@@ -2,3 +2,8 @@ EIFGENs
 *.swp
 *.log
 *.rc
+.venv
+*~
+*.tex
+*.sty
+*.pdf
