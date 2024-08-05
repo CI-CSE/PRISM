@@ -20,6 +20,9 @@ lemma restrict_prop_2: "Pre (p \<sslash>\<^sub>p D) \<subseteq> Pre p"
 theorem restrict_prop: "Pre (p \<sslash>\<^sub>p D) \<subseteq> Pre p \<inter> D"
   by (auto simp: restrict_p_def)
 
+theorem restrict_idem: "(p \<sslash>\<^sub>p C) \<sslash>\<^sub>p C = p \<sslash>\<^sub>p C" \<comment> \<open>NEW\<close>
+  by (auto simp: restrict_p_def S_def)
+
 lemma restrict_inter: "(p\<sslash>\<^sub>pC\<^sub>1)\<sslash>\<^sub>pC\<^sub>2 = p\<sslash>\<^sub>p(C\<^sub>1 \<inter> C\<^sub>2)" \<comment> \<open>/Restrict_inter/\<close>
   by (auto simp: equal_def S_def Field_def restrict_p_def restrict_r_def)
 
@@ -44,9 +47,9 @@ theorem restrict_refine: "p \<subseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment
 theorem order_reversal: "D \<subseteq> C \<Longrightarrow> p \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p D" \<comment> \<open>/Order_reverse/\<close>
   by (auto simp: refines_def extends_def weakens_def strengthens_def restrict_p_def restrict_r_def S_def Field_def)
 
-theorem refinement_safety_restriction: "q \<subseteq>\<^sub>p p \<Longrightarrow> q \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>T22\<close>
+theorem refinement_safety_restriction: "q \<subseteq>\<^sub>p p \<Longrightarrow> q \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Order_reverse/\<close>
   by (auto simp: refines_def extends_def weakens_def strengthens_def restrict_p_def restrict_r_def S_def Field_def)
 
-theorem refinement_safety_restriction2: "q \<subseteq>\<^sub>p p \<Longrightarrow> D \<subseteq> C \<Longrightarrow> q \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p D"
+theorem refinement_safety_restriction2: "q \<subseteq>\<^sub>p p \<Longrightarrow> D \<subseteq> C \<Longrightarrow> q \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p D" \<comment> \<open>/Order_reverse/\<close>
   by (meson order_reversal refinement_safety_restriction refines_is_preorder)
 end

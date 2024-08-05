@@ -7,6 +7,7 @@ theory T_01_Core
 "01_Core/Helper" 
 "01_Core/Implementation"
 "01_Core/Independence"
+"01_Core/Range_p"
 "01_Core/Refinement"
 "01_Core/Relation_operations"
 "01_Core/Subprogram"

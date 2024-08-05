@@ -5,7 +5,7 @@ section \<open>Boolean for top\<close>
 theorem restrict_true: "p \<sslash>\<^sub>p (TRUE (S p)) \<triangleq> p" \<comment> \<open>/Restrict_true/\<close>
   by (auto simp: equal_def TRUE_def restrict_p_def restrict_r_def S_def Field_def)
 
-theorem cond_false: "p \<sslash>\<^sub>p FALSE \<equiv>\<^sub>p Fail (S p)" \<comment> \<open>/Cond_false/\<close>
+theorem cond_false_1: "p \<sslash>\<^sub>p FALSE \<equiv>\<^sub>p Fail (S p)" \<comment> \<open>/Cond_false/\<close>
   by (auto simp: equal_def restr_post_def FALSE_def restrict_p_def restrict_r_def S_def Field_def Fail_def equiv_def)
 
 theorem corestrict_true: "is_feasible p \<Longrightarrow> p \<setminus>\<^sub>p (TRUE (S p)) \<equiv>\<^sub>p p" \<comment> \<open>/Corestrict_true/\<close>

@@ -7,72 +7,93 @@ section \<open>Loop invariant for top\<close>
 
 theorem false_is_loop_invariant: "is_loop_invariant FALSE a C b"
   oops
-  (* by (simp add: FALSE_def invariant_disjoint_from_pre is_loop_invariant_def) *)
 
 theorem true_is_loop_invariant: "S a \<union> S b \<union> C \<subseteq> D \<Longrightarrow> is_loop_invariant (TRUE D) a C b"
   by (auto simp: is_loop_invariant_def is_invariant_def Range_p_def restrict_r_def TRUE_def S_def Field_def restrict_p_def)
-  (* oops *)
 
 theorem loop_invariant_is_invariant_of_loop: "0<s \<Longrightarrow> is_loop_invariant I a C b \<Longrightarrow> is_invariant I (loop (b\<sslash>\<^sub>p(-C)) s n)"
-  by (simp add: arbitrary_repetition_invariant_preserving is_loop_invariant_def)
+  by (simp add: arbitrary_repetition_invariant_preserve is_loop_invariant_def)
 
-theorem loop_correctness: "0 < n \<Longrightarrow> is_loop_invariant I a C b \<Longrightarrow> Range_p (while_loop a C b n) \<subseteq> C \<inter> I"
+lemma loop_correct_1: "is_loop_invariant I a C b \<Longrightarrow> Range_p (a ; loop (b \<sslash>\<^sub>p (- C)) n n) \<subseteq> I"
+  proof (induction n)
+    case 0
+    then show ?case by (auto simp: is_loop_invariant_def is_invariant_def composition_def Skip_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def Range_p_def restr_post_def)
+  next
+    case (Suc n)
+    assume IH: "is_loop_invariant I a C b \<Longrightarrow> Range_p (a ; loop (b \<sslash>\<^sub>p (- C)) n n) \<subseteq> I"
+    assume a2: "is_loop_invariant I a C b"
+    from IH a2 have IH2: "Range_p (a ; loop (b \<sslash>\<^sub>p (- C)) n n) \<subseteq> I" by simp
+    have l1: "a ; loop (b \<sslash>\<^sub>p (- C)) (Suc n) (Suc n) \<equiv>\<^sub>p (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^n) ; (b \<sslash>\<^sub>p (- C))"
+      by (metis compose_assoc equiv_is_reflexive equivalence_is_maintained_by_composition fixed_repetition.simps(2) loop_l2_1)
+    then have "\<forall> y \<in> Range_p (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^(Suc n)). y \<in> I"
+      by (meson a2 composition_pre fixed_repetition_invariant_preserve in_mono invariant_preserve is_loop_invariant_def range_p_explicit_1)
+    then show "Range_p (a ; loop (b \<sslash>\<^sub>p (- C)) (Suc n) (Suc n)) \<subseteq> I"
+      using l1 same_range_p_3 by auto
+  qed
+
+lemma loop_correct_2: "is_loop_invariant I a C b \<Longrightarrow> Range_p (while_support a C b n n) \<subseteq> I"
+  proof (induction n)
+    case 0
+    then show ?case by (auto simp: while_support_def composition_def Skip_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def Range_p_def)
+  next
+    case (Suc n)
+    assume IH: "is_loop_invariant I a C b \<Longrightarrow> Range_p (while_support a C b n n) \<subseteq> I"
+    assume a2: "is_loop_invariant I a C b"
+    from IH a2 have IH2: "Range_p (while_support a C b n n) \<subseteq> I" by simp
+    then have IH_exp: "\<forall>x y. x \<in> Pre a \<and> (x, y) \<in> post (a; ((b\<sslash>\<^sub>p(-C))\<^bold>^n)) \<longrightarrow> y \<in> I"
+      by (meson a2 corestriction_invariant_preserve fixed_repetition_invariant_preserve invariant_preserve is_loop_invariant_def)
+    then have IH_exp_2: "\<forall>x y. x \<in> Pre a \<and> (x, y) \<in> post (a; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n))) \<longrightarrow> y \<in> I"
+      by (meson a2 fixed_repetition_invariant_preserve invariant_preserve is_loop_invariant_def)
+    then have IH_exp_3: "\<forall>x y. x \<in> Pre a \<and> (x, y) \<in> post (a; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n)) \<setminus>\<^sub>p C) \<longrightarrow> y \<in> I"
+      by (meson a2 corestriction_invariant_preserve fixed_repetition_invariant_preserve invariant_preserve is_loop_invariant_def)
+    have l1: "while_support a C b (Suc n) (Suc n) \<equiv>\<^sub>p a; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n)) \<setminus>\<^sub>p C"
+      using while_decomp_7 by blast
+    then have "\<forall>x y. x \<in> Pre a \<and> (x, y) \<in> post (while_support a C b (Suc n) (Suc n)) \<longrightarrow> y \<in> I"
+      by (metis (full_types) IH_exp_3 composition_pre knowing_pre_composition range_p_explicit_1 range_p_explicit_2 same_range_p_3 subsetD while_support_def)
+    then show "Range_p (while_support a C b (Suc n) (Suc n)) \<subseteq> I"
+      by (metis composition_pre in_mono range_p_explicit_1 subsetI while_support_def)
+  qed
+
+lemma loop_correct_3: "s\<le>f \<Longrightarrow> is_loop_invariant I a C b \<Longrightarrow> Range_p (while_support a C b s f) \<subseteq> I"
+  apply (induction f)
+   apply (smt (verit) in_mono le_numeral_extra(3) loop_correct_2 range_while_loop_2 subsetI while_conncetion)
+proof -
+  fix f assume IH: "s \<le> f \<Longrightarrow> is_loop_invariant I a C b \<Longrightarrow> Range_p (while_support a C b s f) \<subseteq> I"
+  assume a1: "is_loop_invariant I a C b"
+  assume a2: " s \<le> Suc f"
+  show "Range_p (while_support a C b s (Suc f)) \<subseteq> I"
+  proof (cases "s\<le>f")
+    case True
+    from IH a1 True have l1: "Range_p (while_support a C b s f) \<subseteq> I" by simp
+    from True have l2: "while_support a C b s (Suc f) \<equiv>\<^sub>p while_support a C b s f \<union>\<^sub>p while_support a C b (Suc f) (Suc f)"
+      by (metis choice_commute while_decomp_4)
+    then show ?thesis
+      by (smt (verit) l1 a1 choice_range_p_prop_2 loop_correct_2 same_range_p_3 subsetD subsetI)
+  next
+    case False
+    then show ?thesis
+      by (metis a1 a2 le_Suc_eq loop_correct_2)
+  qed
+qed
+
+
+theorem loop_correct: "is_loop_invariant I a C b \<Longrightarrow> Range_p (while_loop a C b n) \<subseteq> C \<inter> I" \<comment> \<open>Loop_correct\<close>
   apply (auto)
 proof -
   assume a1: "is_loop_invariant I a C b"
-  fix x assume a2: "x \<in> Range_p (while_loop a C b n)"
+  fix n x assume a2: "x \<in> Range_p (while_loop a C b n)"
   from a1 a2 show "x \<in> C"
     apply (auto simp: while_loop_def)
     by (meson Corestriction.corestrict_prop_1 in_mono range_decreases_composition)
 next
-  assume a0: "0 < n"
-  assume a1: "is_loop_invariant I a C b"
   fix x assume a2: "x \<in> Range_p (while_loop a C b n)"
-  from a0 a1 a2 show "x \<in> I"
-    apply (induction n)
-    apply simp
-     (* apply (simp add: while_loop_def) \<comment> \<open>Maybe a lemma\<close> *)
-    apply (simp add: is_loop_invariant_def) [1]
-    sorry
-  (* proof - *)
-    (* fix n assume IH: "0 < n \<Longrightarrow> x \<in> Range_p (while_loop a C b n) \<Longrightarrow> x \<in> I" *)
-    (* assume a2: "I \<subseteq> Range_p a \<and> is_invariant I (b \<sslash>\<^sub>p (- C))" *)
-    (* assume a3: "x \<in> Range_p (while_loop a C b (Suc n))" *)
-    (* show " x \<in> I" *)
-    (* proof (cases "0 < n") *)
-      (* case True *)
-      (* assume a4: "0 < n" *)
-      (* then show ?thesis sorry *)
-    (* next *)
-      (* case False *)
-      (* assume a4: "\<not> 0 < n" *)
-      (* then have l1: "n=0" by simp *)
-      (* from l1 a3 have l2: "x \<in> Range_p (while_loop a C b 1)" by simp *)
-      (* have l3: "while_loop a C b 1 = a ; (loop (b\<sslash>\<^sub>p(-C)) 0 1)\<setminus>\<^sub>p C" by (simp add: while_loop_def) *)
-      (* have l4: "loop (b\<sslash>\<^sub>p(-C)) 0 1 \<equiv>\<^sub>p loop (b\<sslash>\<^sub>p(-C)) 0 0 \<union>\<^sub>p loop (b\<sslash>\<^sub>p(-C)) 1 1" *)
-        (* by (metis One_nat_def le_numeral_extra(3) loop_l5 zero_less_one_class.zero_le_one) *)
-      (* have l5: "loop (b\<sslash>\<^sub>p(-C)) 0 0 \<equiv>\<^sub>p Skip (S b)" *)
-        (* using loop_l1 by auto *)
-      (* have l6: "loop (b\<sslash>\<^sub>p(-C)) 1 1 \<equiv>\<^sub>p (b\<sslash>\<^sub>p(-C))\<^bold>^1" *)
-        (* using loop_l2_1 by blast *)
-      (* have l7: "(b\<sslash>\<^sub>p(-C))\<^bold>^1 \<equiv>\<^sub>p Skip (S b);(b\<sslash>\<^sub>p(-C))" *)
-        (* by (simp add: equiv_is_reflexive) *)
-      (* have l8: "a ; (loop (b\<sslash>\<^sub>p(-C)) 0 1)\<setminus>\<^sub>p C \<equiv>\<^sub>p a ; ((Skip (S b)) \<union>\<^sub>p (b\<sslash>\<^sub>p(-C)))\<setminus>\<^sub>p C" *)
-        (* by (simp add: equals_equiv_relation_3 equivalence_is_maintained_by_choice equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction skip_prop_5) *)
-      (* from l1 l2 l3 l4 l5 l6 l7 l8 show ?thesis sorry *)
-    (* qed *)
-  (* qed *)
-  (* have l1: "\<forall> i. is_invariant I ((b\<sslash>\<^sub>p(-C))\<^bold>^i)" *)
-    (* using a1 fixed_repetition_invariant_preserving is_loop_invariant_def by blast *)
-  (* have l2: "I \<subseteq> Range_p a" *)
-    (* by (meson a1 is_loop_invariant_def) *)
-  (* have l3: "x \<in> Range_p (a ; (loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>p C)" *)
-    (* by (metis a2 while_loop_def) *)
-  (* have l4: "x \<in> C" *)
-    (* by (meson Corestriction.corestrict_prop_1 l3 range_decreases_composition subsetD) *)
-  (* from a1 a2 l1 l2 l3 l4 show "x \<in> I" *)
-    (* apply (simp add: is_loop_invariant_def while_loop_def is_invariant_def Range_p_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def fixed_repetition_def S_def Field_def arbitrary_repetition.elims) *)
-    (* sorry *)
+  assume a1: "is_loop_invariant I a C b"
+  
+  from a1 a2 have "x \<in> C"
+    apply (auto simp: while_loop_def)
+    by (meson Corestriction.corestrict_prop_1 in_mono range_decreases_composition)
+  from a1 a2 show "x \<in> I"
+    by (metis bot_nat_0.extremum in_mono loop_correct_3 while_conncetion)
 qed
 
 end

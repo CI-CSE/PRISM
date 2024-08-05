@@ -52,7 +52,7 @@ lemma havoc_pre_post: "S p \<subseteq> C \<Longrightarrow>is_feasible p \<Longri
   apply (auto simp: relcompp_apply subset_iff S_def Field_def)
   apply (meson Domain.cases Range.intros)
   by (metis (mono_tags, lifting) Domain_iff Relation_operations.corestrict_prop_1 mem_Collect_eq)
-
+                                       
 theorem NOT_havoc_pre: "p ; Havoc (S p) \<equiv>\<^sub>p Havoc (S p) \<sslash>\<^sub>p Pre p" \<comment> \<open>/Havoc_pre/\<close>
   oops
 

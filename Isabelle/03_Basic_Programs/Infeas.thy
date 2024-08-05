@@ -33,7 +33,7 @@ proof -
     by (auto simp: is_total_def S_def)
   from a1 a2 l1 l2 show "\<not> is_feasible (p \<union>\<^sub>p Infeas (S p))"
     apply (simp add: Infeas_def choice_def is_feasible_def restr_post_def restrict_r_def S_def Field_def subset_iff Domain_iff Range_iff is_total_def Un_def)
-    by (smt (verit))
+    by (auto)
 qed
 
 theorem infeas_makes_total: "is_total (p \<union>\<^sub>p Infeas (S p))"

@@ -15,24 +15,24 @@ section \<open>Complex operation interactions for top\<close>
 
 
 subsubsection \<open>Restriction atomic concurrency\<close>
-theorem restriction_distributes_over_atomic_conc_1: "(p\<^sub>1 || p\<^sub>2) \<sslash>\<^sub>p C = p\<^sub>1 \<sslash>\<^sub>p C || p\<^sub>2 \<sslash>\<^sub>p C"
+theorem restriction_distrib_1: "(p\<^sub>1 || p\<^sub>2) \<sslash>\<^sub>p C = p\<^sub>1 \<sslash>\<^sub>p C || p\<^sub>2 \<sslash>\<^sub>p C"
   oops
 
-theorem restriction_distributes_over_atomic_conc_2: "(p\<^sub>1 || p\<^sub>2) \<sslash>\<^sub>p C \<equiv>\<^sub>p (p\<^sub>1 \<sslash>\<^sub>p C ; p\<^sub>2) \<union>\<^sub>p (p\<^sub>2 \<sslash>\<^sub>p C ; p\<^sub>1)"
+theorem restriction_distrib_2: "(p\<^sub>1 || p\<^sub>2) \<sslash>\<^sub>p C \<equiv>\<^sub>p (p\<^sub>1 \<sslash>\<^sub>p C ; p\<^sub>2) \<union>\<^sub>p (p\<^sub>2 \<sslash>\<^sub>p C ; p\<^sub>1)" \<comment> \<open>NEW\<close>
   by (metis atomic_conc_def compose_absorb_1 restrict_distrib_3)
 
 subsubsection \<open>Restriction non-atomic concurrency\<close>
-theorem restriction_distributes_over_atomic_conc_1: "((p\<^sub>1, p\<^sub>2) \<parallel> q) \<sslash>\<^sub>p C = ((q\<sslash>\<^sub>p C;p\<^sub>1);p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;q);p\<^sub>2)) \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;p\<^sub>2);q)"
+theorem restriction_distrib_1: "((p\<^sub>1, p\<^sub>2) \<parallel> q) \<sslash>\<^sub>p C = ((q\<sslash>\<^sub>p C;p\<^sub>1);p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;q);p\<^sub>2)) \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;p\<^sub>2);q)"
   oops
-theorem restriction_distributes_over_atomic_conc_2: "((p\<^sub>1, p\<^sub>2) \<parallel> q) \<sslash>\<^sub>p C \<triangleq> ((q\<sslash>\<^sub>p C;p\<^sub>1);p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;q);p\<^sub>2)) \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;p\<^sub>2);q)"
+theorem restriction_distrib_2: "((p\<^sub>1, p\<^sub>2) \<parallel> q) \<sslash>\<^sub>p C \<triangleq> ((q\<sslash>\<^sub>p C;p\<^sub>1);p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;q);p\<^sub>2)) \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;p\<^sub>2);q)"
   oops
-theorem restriction_distributes_over_atomic_conc_3: "((p\<^sub>1, p\<^sub>2) \<parallel> q) \<sslash>\<^sub>p C \<equiv>\<^sub>p ((q\<sslash>\<^sub>p C;p\<^sub>1);p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;q);p\<^sub>2)) \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;p\<^sub>2);q)"
+theorem restriction_distrib_3: "((p\<^sub>1, p\<^sub>2) \<parallel> q) \<sslash>\<^sub>p C \<equiv>\<^sub>p ((q\<sslash>\<^sub>p C;p\<^sub>1);p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;q);p\<^sub>2)) \<union>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;p\<^sub>2);q)"
   apply (auto simp: non_atomic_conc_def)
 proof -
   have l1: "((p\<^sub>1 || q) ; p\<^sub>2 \<union>\<^sub>p p\<^sub>1 ; (p\<^sub>2 || q)) \<sslash>\<^sub>p C \<equiv>\<^sub>p ((p\<^sub>1 || q)\<sslash>\<^sub>p C ; p\<^sub>2 \<union>\<^sub>p p\<^sub>1\<sslash>\<^sub>p C ; (p\<^sub>2 || q))"
     by (metis compose_absorb_1 restrict_distrib_3)
   have l2: "((p\<^sub>1 || q)\<sslash>\<^sub>p C ; p\<^sub>2 \<union>\<^sub>p p\<^sub>1\<sslash>\<^sub>p C ; (p\<^sub>2 || q)) \<equiv>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>p C;q \<union>\<^sub>p q\<sslash>\<^sub>p C;p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p p\<^sub>1\<sslash>\<^sub>p C ; (p\<^sub>2;q \<union>\<^sub>p q;p\<^sub>2))"
-    by (metis atomic_conc_def equiv_is_reflexive equivalence_is_maintained_by_choice equivalence_is_maintained_by_composition restriction_distributes_over_atomic_conc_2)
+    by (metis atomic_conc_def equiv_is_reflexive equivalence_is_maintained_by_choice equivalence_is_maintained_by_composition restriction_distrib_2)
   have l3: "(p\<^sub>1\<sslash>\<^sub>p C;q \<union>\<^sub>p q\<sslash>\<^sub>p C;p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p p\<^sub>1\<sslash>\<^sub>p C ; (p\<^sub>2;q \<union>\<^sub>p q;p\<^sub>2) \<equiv>\<^sub>p ((p\<^sub>1\<sslash>\<^sub>pC;q);p\<^sub>2\<union>\<^sub>p(q\<sslash>\<^sub>pC;p\<^sub>1);p\<^sub>2)\<union>\<^sub>p((p\<^sub>1\<sslash>\<^sub>pC;p\<^sub>2);q\<union>\<^sub>p(p\<^sub>1\<sslash>\<^sub>pC;q);p\<^sub>2)"
     by (metis compose_assoc compose_distrib1_3 compose_distrib2_3 equivalence_is_maintained_by_choice)
   from choice_assoc_3 have l4: "((p\<^sub>1\<sslash>\<^sub>pC;q);p\<^sub>2\<union>\<^sub>p(q\<sslash>\<^sub>pC;p\<^sub>1);p\<^sub>2)\<union>\<^sub>p((p\<^sub>1\<sslash>\<^sub>pC;p\<^sub>2);q\<union>\<^sub>p(p\<^sub>1\<sslash>\<^sub>pC;q);p\<^sub>2) \<equiv>\<^sub>p (((p\<^sub>1\<sslash>\<^sub>pC;q);p\<^sub>2\<union>\<^sub>p(q\<sslash>\<^sub>pC;p\<^sub>1);p\<^sub>2)\<union>\<^sub>p(p\<^sub>1\<sslash>\<^sub>pC;p\<^sub>2);q)\<union>\<^sub>p(p\<^sub>1\<sslash>\<^sub>pC;q);p\<^sub>2"
@@ -47,9 +47,10 @@ qed
 
 
 subsubsection \<open>Restriction guarded conditional\<close>
-theorem restriction_distributes_over_gc: "(GC C\<^sub>1 p C\<^sub>2 q) \<sslash>\<^sub>p D \<triangleq> GC (D \<inter> C\<^sub>1) p (D \<inter> C\<^sub>2) q"
+theorem cond_distrib2_1: "(GC C\<^sub>1 p C\<^sub>2 q) \<sslash>\<^sub>p D \<triangleq> GC (D \<inter> C\<^sub>1) p (D \<inter> C\<^sub>2) q"
   oops
-theorem restriction_distributes_over_gc: "(GC C\<^sub>1 p C\<^sub>2 q) \<sslash>\<^sub>p D \<equiv>\<^sub>p GC (D \<inter> C\<^sub>1) p (D \<inter> C\<^sub>2) q"
+
+theorem Cond_distrib2_2: "(GC C\<^sub>1 p C\<^sub>2 q) \<sslash>\<^sub>p D \<equiv>\<^sub>p GC (D \<inter> C\<^sub>1) p (D \<inter> C\<^sub>2) q"
   by (auto simp: equiv_def guarded_conditional_def restrict_p_def restrict_r_def choice_def restr_post_def S_def Field_def)
 
 subsubsection \<open>Restriction If-then-else\<close>
@@ -62,13 +63,13 @@ theorem restriction_ite: "(ITE C a b) \<sslash>\<^sub>p D \<equiv>\<^sub>p (ITE 
   by (metis restrict_distrib_3 restrict_commute)
 
 subsubsection \<open>Restriction fixed repetition\<close>
-theorem restriction_fixed_repetition_1: "is_feasible p \<Longrightarrow> 0<n \<Longrightarrow> (p\<^bold>^n) \<sslash>\<^sub>p C \<equiv>\<^sub>p (p \<sslash>\<^sub>p C);(p\<^bold>^(n-1))"
+theorem restriction_fixed_repetition_1: "0<n \<Longrightarrow> (p\<^bold>^Suc n) \<sslash>\<^sub>p C \<equiv>\<^sub>p (p \<sslash>\<^sub>p C);(p\<^bold>^n)"
 proof -
   assume a1: "0<n"
-  assume a2: "is_feasible p"
-  from a1 have l1: "(p \<^bold>^ n) \<sslash>\<^sub>p C \<equiv>\<^sub>p (p;p \<^bold>^ (n-1)) \<sslash>\<^sub>p C"
-    by (metis Suc_diff_1 a1 a2 equivalence_is_maintained_by_restriction fixed_rep_decomp_front)
-  have "(p;p \<^bold>^ (n-1)) \<sslash>\<^sub>p C \<equiv>\<^sub>p ((p\<sslash>\<^sub>p C);p \<^bold>^ (n-1))"
+  from a1 fixed_rep_decomp_front have l0: "(p \<^bold>^ Suc n) \<equiv>\<^sub>p p;p \<^bold>^ n" by auto
+  from a1 have l1: "(p \<^bold>^ Suc n) \<sslash>\<^sub>p C \<equiv>\<^sub>p (p;p \<^bold>^ n) \<sslash>\<^sub>p C"
+    using equivalence_is_maintained_by_restriction l0 by auto
+  have "(p;p \<^bold>^ n) \<sslash>\<^sub>p C \<equiv>\<^sub>p ((p\<sslash>\<^sub>p C);p \<^bold>^ n)"
     using compose_absorb_3 by auto
   then show ?thesis
     using equiv_is_transitive l1 by auto
@@ -76,21 +77,7 @@ qed
 
 
 theorem restriction_fixed_repetition_2: "is_feasible p \<Longrightarrow> (p\<^bold>^n) \<sslash>\<^sub>p C \<equiv>\<^sub>p (Skip (S p) \<sslash>\<^sub>p C);(p\<^bold>^n)"
-  apply (cases "n=0")
-  apply (metis compose_absorb_3 fixed_repetition.simps(1) skip_is_idempondent_composition)
-proof -
-  assume a1: "n\<noteq>0"
-  assume a2: "is_feasible p"
-  from a1 have l1: "0<n" by simp
-  from l1 have l2: "(p \<^bold>^ n) \<sslash>\<^sub>p C \<equiv>\<^sub>p (p;p \<^bold>^ (n-1)) \<sslash>\<^sub>p C"
-    by (metis Suc_diff_1 a2 equivalence_is_maintained_by_restriction fixed_rep_decomp_front)
-  have l3: "(p;p \<^bold>^ (n-1)) \<sslash>\<^sub>p C \<equiv>\<^sub>p (Skip (S p)\<sslash>\<^sub>p C;p);p \<^bold>^ (n-1)"
-    by (metis compose_absorb_1 equals_equiv_relation_3 equiv_is_symetric equivalence_is_maintained_by_composition skip_prop_2)
-  have l4: "(Skip (S p)\<sslash>\<^sub>p C;p);p \<^bold>^ (n-1) \<equiv>\<^sub>p (Skip (S p)\<sslash>\<^sub>p C);p \<^bold>^ (n)"
-    by (metis Suc_diff_1 a2 compose_absorb_1 compose_absorb_3 compose_assoc equiv_is_symetric equivalence_is_maintained_by_composition fixed_rep_decomp_front l1 skip_is_idempondent_composition)
-  then show ?thesis
-    using equiv_is_transitive l2 l3 by blast
-qed
+  by (metis compose_absorb_1 equivalence_is_maintained_by_restriction skip_compose_l_of_fixed_rep_1)
 
 theorem restriction_fixed_repetition_3:  "(p\<^bold>^n) \<sslash>\<^sub>p C \<equiv>\<^sub>p (Skip C);(p\<^bold>^n)"
   by (simp add: equiv_is_symetric skip_prop_3)
@@ -105,10 +92,22 @@ subsubsection \<open>Restriction while\<close>
 
 
 subsubsection \<open>Composition atomic concurrency\<close>
+theorem composition_refines_atomic_conc_weakens: "weakens (p\<^sub>1||p\<^sub>2) (p\<^sub>1;p\<^sub>2)"
+  by (simp add: atomic_conc_def weakens_def)
+
+theorem composition_refines_atomic_conc_strengthens: "strengthens (p\<^sub>1;p\<^sub>2) (p\<^sub>1||p\<^sub>2)"
+  by (metis atomic_conc_def program_is_subprogram_of_choice subprogram_def)
+
+theorem composition_refines_atomic_conc: "p\<^sub>1;p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1||p\<^sub>2"
+  oops
+
+theorem composition_is_subprogram_of_atomic_conc: "p\<^sub>1;p\<^sub>2 \<preceq>\<^sub>p p\<^sub>1||p\<^sub>2"
+  by (simp add: atomic_conc_def program_is_subprogram_of_choice)
+
+theorem commute_compose: "commute_programs p\<^sub>1 p\<^sub>2 \<Longrightarrow> p\<^sub>1 || p\<^sub>2 \<equiv>\<^sub>p p\<^sub>1 ; p\<^sub>2"
+  by (auto simp: commute_programs_def atomic_conc_def choice_def equiv_def restr_post_def composition_def restrict_r_def)
 
 subsubsection \<open>Composition non-atomic concurrency\<close>
-
-
 subsubsection \<open>Composition If-then-else\<close>
 subsubsection \<open>Composition fixed repetition\<close>
 subsubsection \<open>Composition arbitrary repetition\<close>
@@ -117,42 +116,64 @@ subsubsection \<open>Composition while\<close>
 
 
 subsubsection \<open>Choice atomic concurrency\<close>
+theorem concur_distrib1: "p\<^sub>1 || (p\<^sub>2 \<union>\<^sub>p p\<^sub>3) \<equiv>\<^sub>p (p\<^sub>1 || p\<^sub>2) \<union>\<^sub>p (p\<^sub>1 || p\<^sub>3)"
+  apply (auto simp: atomic_conc_def)
+proof -
+  have l1: "p\<^sub>1 ; (p\<^sub>2 \<union>\<^sub>p p\<^sub>3) \<equiv>\<^sub>p (p\<^sub>1 ; p\<^sub>2 \<union>\<^sub>p p\<^sub>1 ; p\<^sub>3)"
+    by (simp add: compose_distrib1_3)
+  have l2: "(p\<^sub>2 \<union>\<^sub>p p\<^sub>3) ; p\<^sub>1 \<equiv>\<^sub>p (p\<^sub>2 ; p\<^sub>1 \<union>\<^sub>p p\<^sub>3 ; p\<^sub>1)"
+    by (simp add: compose_distrib2_3)
+  have l3: "(p\<^sub>1 ; p\<^sub>2 \<union>\<^sub>p p\<^sub>1 ; p\<^sub>3) \<union>\<^sub>p (p\<^sub>2 ; p\<^sub>1 \<union>\<^sub>p p\<^sub>3 ; p\<^sub>1) \<equiv>\<^sub>p (p\<^sub>1 ; p\<^sub>2 \<union>\<^sub>p p\<^sub>2 ; p\<^sub>1) \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>3 \<union>\<^sub>p p\<^sub>3 ; p\<^sub>1)"
+    by (metis choice_assoc_1 choice_assoc_3 choice_commute)
+  from l1 l2 l3 show "p\<^sub>1 ; (p\<^sub>2 \<union>\<^sub>p p\<^sub>3) \<union>\<^sub>p (p\<^sub>2 \<union>\<^sub>p p\<^sub>3) ; p\<^sub>1 \<equiv>\<^sub>p p\<^sub>1 ; p\<^sub>2 \<union>\<^sub>p (p\<^sub>2 ; p\<^sub>1 \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>3 \<union>\<^sub>p p\<^sub>3 ; p\<^sub>1))"
+    by (metis choice_assoc_1 choice_commute equivalence_is_maintained_by_choice)
+qed
 
+theorem concur_distrib2: "(p\<^sub>2 \<union>\<^sub>p p\<^sub>3) || p\<^sub>1 \<equiv>\<^sub>p (p\<^sub>2 || p\<^sub>1) \<union>\<^sub>p (p\<^sub>3 || p\<^sub>1)"
+  apply (auto simp: equiv_def atomic_conc_def)
+  apply (smt (verit) equiv_def Un_iff atomic_conc_def choice_pre compose_distrib1_3 compose_distrib2_3)
+  apply (smt (verit) equiv_def Un_iff atomic_conc_def choice_pre compose_distrib1_3 compose_distrib2_3)
+  apply (metis equiv_def UnCI choice_pre compose_distrib1_3)
+  apply (metis equiv_def UnCI choice_pre compose_distrib2_3)
+  apply (metis equiv_def UnCI choice_pre compose_distrib1_3)
+    apply (metis equiv_def UnCI choice_pre compose_distrib2_3)
+  apply (metis Definitions.equiv_def atomic_conc_def concur_distrib1 choice_assoc_1)
+  by (metis Definitions.equiv_def atomic_conc_def concur_distrib1 choice_assoc_1)
 subsubsection \<open>Choice non-atomic concurrency\<close>
 
 subsubsection \<open>Choice guarded conditional\<close>
-theorem gc_distributes_over_choice_1: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<triangleq> (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
+theorem cond_distrib1_gc_1: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<triangleq> (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
   apply (auto simp: equal_def guarded_conditional_def restrict_p_def restrict_r_def choice_def restr_post_def)
   apply (simp add: S_def Field_def Domain_iff Range_iff)
   apply force
   apply (simp add: S_def Field_def Domain_iff Range_iff)
   by force
 
-theorem gc_distributes_over_choice_2: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<equiv>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
-  by (simp add: equals_equiv_relation_2 gc_distributes_over_choice_1)
+theorem cond_distrib1_gc_2: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<equiv>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
+  by (simp add: equals_equiv_relation_2 cond_distrib1_gc_1)
 
-theorem gc_distributes_over_choice_3: "(GC C\<^sub>1 (p\<^sub>1 \<union>\<^sub>p p\<^sub>3) C\<^sub>2 p\<^sub>2) \<triangleq> (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>3 C\<^sub>2 p\<^sub>2)" \<comment> \<open>T48\<close>
-  by (metis gc_commutative_1 gc_distributes_over_choice_1)
+theorem cond_distrib1_gc_3: "(GC C\<^sub>1 (p\<^sub>1 \<union>\<^sub>p p\<^sub>3) C\<^sub>2 p\<^sub>2) \<triangleq> (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>3 C\<^sub>2 p\<^sub>2)" \<comment> \<open>T48\<close>
+  by (metis cond_commute_1 cond_distrib1_gc_1)
 
-theorem gc_distributes_over_choice_4: "(GC C\<^sub>1 (p\<^sub>1 \<union>\<^sub>p p\<^sub>3) C\<^sub>2 p\<^sub>2) \<equiv>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>3 C\<^sub>2 p\<^sub>2)" \<comment> \<open>T48\<close>
-  using gc_distributes_over_choice_3 inverse_equality_1 by blast
+theorem cond_distrib1_gc_4: "(GC C\<^sub>1 (p\<^sub>1 \<union>\<^sub>p p\<^sub>3) C\<^sub>2 p\<^sub>2) \<equiv>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<union>\<^sub>p (GC C\<^sub>1 p\<^sub>3 C\<^sub>2 p\<^sub>2)" \<comment> \<open>T48\<close>
+  using cond_distrib1_gc_3 inverse_equality_1 by blast
 
 subsubsection \<open>Choice If-then-else\<close>
-theorem ite_distributes_over_choice_1: "(ITE C p\<^sub>1 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<triangleq> (ITE C p\<^sub>1 p\<^sub>2) \<union>\<^sub>p (ITE C p\<^sub>1 p\<^sub>3)" \<comment> \<open>T48\<close>
+theorem cond_distrib1_ite_1: "(ITE C p\<^sub>1 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<triangleq> (ITE C p\<^sub>1 p\<^sub>2) \<union>\<^sub>p (ITE C p\<^sub>1 p\<^sub>3)" \<comment> \<open>T48\<close>
   apply (auto simp: equal_def if_then_else_def restrict_p_def restrict_r_def choice_def restr_post_def)
   apply (simp add: S_def Field_def Domain_iff Range_iff)
   apply force
   apply (simp add: S_def Field_def Domain_iff Range_iff)
   by force
 
-theorem ite_distributes_over_choice_2: "(ITE C p\<^sub>1 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<equiv>\<^sub>p (ITE C p\<^sub>1 p\<^sub>2) \<union>\<^sub>p (ITE C p\<^sub>1 p\<^sub>3)" \<comment> \<open>T48\<close>
-  using inverse_equality_1 ite_distributes_over_choice_1 by blast
+theorem cond_distrib1_ite_2: "(ITE C p\<^sub>1 (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)) \<equiv>\<^sub>p (ITE C p\<^sub>1 p\<^sub>2) \<union>\<^sub>p (ITE C p\<^sub>1 p\<^sub>3)" \<comment> \<open>T48\<close>
+  using inverse_equality_1 cond_distrib1_ite_1 by blast
 
-theorem ite_distributes_over_choice_3: "(ITE C (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) p\<^sub>3) \<triangleq> (ITE C p\<^sub>1 p\<^sub>3) \<union>\<^sub>p (ITE C p\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
-  by (metis ite_distributes_over_choice_1 property_on_ite_1)
+theorem cond_distrib1_ite_3: "(ITE C (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) p\<^sub>3) \<triangleq> (ITE C p\<^sub>1 p\<^sub>3) \<union>\<^sub>p (ITE C p\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
+  by (metis cond_distrib1_ite_1 cond_swap)
 
-theorem ite_distributes_over_choice_4: "(ITE C (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) p\<^sub>3) \<equiv>\<^sub>p (ITE C p\<^sub>1 p\<^sub>3) \<union>\<^sub>p (ITE C p\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
-  using inverse_equality_1 ite_distributes_over_choice_3 by blast
+theorem cond_distrib1_ite_4: "(ITE C (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) p\<^sub>3) \<equiv>\<^sub>p (ITE C p\<^sub>1 p\<^sub>3) \<union>\<^sub>p (ITE C p\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
+  using inverse_equality_1 cond_distrib1_ite_3 by blast
 
 subsubsection \<open>Choice fixed repetition\<close>   
 subsubsection \<open>Choice arbitrary repetition\<close> 
@@ -160,7 +181,7 @@ subsubsection \<open>Choice while_support\<close>
 subsubsection \<open>Choice while\<close>
 
 subsubsection \<open>Corestriction atomic concurrency\<close>
-theorem corestriction_distributes_over_atomic_conc: "(p\<^sub>1 || p\<^sub>2) \<setminus>\<^sub>p C = p\<^sub>1 \<setminus>\<^sub>p C || p\<^sub>2 \<setminus>\<^sub>p C"
+theorem corestriction_distrib: "(p\<^sub>1 || p\<^sub>2) \<setminus>\<^sub>p C = p\<^sub>1 \<setminus>\<^sub>p C || p\<^sub>2 \<setminus>\<^sub>p C"
   oops
 
 theorem corestriction_distributes_not_over_atomic_conc: "(p\<^sub>1 || p\<^sub>2) \<setminus>\<^sub>p C \<equiv>\<^sub>p p\<^sub>1 ; p\<^sub>2\<setminus>\<^sub>p C  \<union>\<^sub>p p\<^sub>2 ; p\<^sub>1 \<setminus>\<^sub>p C" \<comment> \<open>NEW\<close>
@@ -209,8 +230,8 @@ lemma atomic_refines_non_atomic_strengthens: "strengthens ((p\<^sub>1; p\<^sub>2
   apply (auto simp: composition_def restrict_r_def restr_post_def corestrict_r_def relcomp_unfold) [1]
   by (auto simp: choice_def composition_def corestrict_r_def S_def restr_post_def restrict_r_def relcomp_unfold Domain_iff) [7]
 
-theorem atomic_refines_non_atomic: "((p\<^sub>1; p\<^sub>2) || q) \<subseteq>\<^sub>p ((p\<^sub>1, p\<^sub>2) \<parallel> q)" \<comment> \<open>T56\<close>
-  oops \<comment> \<open>This should not hold. When the previous lemmas hold\<close>
+theorem coarse_fine: "((p\<^sub>1; p\<^sub>2) || q) \<subseteq>\<^sub>p ((p\<^sub>1, p\<^sub>2) \<parallel> q)" \<comment> \<open>Coarse_fine\<close>
+  oops \<comment> \<open>This does not hold. When the previous lemmas hold\<close>
 
 theorem atomic_subprogram_non_atomic: "((p\<^sub>1; p\<^sub>2) || q) \<preceq>\<^sub>p ((p\<^sub>1, p\<^sub>2) \<parallel> q)" \<comment> \<open>T56\<close>
   apply (auto simp: subprogram_def extends_def)
@@ -228,22 +249,30 @@ theorem atomic_subprogram_non_atomic_2: "(q || (p\<^sub>1; p\<^sub>2)) \<preceq>
   apply (simp add: atomic_refines_non_atomic_weakens_2)
   by (simp add: atomic_refines_non_atomic_strengthens_2)
 
+theorem exchange_law1: "p\<^sub>1 ; (p\<^sub>2 || q) \<preceq>\<^sub>p ((p\<^sub>1, p\<^sub>2) \<parallel> q)" \<comment> \<open>Exchange_law1\<close>
+  apply (auto simp: non_atomic_conc_def)
+  by (simp add: program_is_subprogram_of_choice)
+
+theorem exchange_law2: "p\<^sub>1 ; (p\<^sub>2 || q) \<preceq>\<^sub>p ((p\<^sub>1, p\<^sub>2) \<parallel> q)" \<comment> \<open>Exchange_law2\<close>
+  apply (auto simp: non_atomic_conc_def)
+  by (simp add: program_is_subprogram_of_choice)
+
 subsubsection \<open>Atomic concurrency inverse\<close>
 
 subsubsection \<open>Atomic concurrency guarded conditional\<close>
-theorem gc_distributes_over_atomic_conc: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 (p\<^sub>2 || p\<^sub>3)) \<equiv>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) || (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>3)" \<comment> \<open>T48\<close>
+theorem cond_distrib1_conc_gc: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 (p\<^sub>2 || p\<^sub>3)) \<equiv>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) || (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>3)" \<comment> \<open>Cond_distrib1\<close>
   oops \<comment> \<open>p1;p1 can only happen right\<close>
 
 subsubsection \<open>Atomic concurrency If-then-else\<close>
 subsubsection \<open>Atomic concurrency fixed repetition\<close>
 subsubsection \<open>Atomic concurrency arbitrary repetition\<close> 
-subsubsection \<open>Atomic concurrency composition while_support\<close>
-subsubsection \<open>Atomic concurrency composition while\<close>
+subsubsection \<open>Atomic concurrency while_support\<close>
+subsubsection \<open>Atomic concurrency while\<close>
 
 subsubsection \<open>Non-atomic concurrency inverse\<close>
 
 subsubsection \<open>Non-atomic concurrency guarded conditional\<close>
-theorem ite_distributes_over_atomic_conc: "(ITE C p\<^sub>1 (p\<^sub>2 || p\<^sub>3)) \<equiv>\<^sub>p (ITE C p\<^sub>1 p\<^sub>2) || (ITE C p\<^sub>1 p\<^sub>3)" \<comment> \<open>T48\<close>
+theorem cond_distrib1_conc_ite: "(ITE C p\<^sub>1 (p\<^sub>2 || p\<^sub>3)) \<equiv>\<^sub>p (ITE C p\<^sub>1 p\<^sub>2) || (ITE C p\<^sub>1 p\<^sub>3)" \<comment> \<open>Cond_distrib1\<close>
   oops \<comment> \<open>p1;p1 can only happen right\<close>
 
 
@@ -262,7 +291,7 @@ subsubsection \<open>Inverse while_support\<close>
 subsubsection \<open>Inverse while\<close>
 
 subsubsection \<open>Guarded conditional If-then-else\<close>
-theorem gc_and_ite_1: "ITE C p\<^sub>1 p\<^sub>2 = GC C p\<^sub>1 (-C) p\<^sub>2"
+theorem guard_ifthenelse: "ITE C p\<^sub>1 p\<^sub>2 = GC C p\<^sub>1 (-C) p\<^sub>2" \<comment> \<open>Guard_ifthenelse\<close>
   by (auto simp: guarded_conditional_def if_then_else_def)
 subsubsection \<open>Guarded conditional fixed repetition\<close>
 subsubsection \<open>Guarded conditional arbitrary repetition\<close> 

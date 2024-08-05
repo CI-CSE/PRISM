@@ -1,18 +1,26 @@
 theory Definitions
-  imports Relation_operations "HOL-Library.Mapping"
+  imports Relation_operations
 begin
 section \<open>Definitions for top\<close>
 
 record 'a Program = \<comment> \<open>/Basic_def/\<close>
   State :: "'a set"
   Pre :: "'a set"
-  post :: "'a rel" 
+  post :: "'a rel"
+
+record 'a Contracted_Program =
+  a_specification :: "'a Program"
+  a_implementation :: "'a Program"
 
 definition S :: "'a Program \<Rightarrow> 'a set"
   where
     "S p = State p \<union> Pre p \<union> Field (post p)"
 
-definition is_feasible :: "'a Program \<Rightarrow> bool" \<comment> \<open>/Feasible/\<close>
+definition used_states :: "'a Program \<Rightarrow> 'a set" \<comment> \<open>NEW\<close>
+  where
+    "used_states p \<equiv> Pre p \<union> Field (post p)"
+
+definition is_feasible :: "'a Program \<Rightarrow> bool" \<comment> \<open>/Feasible_program/\<close>
   where
     "is_feasible p = (Pre p \<subseteq> Domain (post p))"
 
@@ -55,7 +63,7 @@ definition equal :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (in
   where
     "p\<^sub>1 \<triangleq> p\<^sub>2 \<equiv> (Pre p\<^sub>1 = Pre p\<^sub>2 \<and> post p\<^sub>1 = post p\<^sub>2 \<and> S p\<^sub>1 = S p\<^sub>2)"
 
-definition equiv :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<equiv>\<^sub>p" 49) \<comment> \<open>/Equiv/\<close>
+definition equiv :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<equiv>\<^sub>p" 49) \<comment> \<open>/Equiv_programs/\<close>
   where
     "p\<^sub>1 \<equiv>\<^sub>p p\<^sub>2 \<equiv> (Pre p\<^sub>1 = Pre p\<^sub>2 \<and> restr_post p\<^sub>1 = restr_post p\<^sub>2)"
 
@@ -69,22 +77,25 @@ definition inverse :: "'a Program \<Rightarrow> 'a Program" \<comment> \<open>NE
 
 notation inverse ("_\<^sup>-\<^sup>1" [50] 50)
 
-
-definition extends :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
+definition extends :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>Extend_states\<close>
   where
     "extends p\<^sub>2 p\<^sub>1 = (S p\<^sub>1 \<subseteq> S p\<^sub>2)"
 
-definition weakens :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
+definition weakens :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>Weaken_pre\<close>
   where
     "weakens p\<^sub>2 p\<^sub>1 = (Pre p\<^sub>1 \<subseteq> Pre p\<^sub>2)"
 
-definition strengthens :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>NEW DEFINITION\<close>
+definition strengthens :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>NEW DEFINITION\<close> \<comment> \<open>Weaken_pre\<close>
   where
     "strengthens p\<^sub>2 p\<^sub>1 \<equiv> ((post p\<^sub>2) \<sslash>\<^sub>r Pre p\<^sub>2) \<sslash>\<^sub>r (Pre p\<^sub>1) \<subseteq> post p\<^sub>1"  \<comment> \<open>Can be simplified if p2 weakens p1\<close>  
   
 definition refines :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<subseteq>\<^sub>p" 50) \<comment> \<open>D7\<close>
   where
     "p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 = (extends p\<^sub>2 p\<^sub>1 \<and> weakens p\<^sub>2 p\<^sub>1 \<and> strengthens p\<^sub>2 p\<^sub>1)"
+
+definition refines_c :: "'a Contracted_Program \<Rightarrow> 'a Contracted_Program \<Rightarrow> bool" (infix "\<subseteq>\<^sub>c" 50)
+  where
+    "cp\<^sub>2 \<subseteq>\<^sub>c cp\<^sub>1 \<equiv> a_specification cp\<^sub>2 = a_specification cp\<^sub>1 \<and> a_implementation cp\<^sub>2 \<subseteq>\<^sub>p a_implementation cp\<^sub>1"
 
 definition subprogram :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<preceq>\<^sub>p" 50)
   where
@@ -94,9 +105,33 @@ definition independent :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> boo
   where
     "independent p\<^sub>1 p\<^sub>2 = (Pre p\<^sub>1 \<inter> Pre p\<^sub>2 = {})"
 
-definition implements :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>D8\<close>
+definition implements :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>Implement_def\<close>
   where
     "implements p\<^sub>2 p\<^sub>1 = (p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 \<and> is_feasible p\<^sub>2)"
+
+definition most_abstract_implementation :: "'a Program \<Rightarrow> 'a Contracted_Program" \<comment> \<open>MAI_definition\<close>
+  where
+    "most_abstract_implementation p \<equiv> \<lparr>a_specification=p, a_implementation=p\<rparr>"
+
+abbreviation MAI :: "'a Program \<Rightarrow> 'a Contracted_Program"
+  where
+    "MAI \<equiv> most_abstract_implementation"
+
+definition is_correct :: "'a Contracted_Program \<Rightarrow> bool"
+  where
+    "is_correct cp = implements (a_implementation cp) (a_specification cp)"
+
+definition strongest_postcondition :: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a rel" (infix "sp" 150)
+  where
+    "strongest_postcondition p Pre' \<equiv> post (p) \<sslash>\<^sub>r Pre'"
+
+definition new_behavior :: "'a Program \<Rightarrow> 'a rel \<Rightarrow> 'a rel"
+  where
+    "new_behavior p post' \<equiv> post p - post'"
+
+definition weakest_precondition :: "'a Program \<Rightarrow> 'a rel \<Rightarrow> 'a set" (infix "wp" 150)
+  where
+    "weakest_precondition p post' \<equiv> Pre p - Domain (new_behavior p post')"
 
 definition choice :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<union>\<^sub>p" 151) \<comment> \<open>D9 NEW DEFINITION\<close>
   where
@@ -109,9 +144,9 @@ definition composition :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a 
       Pre = Pre p\<^sub>1 \<inter> Domain (post p\<^sub>1 \<setminus>\<^sub>r Pre p\<^sub>2),
       post = (post p\<^sub>1) O (restr_post p\<^sub>2)\<rparr>" \<comment> \<open>IS THE SAME BECAUSE: r1\s O r2 = r1 O r2/s\<close>
 
-definition commute :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
+definition commute_programs :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
   where
-    "commute p\<^sub>1 p\<^sub>2 \<equiv> (p\<^sub>1 ; p\<^sub>2) \<equiv>\<^sub>p (p\<^sub>2 ; p\<^sub>1)"
+    "commute_programs p\<^sub>1 p\<^sub>2 \<equiv> (p\<^sub>1 ; p\<^sub>2) \<equiv>\<^sub>p (p\<^sub>2 ; p\<^sub>1)"
 
 definition unsafe_composition ::"'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix ";\<^sub>p" 152)
   where
@@ -160,13 +195,18 @@ definition non_atomic_conc:: "('a Program \<times> 'a Program) \<Rightarrow> 'a 
   where
     "p \<parallel> q \<equiv> ((fst p || q) ; snd p) \<union>\<^sub>p (fst p ; (snd p || q))"
 
+primrec generalized_non_atomic_conc:: "('a Program) list \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>\<^sub>G" 50)
+  where
+    "[]     \<parallel>\<^sub>G q = q" |
+    "(x#xs) \<parallel>\<^sub>G q = ((xs \<parallel>\<^sub>G q) ; x) \<union>\<^sub>p (x ; (xs \<parallel>\<^sub>G q))"
+
 definition guarded_conditional :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
   where
     "guarded_conditional C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2 \<equiv> (p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) \<union>\<^sub>p (p\<^sub>2 \<sslash>\<^sub>p C\<^sub>2)"
 
 abbreviation GC :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
   where
-    "GC == guarded_conditional"
+    "GC \<equiv> guarded_conditional"
 
 definition if_then_else :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
   where
@@ -174,7 +214,7 @@ definition if_then_else :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Pro
 
 abbreviation ITE :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
   where
-    "ITE == if_then_else" 
+    "ITE \<equiv> if_then_else" 
 
 definition if_then :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
   where
@@ -252,16 +292,35 @@ definition while_loop:: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Progra
 
 definition is_invariant:: "'a set \<Rightarrow> 'a Program \<Rightarrow> bool"
   where
-    (* "is_invariant I p \<equiv> Range_p (p \<sslash>\<^sub>p I) \<subseteq> I" *)
-    "is_invariant I p \<equiv> Pre p \<subseteq> I \<and> Range_p p \<subseteq> I" \<comment> \<open>Isn't this definition better?\<close>
+    "is_invariant I p \<equiv> Range_p (p \<sslash>\<^sub>p I) \<subseteq> I"
+    (*"is_invariant I p \<equiv> Pre p \<subseteq> I \<and> Range_p p \<subseteq> I" \<comment> \<open>Isn't this definition better?\<close>*)
 
 lemma "Pre p \<subseteq> I \<and> Range_p p \<subseteq> I \<Longrightarrow> Range_p (p \<sslash>\<^sub>p I) \<subseteq> I"
   by (auto simp: Range_p_def restrict_p_def restrict_r_def)
 
-definition is_loop_invariant:: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> bool"
+
+definition is_loop_invariant:: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>Loop_invariant\<close>
   where
     (* "is_loop_invariant I a C b \<equiv> I \<subseteq> (Range_p a) \<and> is_invariant I (b\<sslash>\<^sub>p(-C))" *)
     "is_loop_invariant I a C b \<equiv> Range_p a \<subseteq> I \<and> is_invariant I (b\<sslash>\<^sub>p(-C))" \<comment> \<open>Isn't this definition better?\<close>
 
+definition markovian :: "'a rel \<Rightarrow> bool"
+  where
+    "markovian r \<equiv> \<forall>s s\<^sub>1 s\<^sub>2. ((s\<^sub>1, s) \<in> r) = ((s\<^sub>2, s) \<in> r)"
 
+definition is_trivial :: "'a rel \<Rightarrow> 'a \<Rightarrow> bool"
+  where
+    "is_trivial r s \<equiv> \<forall>s\<^sub>1. (s, s\<^sub>1) \<in> r"
+
+definition is_irrelevant :: "'a rel \<Rightarrow> 'a \<Rightarrow> bool"
+  where
+    "is_irrelevant r s \<equiv> \<forall>s\<^sub>1 s\<^sub>2. ((s, s\<^sub>1) \<in> r) = ((s, s\<^sub>2) \<in> r)"
+
+definition is_relevant :: "'a rel \<Rightarrow> 'a \<Rightarrow> bool"
+  where
+    "is_relevant r s \<equiv> \<not> is_irrelevant r s"
+
+definition is_programming_language :: "'a set \<Rightarrow> ('a Program) set \<Rightarrow> bool"
+  where
+    "is_programming_language s P \<equiv> \<forall>p \<in> P. is_feasible p \<and> S p \<subseteq> s"
 end

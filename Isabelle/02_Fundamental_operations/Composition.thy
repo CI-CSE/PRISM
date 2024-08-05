@@ -6,7 +6,7 @@ section \<open>Composition for top\<close>
 theorem composition_state [simp]: "S (f ; g) = S f \<union> S g"
   by (auto simp: composition_def S_def restr_post_def restrict_r_def Field_def)
 
-theorem composition_pre [simp]: "Pre (f ; g) \<subseteq> Pre f \<union> Pre g"
+theorem composition_pre [simp]: "Pre (f ; g) \<subseteq> Pre f"
   by (auto simp: composition_def)
 
 theorem composition_post_1 [simp]: "Domain (post (f ; g)) \<subseteq> Domain (post f)"
@@ -64,7 +64,7 @@ proof -
     qed
 
   show ?thesis
-    by (metis compose_assoc_S compose_assoc_post compose_assoc_pre composition_def composition_state select_convs(2) select_convs(3))
+    by (metis Program.select_convs(2) Program.select_convs(3) compose_assoc_S compose_assoc_post compose_assoc_pre composition_def composition_state)
 qed
 
 theorem compose_assoc_2 [simp]: "(p\<^sub>1 ; p\<^sub>2) ; p\<^sub>3 \<triangleq> p\<^sub>1 ; (p\<^sub>2 ; p\<^sub>3)" \<comment> \<open>/Compose_assoc/\<close>
@@ -72,7 +72,6 @@ theorem compose_assoc_2 [simp]: "(p\<^sub>1 ; p\<^sub>2) ; p\<^sub>3 \<triangleq
 
 theorem compose_assoc_3 [simp]: "(p\<^sub>1 ; p\<^sub>2) ; p\<^sub>3 \<equiv>\<^sub>p p\<^sub>1 ; (p\<^sub>2 ; p\<^sub>3)" \<comment> \<open>/Compose_assoc/\<close>
   by (simp add: equals_equiv_relation_3)
-
 
 theorem composition_simplification_1 : "p\<^sub>1 ; p\<^sub>2 = p\<^sub>1 \<setminus>\<^sub>p Pre p\<^sub>2 ; p\<^sub>2"
   by (auto simp: corestrict_p_def composition_def corestrict_r_def S_def restr_post_def restrict_r_def Field_def)
@@ -107,9 +106,18 @@ proof -
     by blast
 qed
 
+theorem composition_removes_dead_code_1: "p \<sslash>\<^sub>p (Pre p) ; q \<equiv>\<^sub>p p ; q"
+  by (auto simp: composition_def equiv_def restrict_p_def restr_post_def)
+
+theorem composition_removes_dead_code_2: "p ; q \<sslash>\<^sub>p (Pre q) \<equiv>\<^sub>p p ; q"
+  by (auto simp: composition_def equiv_def restrict_p_def restr_post_def)
+
 theorem composition_makes_feasible: "is_feasible p\<^sub>2 \<Longrightarrow> is_feasible (p\<^sub>1 ; p\<^sub>2)"
   apply (auto simp: is_feasible_def composition_def restr_post_def restrict_r_def relcomp_unfold corestrict_r_def subset_iff Domain_iff)
   by blast
+
+theorem "p\<^sub>1 ; p\<^sub>2 \<equiv>\<^sub>p \<lparr>State ={}, Pre=Pre p\<^sub>1 \<inter> Domain (post p\<^sub>1 \<setminus>\<^sub>r Pre p\<^sub>2), post=post p\<^sub>1\<rparr> ; p\<^sub>2"
+  by (simp add: Definitions.equiv_def composition_def restr_post_def)
 
 lemma range_decreases_composition: "Range_p (y;x) \<subseteq> Range_p x"
   by (auto simp: Range_p_def composition_def corestrict_r_def restrict_r_def restr_post_def)
@@ -130,5 +138,17 @@ value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>Sta
 value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>"
 
 value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr> \<subseteq>\<^sub>p  \<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>"
+
+theorem comp_range_p_prop: "Range_p (q) \<subseteq> C \<Longrightarrow> Range_p (p;q) \<subseteq> C"
+  by (auto simp: Range_p_def composition_def restrict_r_def corestrict_r_def restr_post_def)
+
+theorem comp_range_p_prop_2: "x \<notin> Range_p q \<Longrightarrow> x \<notin> Range_p (p;q)"
+  using range_decreases_composition by fastforce
+
+theorem connecting_element: "(x,y) \<in> post (a;b) \<Longrightarrow> \<exists>z. (x,z) \<in> post a \<and> (z,y) \<in> post b \<and> z \<in> Pre b"
+  by (auto simp: composition_def restr_post_def restrict_r_def)
+
+theorem knowing_pre_composition: "x \<in> Pre (a) \<Longrightarrow> (x, y) \<in> post (a; b) \<Longrightarrow> x \<in> Pre (a ; b)"
+  by (auto simp: composition_def restr_post_def corestrict_r_def restrict_r_def)
 
 end

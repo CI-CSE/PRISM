@@ -41,7 +41,4 @@ theorem inverse_equality_2: "\<not> p\<^sub>1 \<equiv>\<^sub>p p\<^sub>2 \<Longr
 theorem inverse_equality_3: "\<not> p\<^sub>1 \<triangleq> p\<^sub>2 \<Longrightarrow> \<not> p\<^sub>1 = p\<^sub>2"
   using equal_is_reflexive by auto
 
-subsection \<open>\<close>
-lemma range_p_prop_2: "p\<^sub>1 \<equiv>\<^sub>p p\<^sub>2 \<Longrightarrow> Range_p p\<^sub>1 = Range_p p\<^sub>2"
-  by (auto simp: Range_p_def equiv_def restr_post_def)
 end

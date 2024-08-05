@@ -70,7 +70,7 @@ proof -
     have l7: "\<forall>r. r \<in> restr_post (Skip (Pre p)) \<longrightarrow> (fst r \<in> Pre p \<and> snd r \<in> Pre p \<and> fst r = snd r)"
       by (auto simp: Skip_def restr_post_def restrict_r_def)
     have l8: "\<forall>r. r \<in> restr_post (p ; (p\<^sup>-\<^sup>1)) \<longrightarrow> (fst r \<in> Pre p \<and> snd r \<in> Pre p \<and> fst r = snd r)"
-      by (smt (z3) Definitions.equiv_def Range.intros Range_p_def a0 a2 char_rel_composition char_rel_def inverse_of_inverse_is_self inverse_pre post_is_identity prod.collapse relcompE restr_post_def sndI)
+      using a0 a2 by (auto simp: restr_post_def inverse_def composition_def corestrict_r_def restrict_r_def Range_p_def is_feasible_def is_deterministic_def is_function_def converse_def)
     from l5 l6 l7 l8 show ?thesis
       by (metis (no_types, lifting) Collect_cong Collect_mem_eq prod.collapse)
   qed
@@ -100,8 +100,5 @@ theorem refinement_safety_inverse: "S f = S g \<Longrightarrow> all_feasible [f,
 
 theorem inverse_makes_feasible: "is_feasible (p\<^sup>-\<^sup>1)"
   by (auto simp: inverse_def is_feasible_def Range_p_def restr_post_def)
-
-theorem inverse_stays_feasible: "is_feasible p \<Longrightarrow> is_feasible (p\<^sup>-\<^sup>1)"
-  by (simp add: inverse_makes_feasible)
 
 end

@@ -1,42 +1,8 @@
 theory Fixed_repetition
   imports 
-"../T_03_Basic_programs" (*Fixed_repetition_support*)
+"../T_03_Basic_programs"
 begin
 section \<open>Fixed repetition for top\<close>
-
-
-theorem mapping_fixed_and_fixed_sup_1: "0<n \<Longrightarrow> p ^\<^sup>p n = p \<^bold>^ n"
-proof (induction n)
-  case 0
-  then show ?case by auto
-next
-  case (Suc n)
-  assume a1: "0 < Suc n"
-  assume IH: "0 < n \<Longrightarrow> p ^\<^sup>p n = p \<^bold>^ n"
-  then show ?case
-  proof (cases "n=0")
-    case True
-    then show ?thesis
-      by (auto simp: Skip_def composition_def S_def Field_def corestrict_r_def restr_post_def restrict_r_def)
-  next
-    case False
-    assume a2: "n\<noteq>0"
-    from a2 have l1: "0<n" by simp
-    from l1 IH have IH2: "p ^\<^sup>p n = p \<^bold>^ n" by simp
-    have l2: "p ^\<^sup>p Suc n \<equiv>\<^sub>p p ^\<^sup>p n ; p"
-      by (simp add: equiv_is_reflexive)
-    from l1 have l3: "p \<^bold>^ Suc n \<equiv>\<^sub>p p \<^bold>^ n ; p"
-      using IH l2 by auto
-    then show ?thesis
-      by (simp add: IH2)
-  qed
-qed
-
-theorem mapping_fixed_and_fixed_sup_2: "0<n \<Longrightarrow> p ^\<^sup>p n \<triangleq> p \<^bold>^ n"
-  by (simp add: equals_equiv_relation_1 mapping_fixed_and_fixed_sup_1)
-
-theorem mapping_fixed_and_fixed_sup_3: "0<n \<Longrightarrow> p ^\<^sup>p n \<equiv>\<^sub>p p \<^bold>^ n"
-  by (simp add: equals_equiv_relation_3 mapping_fixed_and_fixed_sup_1)
 
 
 theorem state_space_is_same: "0<n \<Longrightarrow> S p = S (p \<^bold>^ n)"
@@ -63,42 +29,60 @@ next
   qed
 qed
 
+theorem fixed_pre_decreases: "Pre (p\<^bold>^(Suc n)) \<subseteq> Pre (p\<^bold>^n)"
+  apply (induction n)
+  apply (auto)
+  by (metis compose_assoc composition_pre subsetD)
+
 theorem fixed_rep_one_1: "p\<^bold>^1 \<equiv>\<^sub>p p \<sslash>\<^sub>p (Pre p)"
   by (auto simp: Skip_def composition_def corestrict_r_def restr_post_def restrict_r_def equiv_def restrict_p_def)
 
 theorem fixed_rep_one_2: "is_feasible p \<Longrightarrow> p\<^bold>^1 \<equiv>\<^sub>p p"
   by (auto simp: Skip_def composition_def corestrict_r_def restr_post_def restrict_r_def equiv_def)
 
-theorem fixed_rep_decomp_front: "0<i \<Longrightarrow> is_feasible p \<Longrightarrow> p\<^bold>^(Suc i) \<equiv>\<^sub>p p;p\<^bold>^i"
-  proof (induction i)
-    case 0
-    then show ?case
-      by (auto)
+theorem fixed_rep_one_3: "x;p\<^bold>^1 \<equiv>\<^sub>p x;p"
+  by (auto simp: numeral_2_eq_2 composition_def Skip_def S_def equiv_def corestrict_r_def restr_post_def restrict_r_def relcomp_unfold Domain_iff)
+
+theorem fixed_rep_two_1: "p\<^bold>^2 \<equiv>\<^sub>p p ; p"
+  by (auto simp: numeral_2_eq_2 composition_def Skip_def S_def equiv_def corestrict_r_def restr_post_def restrict_r_def relcomp_unfold)
+
+theorem fixed_rep_decomp_front: "0<i \<Longrightarrow> p\<^bold>^(Suc i) \<equiv>\<^sub>p p;p\<^bold>^i"
+proof (induction i)
+  case 0
+  then show ?case by simp
+next
+  case (Suc i)
+  assume a1: "0 < Suc i"
+  assume IH: "0 < i \<Longrightarrow> p \<^bold>^ Suc i \<equiv>\<^sub>p p ; p \<^bold>^ i"
+  then show ?case
+  proof (cases "i=0")
+    case True
+    assume a2: "i = 0"
+    from a2 have l1: "p \<^bold>^ Suc (Suc i) = p \<^bold>^ 2" by (simp add: numeral_2_eq_2)
+    have l3: "p ; p \<^bold>^ 1 \<equiv>\<^sub>p p ; p \<sslash>\<^sub>p (Pre p)"
+      by (metis equals_equiv_relation_3 equivalence_is_maintained_by_composition fixed_rep_one_1)
+    have l6: "p \<^bold>^ 1 ; p \<equiv>\<^sub>p p \<sslash>\<^sub>p (Pre p) ; p"
+      by (meson equals_equiv_relation_3 equivalence_is_maintained_by_composition fixed_rep_one_1)
+    have l8: "p \<sslash>\<^sub>p (Pre p) ; p \<equiv>\<^sub>p p ; p"
+      by (auto simp: restrict_p_def equiv_def composition_def restr_post_def)
+    have l9: "p \<^bold>^ 2 \<equiv>\<^sub>p p ; p \<^bold>^ 1"
+      by (metis One_nat_def a2 composition_simplification_2 equiv_is_symetric equiv_is_transitive fixed_repetition.simps(2) l1 l3 l6 l8)
+    then show ?thesis
+      using a2 l1 by fastforce
   next
-    case (Suc i)
-    assume a1: "is_feasible p"
-    assume a2: "0 < Suc i"
-    assume IH: "0 < i \<Longrightarrow> is_feasible p \<Longrightarrow> p \<^bold>^ Suc i \<equiv>\<^sub>p p ; p \<^bold>^ i"
-    then show ?case
-      apply (cases "i = 0")
-    proof -
-      assume a3: "i = 0"
-      have l3: "p ; p \<^bold>^ 1 \<equiv>\<^sub>p p \<^bold>^ 2"
-        by (metis Suc_1 a1 equiv_is_symetric equivalence_is_maintained_by_composition fixed_rep_one_2 fixed_repetition.simps(2))
-      show "p \<^bold>^ Suc (Suc i) \<equiv>\<^sub>p p ; p \<^bold>^ Suc i"
-        by (metis One_nat_def Suc_1 a3 equiv_is_symetric l3)
-    next
-      assume a3: "i \<noteq> 0"
-      have IH2: "p \<^bold>^ Suc i \<equiv>\<^sub>p p ; p \<^bold>^ i"
-        using IH a1 a3 by auto
-      have l1: "p \<^bold>^ Suc (Suc i) \<equiv>\<^sub>p p \<^bold>^ Suc i ; p"
-        by (simp add: equiv_is_reflexive)
-      have l2: "p \<^bold>^ Suc i ; p \<equiv>\<^sub>p (p ; p \<^bold>^ i) ; p"
-        using IH2 equiv_is_reflexive equivalence_is_maintained_by_composition by blast
-      show "p \<^bold>^ Suc (Suc i) \<equiv>\<^sub>p p ; p \<^bold>^ Suc i"
-        using l2 by auto
-      qed
-    qed
+    case False
+    assume a2: "i \<noteq> 0"
+    have IH2: "p \<^bold>^ Suc i \<equiv>\<^sub>p p ; p \<^bold>^ i"
+      using IH a2 by auto
+    have l1: "p ; p \<^bold>^ Suc i \<equiv>\<^sub>p p ; (p ; p \<^bold>^ i)"
+      using IH2 equiv_is_reflexive equivalence_is_maintained_by_composition by blast
+    have l2: "p \<^bold>^ Suc (Suc i) \<equiv>\<^sub>p (p; p \<^bold>^ i) ;  p"
+      by (metis IH2 equiv_is_reflexive equivalence_is_maintained_by_composition fixed_repetition.simps(2))
+    then show ?thesis
+      by simp
+  qed
+qed
+
 
 
 theorem fixed_rep_decomp_back: "is_feasible p \<Longrightarrow> p\<^bold>^(Suc i) \<equiv>\<^sub>p p\<^bold>^i;p"
@@ -137,6 +121,37 @@ next
     case False
     then show ?thesis
       by (simp add: range_decreases_composition)
+  qed
+qed
+
+theorem range_decreases_fixed_repetition_2: "0 < n \<Longrightarrow> Range_p (x \<^bold>^ Suc n) \<subseteq> Range_p (x \<^bold>^ n)"
+proof (induction n)
+  case 0
+  then show ?case
+    by simp
+next
+  case (Suc n)
+  assume IH: "0 < n \<Longrightarrow> Range_p (x \<^bold>^ Suc n) \<subseteq> Range_p (x \<^bold>^ n)"
+  then show ?case
+  proof (cases "n=0")
+    case True
+    have l1: "x \<^bold>^ 2 \<equiv>\<^sub>p x;x \<^bold>^ 1"
+      by (metis One_nat_def Suc.prems True fixed_rep_decomp_front numeral_2_eq_2)
+    have l2: "x \<^bold>^ 1;x \<equiv>\<^sub>p x;x" by (auto simp: Skip_def composition_def equiv_def corestrict_r_def restr_post_def restrict_r_def relcomp_unfold)
+    have "Range_p (x;x) \<subseteq> Range_p (x)"
+      by (simp add: range_decreases_composition)
+    then have "Range_p (x \<^bold>^ 2) \<subseteq> Range_p (x \<^bold>^ 1)"
+      using l1 range_decreases_composition same_range_p_3 by fastforce
+    then show ?thesis
+      using One_nat_def Suc_1 True by presburger
+  next
+    case False
+    then have IH2: "Range_p (x \<^bold>^ Suc n) \<subseteq> Range_p (x \<^bold>^ n)"
+      using IH by auto
+    have l1: "x \<^bold>^ Suc (Suc n) \<equiv>\<^sub>p x \<^bold>^ Suc n ; x"
+      by (simp add: equals_equiv_relation_3)
+    then show ?thesis
+      by (metis Suc.prems fixed_rep_decomp_front range_decreases_composition same_range_p_3)
   qed
 qed
 
@@ -248,9 +263,10 @@ qed
 theorem skip_compose_l_of_fixed_rep_1: "p\<^bold>^n \<equiv>\<^sub>p Skip (S p) ; p\<^bold>^n"
   apply (cases "n=0")
   apply (auto) [1]
-   apply (metis Definitions.equiv_def Int_absorb Int_subset_iff Restriction.restrict_prop_1 equiv_is_symetric is_total_def restrict_p_def select_convs(2) skip_is_idempondent_composition skip_is_total skip_prop_3 skip_prop_6)
+  apply (metis One_nat_def composition_state equiv_is_symetric fixed_repetition.simps(1) fixed_repetition.simps(2) skip_prop_6 state_space_is_same subset_Un_eq zero_less_one)
   using skip_compose_l apply (auto)
   by (smt (verit) equiv_is_symetric skip_compose_l state_space_is_same)
+
 
 
 end

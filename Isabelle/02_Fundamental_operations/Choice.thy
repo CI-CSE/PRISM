@@ -31,10 +31,10 @@ theorem choice_commute_2 [simp]: "p\<^sub>1 \<union>\<^sub>p p\<^sub>2 \<triangl
 theorem choice_commute_3 [simp]: "p\<^sub>1 \<union>\<^sub>p p\<^sub>2 \<equiv>\<^sub>p p\<^sub>2 \<union>\<^sub>p p\<^sub>1" \<comment> \<open>/Choice_commute/\<close>
   by (auto simp: equiv_is_reflexive)
 
-theorem choice_assoc_1 [simp]: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<union>\<^sub>p p\<^sub>3 = p\<^sub>1 \<union>\<^sub>p (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)" \<comment> \<open>T7\<close>
+theorem choice_assoc_1 [simp]: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<union>\<^sub>p p\<^sub>3 = p\<^sub>1 \<union>\<^sub>p (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)" \<comment> \<open>Choice_assoc\<close>
   by (auto simp: equal_def S_def choice_def restr_post_def restrict_r_def Field_def)
 
-theorem choice_assoc_2 [simp]: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<union>\<^sub>p p\<^sub>3 \<triangleq> p\<^sub>1 \<union>\<^sub>p (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)" \<comment> \<open>T7\<close>
+theorem choice_assoc_2 [simp]: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<union>\<^sub>p p\<^sub>3 \<triangleq> p\<^sub>1 \<union>\<^sub>p (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)" \<comment> \<open>Choice_assoc\<close>
   by (metis choice_assoc_1 equal_is_reflexive)
 
 theorem choice_assoc_3 [simp]: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<union>\<^sub>p p\<^sub>3 \<equiv>\<^sub>p p\<^sub>1 \<union>\<^sub>p (p\<^sub>2 \<union>\<^sub>p p\<^sub>3)"
@@ -83,4 +83,13 @@ theorem refinement_safety_choice_2: "independent q\<^sub>1 p\<^sub>2 \<Longright
 
 theorem program_is_subprogram_of_choice: "p\<^sub>1 \<preceq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
   by (auto simp: subprogram_def choice_def extends_def S_def weakens_def strengthens_def restr_post_def restrict_r_def)
+
+theorem choice_range_p_prop_1: "Range_p p \<subseteq> Range_p (p \<union>\<^sub>p q)"
+  by (auto simp: Range_p_def choice_def restrict_r_def restr_post_def)
+
+theorem choice_range_p_prop_2: "x \<in> Range_p (p \<union>\<^sub>p q) \<Longrightarrow> x \<notin> Range_p p \<Longrightarrow> x \<in> Range_p q"
+  by (auto simp: Range_p_def choice_def restrict_r_def restr_post_def)
+
+theorem choice_range_p_prop_3: "x \<notin> Range_p (p \<union>\<^sub>p q) \<Longrightarrow> x \<notin> Range_p p"
+  by (auto simp: Range_p_def choice_def restrict_r_def restr_post_def)
 end

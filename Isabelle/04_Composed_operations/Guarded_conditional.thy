@@ -5,18 +5,17 @@ section \<open>Guarded conditional top\<close>
 
 theorem gc_S [simp]: "S (GC C p D q) = S p \<union> S q"
   by (auto simp: guarded_conditional_def)
-theorem gc_commutative_1: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) = (GC C\<^sub>2 p\<^sub>2 C\<^sub>1 p\<^sub>1)" \<comment> \<open>T46\<close>
+theorem cond_commute_1: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) = (GC C\<^sub>2 p\<^sub>2 C\<^sub>1 p\<^sub>1)" \<comment> \<open>T46\<close>
   by (simp add: guarded_conditional_def)
 
-theorem gc_commutative_2: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<triangleq> (GC C\<^sub>2 p\<^sub>2 C\<^sub>1 p\<^sub>1)" \<comment> \<open>T46\<close>
-  by (simp add: equal_is_reflexive gc_commutative_1)
+theorem cond_commute_2: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<triangleq> (GC C\<^sub>2 p\<^sub>2 C\<^sub>1 p\<^sub>1)" \<comment> \<open>T46\<close>
+  by (simp add: equal_is_reflexive cond_commute_1)
 
-theorem gc_commutative_3: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<equiv>\<^sub>p (GC C\<^sub>2 p\<^sub>2 C\<^sub>1 p\<^sub>1)" \<comment> \<open>T46\<close>
-  by (simp add: equiv_is_reflexive gc_commutative_1)
+theorem cond_commute_3: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2) \<equiv>\<^sub>p (GC C\<^sub>2 p\<^sub>2 C\<^sub>1 p\<^sub>1)" \<comment> \<open>T46\<close>
+  by (simp add: equiv_is_reflexive cond_commute_1)
 
 
-
-theorem subprogram_gc: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> (GC D\<^sub>1 p D\<^sub>2 q) \<preceq>\<^sub>p (GC C\<^sub>1 p C\<^sub>2 q)"
+theorem cond_sub1: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> (GC D\<^sub>1 p D\<^sub>2 q) \<preceq>\<^sub>p (GC C\<^sub>1 p C\<^sub>2 q)" \<comment> \<open>Cond_sub1\<close>
   apply (auto simp: subprogram_def extends_def weakens_def strengthens_def guarded_conditional_def restr_post_def restrict_p_def restrict_r_def choice_def)
   apply (simp add: S_def Field_def Range_iff Domain_iff)
   by force
@@ -30,7 +29,7 @@ theorem property_on_gc_3_1: "weakens (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2
 theorem property_on_gc_3_2: "strengthens (p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2)"
   by (auto simp: strengthens_def restr_post_def restrict_r_def restrict_p_def guarded_conditional_def choice_def)
 
-theorem property_on_gc_3_3: "(p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) \<preceq>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2)"
+theorem cond_sub4: "(p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) \<preceq>\<^sub>p (GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2)" \<comment> \<open>Cond_sub4\<close>
   by (auto simp: restrict_p_def subprogram_def guarded_conditional_def extends_def weakens_def restr_post_def restrict_r_def strengthens_def)
 
 theorem refinement_safety_gc_1: "all_feasible [p, q] \<Longrightarrow> D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> GC D\<^sub>1 p D\<^sub>2 q \<subseteq>\<^sub>p GC C\<^sub>1 p C\<^sub>2 q" \<comment> \<open>T49\<close>
@@ -45,6 +44,12 @@ theorem refinement_safety_gc_weakens: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrig
 theorem refinement_safety_gc_strengthens: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> strengthens (GC D\<^sub>1 p D\<^sub>2 q) (GC C\<^sub>1 p C\<^sub>2 q)" \<comment> \<open>T49\<close>
   by (auto simp: strengthens_def restr_post_def guarded_conditional_def restrict_p_def restrict_r_def choice_def)
 
+theorem cond_refine1: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> (GC D\<^sub>1 p D\<^sub>2 q) \<subseteq>\<^sub>p (GC C\<^sub>1 p C\<^sub>2 q)" \<comment> \<open>Cond_refine1\<close>
+  oops
+
+theorem cond_refine2: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC C q\<^sub>1 C q\<^sub>2 \<subseteq>\<^sub>p GC C p\<^sub>1 C p\<^sub>2"
+  oops
+
 theorem refinement_safety_gc_3: "all_feasible [p\<^sub>1, p\<^sub>2, q\<^sub>1, q\<^sub>2] \<Longrightarrow> strengthens q\<^sub>1 p\<^sub>2 \<Longrightarrow> strengthens q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC C q\<^sub>1 C q\<^sub>2 \<subseteq>\<^sub>p GC C p\<^sub>1 C p\<^sub>2" \<comment> \<open>T50 NEW Same problem as with refinement safety of choice\<close>
   apply (auto simp: refines_def)
   apply (auto simp: is_feasible_def extends_def) [1]
@@ -55,8 +60,13 @@ theorem refinement_safety_gc_4: "all_feasible [p\<^sub>1, p\<^sub>2, q\<^sub>1, 
   by (simp add: independent_strengthens refinement_safety_gc_3)
 
 
-theorem "GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1"
+theorem cond_refine4 "GC C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1" \<comment> \<open>Cond_refine4\<close>
   oops \<comment> \<open>C1 and C2 might have an overlap\<close>
+
+theorem cond_sub2: "q\<^sub>1 \<preceq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<preceq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC C q\<^sub>1 C q\<^sub>2 \<preceq>\<^sub>p GC C p\<^sub>1 C p\<^sub>2"
+  apply (auto simp: guarded_conditional_def subprogram_def extends_def weakens_def restrict_p_def strengthens_def restrict_r_def restr_post_def)
+  by (auto simp: S_def)
+
 
 
 end

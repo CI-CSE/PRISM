@@ -8,7 +8,7 @@ section \<open>While support for top\<close>
 
 subsection \<open>Step cases\<close>
 lemma while_decomp_1: "while_support a C b 0 n \<equiv>\<^sub>p while_support a C b 0 0 \<union>\<^sub>p while_support a C b (Suc 0) n"
-  apply (simp add: while_support_def)
+  apply (simp add: while_support_def)                   
 proof (induction n)
   case 0
   have right_1: "loop (b \<sslash>\<^sub>p (- C)) (Suc 0) 0 \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail (S b)"
@@ -265,5 +265,25 @@ proof -
     using assms(1) equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction l3 by blast
 qed
 
+theorem bad_index_is_fail_support: "f < s \<Longrightarrow> while_support a C b s f \<equiv>\<^sub>p Fail {}"
+proof -
+  assume a1: "f < s"
+  then have "loop (b\<sslash>\<^sub>p(-C)) s f \<equiv>\<^sub>p Fail {}"
+    by (simp add: bad_index_is_fail_arbitrary)
+  then have l1: "while_support a C b s f \<equiv>\<^sub>p a ; (Fail {})\<setminus>\<^sub>p C"
+    by (simp add: equiv_is_reflexive equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction while_support_def)
+  have l2: "a ; (Fail {})\<setminus>\<^sub>p C \<equiv>\<^sub>p Fail {}"
+    by (metis corestrict_idem fail_compose_r infeas_corestriction)
+  then show "while_support a C b s f \<equiv>\<^sub>p Fail {}"
+    using equiv_is_transitive l1 by blast
+qed
 
+theorem bad_index_range_support: "f < s \<Longrightarrow> Range_p (while_support a C b s f) = {}"
+proof -
+  assume a1: "f < s"
+  then have "while_support a C b s f \<equiv>\<^sub>p Fail {}"
+    by (simp add: bad_index_is_fail_support)
+  then show "Range_p (while_support a C b s f) = {}"
+    by (metis range_of_fail same_range_p_3)
+qed
 end

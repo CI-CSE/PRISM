@@ -18,8 +18,8 @@ theorem skip_is_idempondent_composition: "Skip C ; Skip C = Skip C" \<comment> \
 theorem skip_is_idempondent_unsafe_composition: "Skip C ;\<^sub>p Skip C = Skip C" \<comment> \<open>NEW\<close>
   by (auto simp: unsafe_composition_def Skip_def S_def restr_post_def Field_def corestrict_r_def restrict_r_def)
 
-theorem skip_unsafe_compose_r: "p ;\<^sub>p Skip (S p) \<triangleq> p"
-  apply (auto simp: unsafe_composition_def restr_post_def restrict_r_def Skip_def S_def Field_def relcomp_unfold equal_def)
+theorem skip_unsafe_compose_r_1: "p ;\<^sub>p Skip (S p) \<triangleq> p"
+  by (auto simp: unsafe_composition_def restr_post_def restrict_r_def Skip_def S_def Field_def relcomp_unfold equal_def)
 
 lemma skip_compose_r_post: "post (p ; Skip (S p)) = post p" 
   by (auto simp: S_def Skip_def Field_def composition_def corestrict_r_def relcomp_def restr_post_def restrict_r_def)
@@ -53,8 +53,13 @@ proof -
   qed
 qed
 
-theorem skip_compose_r_2: "is_feasible p \<Longrightarrow> p ; Skip (S p) \<equiv>\<^sub>p p" \<comment> \<open>\<comment> \<open>/Skip_compose/\<close>\<close>
+lemma skip_compose_r_2: "is_feasible p \<Longrightarrow> p ; Skip (S p) \<equiv>\<^sub>p p" \<comment> \<open>/Skip_compose/\<close>
   by (simp add: equals_equiv_relation_2 skip_compose_r_1)
+
+theorem skip_compose_r_3: "p ; Skip (S p) \<equiv>\<^sub>p p \<sslash>\<^sub>p Domain (post p)"
+  by (auto simp: Skip_def composition_def restrict_p_def restr_post_def S_def equiv_def corestrict_r_def Field_def restrict_r_def Domain_iff Range_iff)
+
+
 
 theorem skip_makes_feasible: "is_feasible (p ; Skip (S p))" \<comment> \<open>NEW\<close>
   by (simp add: is_feasible_def skip_compose_r_Pre_1 skip_compose_r_post)
@@ -69,16 +74,14 @@ lemma skip_compose_l_post: "post (Skip (S p) ; p) = post p \<sslash>\<^sub>r Pre
   by (auto simp: Skip_def restrict_r_def S_def composition_def corestrict_r_def restr_post_def)
 
 lemma skip_compose_l_1: "Skip (S p) ; p \<triangleq> \<lparr> State = S p, Pre = Pre p, post = post p \<sslash>\<^sub>r Pre p\<rparr>" \<comment> \<open>NEW\<close>
-  apply (auto simp: equal_def skip_compose_l_Pre skip_compose_l_post skip_compose_l_S)
-  apply (metis S_def UnCI composition_state select_convs(1) skip_compose_r_S)
-  by (auto simp: composition_def corestrict_r_def S_def Field_def restrict_r_def)
+  by (metis (no_types, lifting) Program.select_convs(2) Program.select_convs(3) composition_def composition_state equal_def skip_compose_l_Pre skip_compose_l_S skip_compose_l_post)
 
 theorem skip_compose_l: "Skip (S p) ; p \<equiv>\<^sub>p p" \<comment> \<open>/Skip_compose/\<close>
   by (auto simp: equiv_def restr_post_def restrict_r_def skip_compose_l_Pre skip_compose_l_post)
 
-theorem skip_unsafe_compose_r: "Skip (S p) ;\<^sub>p p \<triangleq> \<lparr>State=S p, Pre=S p, post = restr_post p \<rparr>"
-  by (auto simp: unsafe_composition_def restr_post_def restrict_r_def Skip_def S_def Field_def equal_def)
-
+theorem skip_unsafe_compose_r_2: "Skip (S p) ;\<^sub>p p \<triangleq> \<lparr>State=S p, Pre=S p, post = restr_post p \<rparr>"
+  by (auto simp: unsafe_composition_def equal_def Skip_def S_def restr_post_def restrict_r_def Field_def)
+  
 theorem corestriction_prop: "p \<setminus>\<^sub>p C \<equiv>\<^sub>p p ; (Skip (S p) \<sslash>\<^sub>p C)" \<comment> \<open>T28\<close>
   apply (auto simp: Skip_def restrict_p_def equiv_def corestrict_p_def corestrict_r_def composition_def restr_post_def restrict_r_def)
   by (auto simp: Domain_iff S_def Field_def Range_iff)

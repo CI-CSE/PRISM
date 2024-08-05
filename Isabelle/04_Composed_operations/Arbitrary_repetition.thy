@@ -7,10 +7,10 @@ section \<open>Arbitrary repetition for top\<close>
 
 
 subsection \<open>Base cases\<close>
-theorem loop_l1: "s=0 \<Longrightarrow> f=0 \<Longrightarrow> loop p s f \<equiv>\<^sub>p Skip (Pre p) "
+theorem loop_l1: "s=0 \<Longrightarrow> f=0 \<Longrightarrow> loop p s f = Skip (Pre p) "
   by (auto simp: arbitrary_repetition.cases choice_def Fail_def restr_post_def equiv_def restrict_r_def)
 
-theorem loop_l2: "s=0 \<Longrightarrow> f=1 \<Longrightarrow> loop p s f \<equiv>\<^sub>p Skip (Pre p) \<union>\<^sub>p (Skip (Pre p);p) "
+theorem loop_l2: "s=0 \<Longrightarrow> f=1 \<Longrightarrow> loop p s f = Skip (Pre p) \<union>\<^sub>p (Skip (Pre p);p) "
   by (auto simp: Skip_def equiv_def)
 
 lemma loop_l2_01: "loop p (Suc f) f = Fail (S p)"
@@ -67,9 +67,9 @@ proof -
       by (meson IH2 IH3 equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice loop_l2_1)
     then have IH5: "loop p s f \<equiv>\<^sub>p p \<^bold>^ s \<union>\<^sub>p (p \<^bold>^ f \<union>\<^sub>p loop p (Suc s) (f - 1))"
       by (metis choice_assoc_1 choice_commute)
-    from a_suc IH5 choice_assoc_2 equiv_is_transitive arbitrary_repetition.elims(1) arbitrary_repetition.simps(2) arbitrary_repetition.cases(1)
+    from IH5 arbitrary_repetition.elims(1) IH2 l1
     show ?case
-      by (smt (verit) IH2 One_nat_def diff_Suc_1' diff_is_0_eq' l1 le_less_Suc_eq nat_less_le zero_less_one_class.zero_le_one)
+      by (smt (verit) One_nat_def diff_Suc_1' diff_is_0_eq' le_less_Suc_eq nat_less_le zero_less_one_class.zero_le_one)
   qed
 qed
 
@@ -321,10 +321,11 @@ theorem skip_compose_r_of_loop_2: "is_feasible p \<Longrightarrow> loop p s f \<
   apply (induction f)
    apply (metis arbitrary_repetition.simps(1) equiv_is_symetric fail_compose_l skip_compose_r_of_fixed_rep_1)
   apply (cases "f>s")
-   apply (smt (verit) arbitrary_repetition.elims arbitrary_repetition.simps(2) compose_distrib2_1 equivalence_is_maintained_by_choice not_less_eq not_less_iff_gr_or_eq skip_compose_r_of_fixed_rep_1)
-  apply (cases "s=f")
-  apply (smt (verit) arbitrary_repetition.elims arbitrary_repetition.simps(2) compose_distrib2_1 equivalence_is_maintained_by_choice not_less_eq not_less_iff_gr_or_eq skip_compose_r_of_fixed_rep_1)
-  by (smt (verit) arbitrary_repetition.elims arbitrary_repetition.simps(2) compose_distrib2_1 equivalence_is_maintained_by_choice not_less_eq not_less_iff_gr_or_eq skip_compose_r_of_fixed_rep_1)
+  apply (auto)
+  apply (auto simp: Fail_def equiv_def restr_post_def is_feasible_def Skip_def restrict_r_def composition_def) [1]
+  apply (metis compose_distrib2_1 composition_makes_feasible equiv_is_symetric equivalence_is_maintained_by_choice fixed_repetition.simps(2) skip_compose_r_2 state_space_is_same zero_less_Suc)
+  apply (auto simp: Fail_def equiv_def restr_post_def is_feasible_def Skip_def restrict_r_def composition_def) [1]
+  by (metis compose_distrib2_1 composition_makes_feasible equiv_is_symetric equivalence_is_maintained_by_choice fixed_repetition.simps(2) skip_compose_r_2 state_space_is_same zero_less_Suc)
 
 theorem skip_compose_l_of_loop_3: "is_feasible p \<Longrightarrow> loop p s f \<equiv>\<^sub>p Skip (S p) ; loop p s f"
   apply (induction f)
@@ -333,25 +334,96 @@ proof -
   fix f assume IH: "is_feasible p \<Longrightarrow> loop p s f \<equiv>\<^sub>p Skip (S p) ; loop p s f"
   assume feas: "is_feasible p"
   from feas IH have IH2: "loop p s f \<equiv>\<^sub>p Skip (S p) ; loop p s f" by simp
-  from IH show "loop p s (Suc f) \<equiv>\<^sub>p Skip (S p) ; loop p s (Suc f)"
+  from IH2 show "loop p s (Suc f) \<equiv>\<^sub>p Skip (S p) ; loop p s (Suc f)"
     apply (cases "f=0")
     apply (auto)
-    apply (auto simp: Fail_def equiv_def Skip_def composition_def corestrict_r_def restr_post_def restrict_r_def) [1]
+    apply (auto simp: Fail_def equiv_def Skip_def composition_def corestrict_r_def restr_post_def restrict_r_def S_def Domain_iff) [1]
     apply (auto simp: Fail_def equiv_def Skip_def composition_def corestrict_r_def restr_post_def restrict_r_def Domain_iff S_def) [1]
-    apply (metis One_nat_def choice_state composition_state equalityE equiv_is_symetric fixed_repetition.simps(1) fixed_repetition.simps(2) fixed_repetition_helper.simps(1) fixed_repetition_helper.simps(2) less_one mapping_fixed_and_fixed_sup_1 skip_compose_l_S skip_prop_6)
-    using equiv_is_symetric fail_compose_r apply blast
+    apply (auto simp: Fail_def equiv_def Skip_def composition_def corestrict_r_def restr_post_def restrict_r_def Domain_iff S_def) [1]
   proof -
-    assume a1: "0<f"
-    have l1: "loop p s f \<union>\<^sub>p p \<^bold>^ f ; p \<equiv>\<^sub>p  Skip (S p) ; loop p s f  \<union>\<^sub>p p \<^bold>^ f ; p"
-      using IH2 equiv_is_reflexive equivalence_is_maintained_by_choice by blast
-    from feas have l2: "Skip (S p) ; (loop p s f  \<union>\<^sub>p p \<^bold>^ f ; p) \<equiv>\<^sub>p  (Skip (S p) ; loop p s f)  \<union>\<^sub>p ((Skip (S p) ; p \<^bold>^ f) ; p)"
-      by (simp add: compose_distrib1_3)
-    from feas have l3: "Skip (S p) ; loop p s f  \<union>\<^sub>p (Skip (S p) ; p \<^bold>^ f) ; p \<equiv>\<^sub>p  Skip (S p) ; (loop p s f \<union>\<^sub>p p \<^bold>^ f ; p)"
+    have l1: "p \<^bold>^ f ; p \<equiv>\<^sub>p Skip (S p) ; (p \<^bold>^ f ; p)"
+      by (metis fixed_repetition.simps(2) skip_compose_l_of_fixed_rep_1)
+    have l2 :"Skip (S p) ; loop p s f  \<union>\<^sub>p Skip (S p) ; (p \<^bold>^ f ; p) \<equiv>\<^sub>p Skip (S p) ; (loop p s f \<union>\<^sub>p p \<^bold>^ f ; p)"
       by (simp add: compose_distrib1_3 equiv_is_symetric)
-    from l1 l2 l3 IH2 show "loop p s f \<union>\<^sub>p p \<^bold>^ f ; p \<equiv>\<^sub>p Skip (S p) ; (loop p s f \<union>\<^sub>p p \<^bold>^ f ; p)"
-      by (meson equals_equiv_relation_3 equiv_is_transitive equivalence_is_maintained_by_choice equivalence_is_maintained_by_composition feas skip_compose_l_of_fixed_rep_1)
+    have l3: "loop p s f \<union>\<^sub>p p \<^bold>^ f ; p \<equiv>\<^sub>p Skip (S p) ; loop p s f \<union>\<^sub>p Skip (S p) ; (p \<^bold>^ f ; p)"
+      by (simp add: IH2 equivalence_is_maintained_by_choice l1)
+    from IH2 feas l1 l2 l3 show "loop p s f \<union>\<^sub>p p \<^bold>^ f ; p \<equiv>\<^sub>p Skip (S p) ; (loop p s f \<union>\<^sub>p p \<^bold>^ f ; p)"
+      using equiv_is_transitive by blast
   qed
 qed
-  
+
+theorem range_fixed_rep: "s\<le>m \<Longrightarrow> m\<le>f \<Longrightarrow> x \<notin> Range_p (loop p s f) \<Longrightarrow> x \<notin> Range_p (p\<^bold>^m)"
+proof (induction f)
+  case 0
+  then show ?case by auto
+next
+  case (Suc f)
+  assume IH: "s \<le> m \<Longrightarrow> m \<le> f \<Longrightarrow> x \<notin> Range_p (loop p s f) \<Longrightarrow> x \<notin> Range_p (p \<^bold>^ m)"
+  assume a1: "s \<le> m"
+  assume a2: "m \<le> Suc f"
+  assume a3: "x \<notin> Range_p (loop p s (Suc f))"
+  then show ?case
+  proof (cases "m\<le>f")
+    case True
+    then have IH2: "x \<notin> Range_p (loop p s f) \<Longrightarrow> x \<notin> Range_p (p \<^bold>^ m)"
+      by (simp add: IH a1)
+    have l2: "loop p s (Suc f) \<equiv>\<^sub>p loop p s f \<union>\<^sub>p p\<^bold>^(Suc f)"
+      by (metis True a1 choice_commute le_trans loop_l3)
+    then show ?thesis
+    proof (cases "x \<notin> Range_p (loop p s f)")
+      case True
+      then show ?thesis
+        by (simp add: IH2)
+    next
+      case False
+      then have l1: "x \<in> Range_p (loop p s f)" by simp
+      from l1 l2 have l3: "x \<in> Range_p (loop p s (Suc f))"
+        by (metis choice_range_p_prop_3 same_range_p_3)
+      from l3 a3 show ?thesis
+        by simp
+    qed
+  next
+    case False
+    then have "m = Suc f" using a2 by simp
+    then show ?thesis
+    proof (cases "s\<le>f")
+      case True
+      from loop_l3 have l2: "loop p s (Suc f) \<equiv>\<^sub>p loop p s f \<union>\<^sub>p p\<^bold>^(Suc f)"
+        by (metis True choice_commute)
+      then show ?thesis
+      proof (cases "x \<notin> Range_p (loop p s f)")
+        case True
+        then show ?thesis
+          by (metis \<open>m = Suc f\<close> a3 choice_commute choice_range_p_prop_3 l2 same_range_p_3)
+      next
+        case False
+        then show ?thesis
+          by (metis a3 choice_range_p_prop_3 l2 same_range_p_3)
+      qed
+    next
+      case False
+      then have "Suc f = s"
+        using \<open>m = Suc f\<close> a1 by auto
+      then have l1: "loop p s (Suc f) \<equiv>\<^sub>p p\<^bold>^(Suc f)"
+        by (simp add: loop_l2_1)
+      from a3 show ?thesis
+        using \<open>m = Suc f\<close> l1 same_range_p_3 by auto
+    qed
+  qed
+qed
+
+lemma pre_is_known_arbitrary_rep_1: "\<forall>x y. x \<in> Pre a \<and> (x, y) \<in> post (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^n) \<longrightarrow> x \<in> Pre (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^n)"
+  apply (induction n)
+   apply (auto simp: Skip_def composition_def restr_post_def restrict_p_def restrict_r_def corestrict_r_def) [1]
+  by (metis knowing_pre_composition)
+
+lemma pre_is_known_arbitrary_rep_2: "x \<in> Pre a \<Longrightarrow> (x, y) \<in> post (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^n) \<Longrightarrow> x \<in> Pre (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^n)"
+  apply (induction n)
+   apply (auto simp: Skip_def composition_def restr_post_def restrict_p_def restrict_r_def corestrict_r_def) [1]
+  apply (auto)
+  by (simp add: knowing_pre_composition)
+
+theorem bad_index_is_fail_arbitrary: "f<s \<Longrightarrow> loop a s f \<equiv>\<^sub>p Fail {}"
+  by (metis arbitrary_repetition.elims fail_is_equivalent_independant_of_arg)
 
 end

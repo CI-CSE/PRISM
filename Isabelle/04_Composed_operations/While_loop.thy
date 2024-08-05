@@ -22,6 +22,9 @@ proof -
     using l1 l2 by auto
 qed
 
+lemma while_decomposition_2: "while_loop a C b (Suc n) \<equiv>\<^sub>p a;((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n)) \<setminus>\<^sub>p C \<union>\<^sub>p while_loop a C b n"
+  by (simp add: equiv_is_symetric while_loop_def while_simplification_1)
+
 lemma while_def_lemma_3: "while_loop a C b n \<equiv>\<^sub>p a;(Skip (Pre (b\<sslash>\<^sub>p(-C))) \<union>\<^sub>p (loop (b\<sslash>\<^sub>p(-C)) 1 n)) \<setminus>\<^sub>p C"
   apply (simp add: while_loop_def)
 proof -
@@ -31,7 +34,7 @@ proof -
     by (metis equiv_is_reflexive equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction)
 qed
 
-theorem while_prop: "while_loop a C b n \<equiv>\<^sub>p \<Union>\<^sub>p [a;((b \<sslash>\<^sub>p (- C))\<^bold>^(nat i))\<setminus>\<^sub>pC. i \<leftarrow> [0..int n]]" \<comment> \<open>T77\<close>
+theorem loop_union1: "while_loop a C b n \<equiv>\<^sub>p \<Union>\<^sub>p [a;((b \<sslash>\<^sub>p (- C))\<^bold>^(nat i))\<setminus>\<^sub>pC. i \<leftarrow> [0..int n]]" \<comment> \<open>T77\<close>
 proof (induction n)
   case 0
   then show ?case
@@ -54,7 +57,7 @@ next
     by (smt (verit, ccfv_SIG) Suc equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l4 l5)
 qed
 
-theorem while_range_prop: "Range_p (while_loop a C b n) = \<Union>\<^sub>s [Range_p (a;((b \<sslash>\<^sub>p (- C))\<^bold>^(nat i))\<setminus>\<^sub>pC). i \<leftarrow> [0..int n]]"
+theorem loop_union2: "Range_p (while_loop a C b n) = \<Union>\<^sub>s [Range_p (a;((b \<sslash>\<^sub>p (- C))\<^bold>^(nat i))\<setminus>\<^sub>pC). i \<leftarrow> [0..int n]]"
 proof (induction n)
   case 0
   then show ?case
@@ -66,7 +69,7 @@ next
     apply (simp add: while_loop_def)
     using compose_distrib1_3 corestrict_union equiv_is_reflexive equiv_is_transitive equivalence_is_maintained_by_composition by blast
   from l1 have l2: "Range_p (while_loop a C b (Suc n)) = Range_p (while_loop a C b n) \<union> Range_p (a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ (Suc n)) \<setminus>\<^sub>p C)"
-    by (metis range_p_prop_2 range_p_prop_1)
+    by (metis same_range_p_3 range_p_prop_1)
   from l1 have l3: "Range_p (while_loop a C b (Suc n)) = \<Union>\<^sub>s [Range_p (a;((b \<sslash>\<^sub>p (- C))\<^bold>^(nat i))\<setminus>\<^sub>pC). i \<leftarrow> [0..int n]] \<union> Range_p (a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ (Suc n)) \<setminus>\<^sub>p C)"
     by (simp add: Suc l2)
   have l4: "\<Union>\<^sub>s [Range_p (a;((b \<sslash>\<^sub>p (- C))\<^bold>^(nat i))\<setminus>\<^sub>pC). i \<leftarrow> [0..int (Suc n)]] = \<Union>\<^sub>s [Range_p (a;((b \<sslash>\<^sub>p (- C))\<^bold>^(nat i))\<setminus>\<^sub>pC). i \<leftarrow> [0..int n]] \<union> Range_p (a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ (Suc n)) \<setminus>\<^sub>p C)"
@@ -85,5 +88,83 @@ theorem equiv_is_maintained_by_while_loop_2:
       and "all_feasible [b\<^sub>1, b\<^sub>2]"
     shows "while_loop a\<^sub>1 C b\<^sub>1 n \<equiv>\<^sub>p while_loop a\<^sub>2 C b\<^sub>2 n"
   by (metis assms(1) assms(2) assms(3) assms(4) equiv_is_maintained_by_while_support_1 while_conncetion)
-  
+
+theorem range_while_loop_1: "m\<le>n \<Longrightarrow> x \<notin> Range_p (while_loop a C b n) \<Longrightarrow> x \<notin> Range_p (while_loop a C b m)"
+proof (induction n)
+  case 0
+  then show ?case
+    by blast
+next
+  case (Suc n)
+  assume IH: "m \<le> n \<Longrightarrow> x \<notin> Range_p (while_loop a C b n) \<Longrightarrow> x \<notin> Range_p (while_loop a C b m)"
+  assume a1: "m \<le> Suc n"
+  assume a2: "x \<notin> Range_p (while_loop a C b (Suc n))"
+  have l1: "while_loop a C b (Suc n) \<equiv>\<^sub>p while_loop a C b n \<union>\<^sub>p a;((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n))\<setminus>\<^sub>pC"
+    using while_decomposition_2 by auto
+  then show "x \<notin> Range_p (while_loop a C b m)"
+  proof (cases "m\<le>n")
+    case True
+    then show ?thesis
+    proof (cases "x \<notin> Range_p (while_loop a C b n)")
+      case True
+      then show ?thesis
+        using IH a1 a2 le_SucE by auto
+    next
+      case False
+      then show ?thesis
+        by (metis a2 choice_range_p_prop_3 l1 same_range_p_3)
+    qed
+  next
+    case False
+    then have l2: "m=Suc n"
+      using a1 by auto
+    then show ?thesis
+      by (simp add: a2)
+  qed
+qed
+
+theorem range_while_loop_2: "m\<le>n \<Longrightarrow> x \<notin> Range_p (while_loop a C b n) \<Longrightarrow> x \<notin> Range_p (while_support a C b s m)"
+proof -
+  fix n assume a1: "m\<le>n"
+  assume a2: "x \<notin> Range_p (while_loop a C b n)"
+  have l1: "x \<notin> Range_p (while_loop a C b m)"
+    by (meson a1 a2 range_while_loop_1)
+  show "x \<notin> Range_p (while_support a C b s m)"
+  proof (induction s)
+    case 0
+    then show ?case
+      by (metis l1 while_conncetion)
+  next
+    case (Suc s)
+    assume a3: "x \<notin> Range_p (while_support a C b s m)"
+    then show "x \<notin> Range_p (while_support a C b (Suc s) m)"
+    proof (cases "s\<ge>m")
+      case True
+      from True have l2: "loop (b \<sslash>\<^sub>p (- C)) (Suc s) m \<equiv>\<^sub>p Fail C"
+        by (metis arbitrary_repetition.elims fail_is_equivalent_independant_of_arg le_imp_less_Suc)
+      have l3: "a ; Fail C \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail C"
+        by (metis corestrict_compose equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_corestriction fail_compose_l fail_compose_r)
+      have l4: "while_support a C b (Suc s) m \<equiv>\<^sub>p Fail C"
+        apply (auto simp: while_support_def)
+        by (meson equiv_is_reflexive equiv_is_transitive equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction l2 l3)
+      then show ?thesis
+        by (metis choice_range_p_prop_1 fail_union_l l1 same_range_p_3 subset_iff)
+    next
+      case False
+      then have l2: "s < m" by simp
+      have "while_support a C b s m \<equiv>\<^sub>p while_support a C b s s \<union>\<^sub>p while_support a C b (Suc s) m"
+          by (simp add: l2 less_imp_le_nat while_decomp_3)
+      (* from while_decomp_3 have l2: "while_support a C b (Suc s) m \<equiv>\<^sub>p while_support a C b s m \<union>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) (Suc s) m \<setminus>\<^sub>p C" *)
+      then show ?thesis
+        by (metis a3 choice_commute choice_range_p_prop_3 same_range_p_3)
+    qed
+  qed
+qed
+
+theorem range_while_loop_3: "Range_p (while_loop a C b n) \<subseteq> C"
+  by (metis Corestriction.corestrict_prop_1 corestrict_compose same_range_p_3 while_conncetion while_support_def)
+
+theorem split_front: "while_loop (x;a) C b n \<equiv>\<^sub>p x ; while_loop a C b n"
+  by (metis compose_assoc_3 while_loop_def)
+
 end

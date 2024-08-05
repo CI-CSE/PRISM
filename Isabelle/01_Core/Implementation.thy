@@ -8,7 +8,7 @@ section "Implementation for top"
 lemma implementation_1: "x ∈ X ⟹ x ∈ Domain (R) ⟹ x ∈ Domain (R ⫽⇩r X)"
   by (auto simp: restrict_r_def)
 
-theorem implementation_theorem: "implements p⇩2 p⇩1 ⟹ is_feasible p⇩1" ― ‹T2›
+theorem implementation_theorem: "implements p⇩2 p⇩1 ⟹ is_feasible p⇩1" ― ‹Implement_theorem›
 proof -
   assume a1: "implements p⇩2 p⇩1"
   have l1: "Pre p⇩1 ⊆ Domain (post p⇩2)"

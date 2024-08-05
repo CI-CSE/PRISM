@@ -46,10 +46,13 @@ theorem fail_compose_r: "p ; Fail C \<equiv>\<^sub>p Fail C" \<comment> \<open>/
 theorem only_fail_refines_fail: "(p \<subseteq>\<^sub>p Fail (S p)) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>T26\<close>
   oops
 
-theorem all_p_refine_fail: "p \<subseteq>\<^sub>p Fail (S p)" \<comment> \<open>Everything refines Fail\<close>
+theorem refine_fail: "p \<subseteq>\<^sub>p Fail (S p)" \<comment> \<open>Refine_fail\<close>
   by (auto simp: refines_def Fail_def S_def Field_def extends_def weakens_def strengthens_def restrict_r_def)
 
 theorem fail_refine_self: "(Fail (S p) \<subseteq>\<^sub>p p) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>/Fail_refine_self/\<close>
   by (auto simp: Fail_def S_def Field_def equiv_def restr_post_def restrict_r_def refines_def extends_def weakens_def strengthens_def)
+
+theorem range_of_fail: "Range_p (Fail C) = {}"
+  by (auto simp: Fail_def Range_p_def restrict_r_def)
 
 end
