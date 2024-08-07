@@ -9,8 +9,8 @@ theory T_04_Composed_operations
 "04_Composed_operations/Guarded_conditional"
 "04_Composed_operations/If_then_else"
 "04_Composed_operations/Non_atomic_concurrency"
-"04_Composed_operations/While_loop"
-"04_Composed_operations/While_support"
+"04_Composed_operations/Until_loop"
+"04_Composed_operations/Until_support"
 begin
 section \<open>Complete theory of composed operations of top\<close>
 

@@ -282,13 +282,13 @@ abbreviation loop :: "'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarro
   "loop \<equiv> arbitrary_repetition"
 
 
-definition while_support:: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a Program"
+definition until_support:: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a Program"
   where
-    "while_support a C b s f = a ; (loop (b\<sslash>\<^sub>p(-C)) s f)\<setminus>\<^sub>p C"
+    "until_support a C b s f = a ; (loop (b\<sslash>\<^sub>p(-C)) s f)\<setminus>\<^sub>p C"
 
-definition while_loop:: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> nat \<Rightarrow> 'a Program"
+definition until_loop:: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> nat \<Rightarrow> 'a Program"
   where
-    "while_loop a C b n = a ; (loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>p C"
+    "until_loop a C b n = a ; (loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>p C"
 
 definition is_invariant:: "'a set \<Rightarrow> 'a Program \<Rightarrow> bool"
   where

@@ -174,15 +174,15 @@ theorem arbitrary_repetition_invariant_preserve: "is_invariant I p \<Longrightar
   apply (simp add: invariant_prop_2)
   by (simp add: choice_invariant_preserve composition_invariant_preserve fixed_repetition_invariant_preserve)
 
-theorem while_support_invariant_preserve: "0<s \<Longrightarrow> is_invariant I a \<Longrightarrow> is_invariant I b \<Longrightarrow> is_invariant I (while_support a C b s f)" \<comment> \<open>General_invariant\<close>
-    apply (auto simp: while_support_def)
+theorem until_support_invariant_preserve: "0<s \<Longrightarrow> is_invariant I a \<Longrightarrow> is_invariant I b \<Longrightarrow> is_invariant I (until_support a C b s f)" \<comment> \<open>General_invariant\<close>
+    apply (auto simp: until_support_def)
     apply (cases "s\<le>f")
     apply (simp add: arbitrary_repetition_invariant_preserve composition_invariant_preserve corestriction_invariant_preserve restriction_invariant_preserve)
     by (simp add: arbitrary_repetition_invariant_preserve composition_invariant_preserve corestriction_invariant_preserve restriction_invariant_preserve)
 
-theorem while_loop_invariant_preserve: "is_invariant I a \<Longrightarrow> is_invariant I b \<Longrightarrow> is_invariant I (while_loop a C b n)" \<comment> \<open>General_invariant\<close>
+theorem until_loop_invariant_preserve: "is_invariant I a \<Longrightarrow> is_invariant I b \<Longrightarrow> is_invariant I (until_loop a C b n)" \<comment> \<open>General_invariant\<close>
   (* oops *)
-  by (simp add: arbitrary_repetition_invariant_preserve composition_invariant_preserve corestriction_invariant_preserve restriction_invariant_preserve while_loop_def)
+  by (simp add: arbitrary_repetition_invariant_preserve composition_invariant_preserve corestriction_invariant_preserve restriction_invariant_preserve until_loop_def)
 
 (* theorem inverse_is_not_invariant_preseving: "is_invariant I p \<Longrightarrow> is_invariant I (p\<^sup>-\<^sup>1)" \<comment> \<open>General_invariant\<close> *)
   (* by (auto simp: is_invariant_def inverse_def restr_post_def Range_p_def restrict_r_def) *)

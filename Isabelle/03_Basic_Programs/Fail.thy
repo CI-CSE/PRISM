@@ -55,4 +55,7 @@ theorem fail_refine_self: "(Fail (S p) \<subseteq>\<^sub>p p) = (p \<equiv>\<^su
 theorem range_of_fail: "Range_p (Fail C) = {}"
   by (auto simp: Fail_def Range_p_def restrict_r_def)
 
+theorem choice_fail_implication: "(a \<union>\<^sub>p b \<equiv>\<^sub>p Fail {}) = (a \<equiv>\<^sub>p Fail {} \<and> b \<equiv>\<^sub>p Fail {})"
+  by (auto simp: Fail_def choice_def equiv_def restr_post_def restrict_r_def)
+
 end

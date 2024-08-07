@@ -90,4 +90,9 @@ theorem corestrict_range_prop_2: "is_feasible a \<Longrightarrow> Range_p a \<su
   apply fastforce
   by fastforce
 
+theorem corestrict_range_prop_3: "Range_p(a) \<inter> C = {} \<Longrightarrow> a\<setminus>\<^sub>pC \<equiv>\<^sub>p Fail {}"
+  by (auto simp: Range_p_def composition_def restrict_p_def equiv_def corestrict_r_def restrict_r_def Int_def Range_iff Domain_iff restr_post_def relcomp_unfold Fail_def corestrict_p_def)
+
+theorem corestrict_range_porp_4: "is_feasible p \<Longrightarrow> p \<setminus>\<^sub>p Range_p p \<equiv>\<^sub>p p"
+  by (simp add: corestrict_range_prop_2)
 end

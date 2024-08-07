@@ -15,4 +15,9 @@ theorem range_p_explicit_1: "y \<in> Range_p a \<Longrightarrow> \<exists>x. (x,
 theorem range_p_explicit_2: "(x,y) \<in> post a \<and> x \<in> Pre a \<Longrightarrow> y \<in> Range_p a"
   by (auto simp: Range_p_def restrict_r_def)
 
+theorem no_range_fail: "is_feasible p \<Longrightarrow> Range_p p = {} \<Longrightarrow> p \<equiv>\<^sub>p Fail {}"
+  apply (auto simp: is_feasible_def Range_p_def Fail_def equiv_def restrict_r_def subset_iff Domain_iff Range_iff restr_post_def)
+  apply fastforce
+  by fastforce
+
 end

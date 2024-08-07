@@ -426,4 +426,132 @@ lemma pre_is_known_arbitrary_rep_2: "x \<in> Pre a \<Longrightarrow> (x, y) \<in
 theorem bad_index_is_fail_arbitrary: "f<s \<Longrightarrow> loop a s f \<equiv>\<^sub>p Fail {}"
   by (metis arbitrary_repetition.elims fail_is_equivalent_independant_of_arg)
 
+theorem fail_stays_fail_arbitrary: "s\<le>f \<Longrightarrow> loop p s f \<equiv>\<^sub>p Fail {} \<Longrightarrow> loop p s (Suc f) \<equiv>\<^sub>p Fail {}"
+  apply (induction f)
+   apply (auto simp: Skip_def equiv_def Fail_def composition_def restr_post_def restrict_r_def) [1]
+proof -
+  fix f assume IH: "s \<le> f \<Longrightarrow> loop p s f \<equiv>\<^sub>p Fail {} \<Longrightarrow> loop p s (Suc f) \<equiv>\<^sub>p Fail {}"
+  assume a1: "s \<le> Suc f"
+  assume a2: "loop p s (Suc f) \<equiv>\<^sub>p Fail {}"
+  show "loop p s (Suc (Suc f)) \<equiv>\<^sub>p Fail {}"
+  proof (cases "s\<le>f")
+    case True
+    have l1: "loop p s (Suc (Suc f)) \<equiv>\<^sub>p loop p s (Suc f) \<union>\<^sub>p loop p (Suc (Suc f)) (Suc (Suc f))"
+      by (meson a1 le_SucI loop_l5 not_less_eq_eq)
+    from a2 have l2: "loop p s (Suc f) \<union>\<^sub>p loop p (Suc (Suc f)) (Suc (Suc f)) \<equiv>\<^sub>p loop p (Suc (Suc f)) (Suc (Suc f))"
+      by (meson equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice fail_union_l)
+    have l3: "loop p (Suc (Suc f)) (Suc (Suc f)) \<equiv>\<^sub>p p\<^bold>^(Suc (Suc f))"
+      using loop_l2_1 by blast
+    have "p\<^bold>^(Suc (Suc f)) \<equiv>\<^sub>p p\<^bold>^(Suc f) ; p"
+      by (simp add: equiv_is_reflexive)
+    have "loop p s (Suc f) \<equiv>\<^sub>p p\<^bold>^(Suc f) \<union>\<^sub>p loop p s f"
+      using True loop_l3 by auto
+    from a2 have "p\<^bold>^(Suc f) \<equiv>\<^sub>p Fail {}"
+      using a1 choice_fail_implication by auto
+    then show ?thesis
+      using l3 equiv_is_transitive fail_stays_fail_fixed l1 l2 by blast
+  next
+    case False
+    then have "s=Suc f"
+      using a1 by auto
+    have l1: "loop p s (Suc (Suc f)) \<equiv>\<^sub>p loop p (Suc f) (Suc (Suc f))"
+      by (simp add: \<open>s = Suc f\<close> equiv_is_reflexive)
+    have l2: "loop p (Suc f) (Suc (Suc f)) \<equiv>\<^sub>p loop p (Suc f) (Suc f) \<union>\<^sub>p loop p (Suc (Suc f)) (Suc (Suc f))"
+      by (metis False Suc_le_mono \<open>s = Suc f\<close> loop_l5 nat_le_linear)
+    have l3: "loop p (Suc f) (Suc f) \<equiv>\<^sub>p Fail {}"
+      using \<open>s = Suc f\<close> a2 by auto
+    have l4: "loop p (Suc (Suc f)) (Suc (Suc f)) \<equiv>\<^sub>p Fail {}"
+      by (metis a1 a2 arbitrary_repetition.simps(2) choice_fail_implication equiv_is_transitive fail_stays_fail_fixed leD loop_l2_1)
+    have l5: "loop p (Suc f) (Suc f) \<union>\<^sub>p loop p (Suc (Suc f)) (Suc (Suc f)) \<equiv>\<^sub>p Fail {}"
+      using choice_fail_implication l3 l4 by blast
+    from l1 l2 l3 l4 show ?thesis
+      using equiv_is_transitive l5 by blast
+  qed
+qed
+
+theorem fail_stays_fail_arbitrary_2: "s\<le>f \<Longrightarrow> loop p s (Suc f) \<equiv>\<^sub>p Fail {} \<Longrightarrow> loop p s f \<equiv>\<^sub>p Fail {}"
+proof -
+  assume a1: "s \<le> f"
+  assume a2: "loop p s (Suc f) \<equiv>\<^sub>p Fail {}"
+  have l1: "loop p s (Suc f) \<equiv>\<^sub>p loop p s f \<union>\<^sub>p p\<^bold>^(Suc f)"
+    using a1 loop_l3 by auto
+  from a2 l1 show "loop p s f \<equiv>\<^sub>p Fail {}"
+    using a1 choice_fail_implication by auto
+qed
+
+lemma fail_arbitrary_implies_fixed: "k \<le> n \<Longrightarrow> loop (b \<sslash>\<^sub>p (- C)) 0 n \<equiv>\<^sub>p Fail {} \<Longrightarrow> (b \<sslash>\<^sub>p (- C)) \<^bold>^ k \<equiv>\<^sub>p Fail {}"
+proof (induction n)
+  case 0
+  then show ?case by fastforce
+next
+  case (Suc n)
+  assume IH: "k \<le> n \<Longrightarrow> loop (b \<sslash>\<^sub>p (- C)) 0 n \<equiv>\<^sub>p Fail {} \<Longrightarrow> (b \<sslash>\<^sub>p (- C)) \<^bold>^ k \<equiv>\<^sub>p Fail {}"
+  assume a1: "k \<le> Suc n"
+  assume a2: "loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<equiv>\<^sub>p Fail {}"
+  from a2 have l1: "loop (b \<sslash>\<^sub>p (- C)) 0 n \<equiv>\<^sub>p Fail {}"
+    apply (cases "loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<equiv>\<^sub>p Fail {}")
+    apply (simp add: fail_stays_fail_arbitrary_2)
+    by simp
+  then show "loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<equiv>\<^sub>p Fail {} \<Longrightarrow> (b \<sslash>\<^sub>p (- C)) \<^bold>^ k \<equiv>\<^sub>p Fail {}"
+    by (metis IH a1 arbitrary_repetition.simps(2) choice_fail_implication le_SucE less_nat_zero_code)
+qed
+
+lemma extract_fixed_from_arbitrary: "k\<le>n \<Longrightarrow> a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ k) \<setminus>\<^sub>p C"
+proof (induction n)
+  case 0
+  then show ?case by (auto simp: equiv_def restr_post_def Skip_def composition_def restrict_p_def restrict_r_def)
+next
+  case (Suc n)
+  assume IH: "k \<le> n \<Longrightarrow> a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ k) \<setminus>\<^sub>p C"
+  assume a1: " k \<le> Suc n"
+  then show ?case
+  proof (cases "k\<le>n")
+    case True
+    have l1: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; (loop (b \<sslash>\<^sub>p (- C)) 0 n \<union>\<^sub>p (b \<sslash>\<^sub>p (- C)) \<^bold>^ Suc n) \<setminus>\<^sub>p C"
+      by (simp add: Definitions.equiv_def)
+    have l2: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ Suc n) \<setminus>\<^sub>p C"
+      by (simp add: equiv_is_symetric until_simplification_1)
+    from l2 IH True have l3: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p (a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ k) \<setminus>\<^sub>p C) \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ Suc n) \<setminus>\<^sub>p C"
+      by (smt (verit) composition_removes_dead_code_2 composition_simplification_2 equiv_is_transitive equivalence_is_maintained_by_choice)
+    from l3 have l4: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p (a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ Suc n) \<setminus>\<^sub>p C) \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ k) \<setminus>\<^sub>p C"
+      by (metis choice_assoc_1 choice_commute)
+    show ?thesis
+      by (meson equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice inverse_equality_2 l2 l4)
+  next
+    case False
+    have l1: "k=Suc n"
+      using False a1 by fastforce
+    obtain p1 where o1: "p1 = a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ (Suc n)) \<setminus>\<^sub>p C" by simp
+    have l2: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p p1"
+      by (simp add: equiv_is_symetric until_simplification_1 o1)
+    have l3: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p (p1 \<union>\<^sub>p p1)"
+      by (metis Definitions.equiv_def choice_def choice_idem_3 choice_state sup_idem l2)
+    have l4: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p (a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p p1) \<union>\<^sub>p p1"
+      using l3 by fastforce
+    have l5: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p (a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C) \<union>\<^sub>p p1"
+      by (smt (verit, ccfv_SIG) composition_removes_dead_code_2 composition_simplification_2 equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l2 l4 o1)
+    then show ?thesis
+      by (simp add: l1 o1)
+  qed
+qed
+
+lemma fail_arbitrary_implies_fixed_2: "k \<le> n \<Longrightarrow> a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail {} \<Longrightarrow> a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ k) \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail {}"
+proof (cases "a \<equiv>\<^sub>p Fail {}")
+  case True
+  obtain pr where o1: "pr = ((b \<sslash>\<^sub>p (- C)) \<^bold>^ k) \<setminus>\<^sub>p C" by simp
+  have "a ; pr \<equiv>\<^sub>p Fail {}"
+    by (meson True equals_equiv_relation_3 equiv_is_transitive equivalence_is_maintained_by_composition fail_compose_l)
+  then show ?thesis
+    by (simp add: o1)
+next
+  case False
+  assume a1: "k \<le> n"
+  assume a2: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail {}"
+  from a1 have "a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ k) \<setminus>\<^sub>p C" using extract_fixed_from_arbitrary
+    by blast
+  then show ?thesis
+    by (metis (no_types, lifting) Definitions.equiv_def a2 choice_fail_implication)
+qed
+
+
 end

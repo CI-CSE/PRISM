@@ -267,6 +267,18 @@ theorem skip_compose_l_of_fixed_rep_1: "p\<^bold>^n \<equiv>\<^sub>p Skip (S p) 
   using skip_compose_l apply (auto)
   by (smt (verit) equiv_is_symetric skip_compose_l state_space_is_same)
 
-
+theorem fail_stays_fail_fixed: "p\<^bold>^n \<equiv>\<^sub>p Fail {} \<Longrightarrow> p\<^bold>^Suc n \<equiv>\<^sub>p Fail {}"
+  apply (induction n)
+   apply (auto simp: Skip_def equiv_def Fail_def composition_def restr_post_def) [1]
+proof -
+  fix n assume IH: "p \<^bold>^ n \<equiv>\<^sub>p Fail {} \<Longrightarrow> p \<^bold>^ Suc n \<equiv>\<^sub>p Fail {}"
+  assume a1: "p \<^bold>^ Suc n \<equiv>\<^sub>p Fail {}"
+  have l1: "p \<^bold>^ Suc (Suc n) \<equiv>\<^sub>p p \<^bold>^ Suc n ; p"
+    by (simp add: equiv_is_reflexive)
+  have l2: "p \<^bold>^ Suc n \<equiv>\<^sub>p Fail {}"
+    using a1 by auto
+  show "p \<^bold>^ Suc (Suc n) \<equiv>\<^sub>p Fail {}"
+    by (metis equiv_is_reflexive equiv_is_transitive equivalence_is_maintained_by_composition fail_compose_l fixed_repetition.simps(2) l2)
+qed
 
 end

@@ -8,8 +8,8 @@ theory Complex_operation_interactions
 "Guarded_conditional"
 "If_then_else"
 "Non_atomic_concurrency"
-"While_loop"
-"While_support"
+"Until_loop"
+"Until_support"
 begin
 section \<open>Complex operation interactions for top\<close>
 
@@ -86,8 +86,8 @@ subsubsection \<open>Restriction arbitrary repetition\<close>
 theorem "loop p s f \<sslash>\<^sub>p C \<equiv>\<^sub>p Skip C ; loop p s f"
   by (simp add: equiv_is_symetric skip_prop_3)
 
-subsubsection \<open>Restriction while_support\<close>
-subsubsection \<open>Restriction while\<close>
+subsubsection \<open>Restriction until_support\<close>
+subsubsection \<open>Restriction until\<close>
 
 
 
@@ -111,8 +111,8 @@ subsubsection \<open>Composition non-atomic concurrency\<close>
 subsubsection \<open>Composition If-then-else\<close>
 subsubsection \<open>Composition fixed repetition\<close>
 subsubsection \<open>Composition arbitrary repetition\<close>
-subsubsection \<open>Composition while_support\<close>
-subsubsection \<open>Composition while\<close>
+subsubsection \<open>Composition until_support\<close>
+subsubsection \<open>Composition until\<close>
 
 
 subsubsection \<open>Choice atomic concurrency\<close>
@@ -177,8 +177,8 @@ theorem cond_distrib1_ite_4: "(ITE C (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) p\<^
 
 subsubsection \<open>Choice fixed repetition\<close>   
 subsubsection \<open>Choice arbitrary repetition\<close> 
-subsubsection \<open>Choice while_support\<close>
-subsubsection \<open>Choice while\<close>
+subsubsection \<open>Choice until_support\<close>
+subsubsection \<open>Choice until\<close>
 
 subsubsection \<open>Corestriction atomic concurrency\<close>
 theorem corestriction_distrib: "(p\<^sub>1 || p\<^sub>2) \<setminus>\<^sub>p C = p\<^sub>1 \<setminus>\<^sub>p C || p\<^sub>2 \<setminus>\<^sub>p C"
@@ -195,8 +195,8 @@ subsubsection \<open>Corestriction guarded conditional\<close>
 subsubsection \<open>Corestriction If-then-else\<close>
 subsubsection \<open>Corestriction fixed repetition\<close>
 subsubsection \<open>Corestriction arbitrary repetition\<close> 
-subsubsection \<open>Corestriction while_support\<close>
-subsubsection \<open>Corestriction while\<close>
+subsubsection \<open>Corestriction until_support\<close>
+subsubsection \<open>Corestriction until\<close>
 
 subsubsection \<open>Unsafe composition atomic concurrency\<close>
 
@@ -207,8 +207,8 @@ subsubsection \<open>Unsafe composition guarded conditional\<close>
 subsubsection \<open>Unsafe composition If-then-else\<close>
 subsubsection \<open>Unsafe composition fixed repetition\<close>
 subsubsection \<open>Unsafe composition arbitrary repetition\<close> 
-subsubsection \<open>Unsafe composition while_support\<close>
-subsubsection \<open>Unsafe composition while\<close>
+subsubsection \<open>Unsafe composition until_support\<close>
+subsubsection \<open>Unsafe composition until\<close>
 
 subsubsection \<open>Atomic concurrency non-atomic concurreny\<close>
 
@@ -266,8 +266,8 @@ theorem cond_distrib1_conc_gc: "(GC C\<^sub>1 p\<^sub>1 C\<^sub>2 (p\<^sub>2 || 
 subsubsection \<open>Atomic concurrency If-then-else\<close>
 subsubsection \<open>Atomic concurrency fixed repetition\<close>
 subsubsection \<open>Atomic concurrency arbitrary repetition\<close> 
-subsubsection \<open>Atomic concurrency while_support\<close>
-subsubsection \<open>Atomic concurrency while\<close>
+subsubsection \<open>Atomic concurrency until_support\<close>
+subsubsection \<open>Atomic concurrency until\<close>
 
 subsubsection \<open>Non-atomic concurrency inverse\<close>
 
@@ -279,37 +279,37 @@ theorem cond_distrib1_conc_ite: "(ITE C p\<^sub>1 (p\<^sub>2 || p\<^sub>3)) \<eq
 subsubsection \<open>Non-atomic concurrency If-then-else\<close>
 subsubsection \<open>Non-atomic concurrency fixed repetition\<close>
 subsubsection \<open>Non-atomic concurrency arbitrary repetition\<close> 
-subsubsection \<open>Non-atomic concurrency composition while_support\<close>
-subsubsection \<open>Non-atomic concurrency composition while\<close>
+subsubsection \<open>Non-atomic concurrency composition until_support\<close>
+subsubsection \<open>Non-atomic concurrency composition until\<close>
 
 subsubsection \<open>Inverse guarded conditional\<close>
 
 subsubsection \<open>Inverse If-then-else\<close>
 subsubsection \<open>Inverse fixed repetition\<close>
 subsubsection \<open>Inverse arbitrary repetition\<close> 
-subsubsection \<open>Inverse while_support\<close>
-subsubsection \<open>Inverse while\<close>
+subsubsection \<open>Inverse until_support\<close>
+subsubsection \<open>Inverse until\<close>
 
 subsubsection \<open>Guarded conditional If-then-else\<close>
 theorem guard_ifthenelse: "ITE C p\<^sub>1 p\<^sub>2 = GC C p\<^sub>1 (-C) p\<^sub>2" \<comment> \<open>Guard_ifthenelse\<close>
   by (auto simp: guarded_conditional_def if_then_else_def)
 subsubsection \<open>Guarded conditional fixed repetition\<close>
 subsubsection \<open>Guarded conditional arbitrary repetition\<close> 
-subsubsection \<open>Guarded conditional while_support\<close>
-subsubsection \<open>Guarded conditional while\<close>
+subsubsection \<open>Guarded conditional until_support\<close>
+subsubsection \<open>Guarded conditional until\<close>
 subsubsection \<open>If-then-else fixed repetition\<close>
 subsubsection \<open>If-then-else arbitrary repetition\<close> 
-subsubsection \<open>If-then-else while_support\<close>
-subsubsection \<open>If-then-else while\<close>
+subsubsection \<open>If-then-else until_support\<close>
+subsubsection \<open>If-then-else until\<close>
 subsubsection \<open>Fixed repetition arbitrary repetition\<close> 
-subsubsection \<open>Fixed repetition while_support\<close>
+subsubsection \<open>Fixed repetition until_support\<close>
 
-subsubsection \<open>Fixed repetition while\<close>
-subsubsection \<open>Arbitrary repetition while_support\<close>
-subsubsection \<open>Arbitrary repetition while\<close>
-lemma while_def_lemma: "while_loop a C b n \<equiv>\<^sub>p a;(loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>pC"
-  by (simp add: equals_equiv_relation_3 while_loop_def)
-subsubsection \<open>while_support while\<close> 
+subsubsection \<open>Fixed repetition until\<close>
+subsubsection \<open>Arbitrary repetition until_support\<close>
+subsubsection \<open>Arbitrary repetition until\<close>
+lemma until_def_lemma: "until_loop a C b n \<equiv>\<^sub>p a;(loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>pC"
+  by (simp add: equals_equiv_relation_3 until_loop_def)
+subsubsection \<open>until_support until\<close> 
 
 
 

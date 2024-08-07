@@ -45,8 +45,8 @@ session MySession = HOL +
     "../04_Composed_operations/Guarded_conditional"
     "../04_Composed_operations/If_then_else"
     "../04_Composed_operations/Non_atomic_concurrency"
-    "../04_Composed_operations/While_loop"
-    "../04_Composed_operations/While_support"
+    "../04_Composed_operations/Until_loop"
+    "../04_Composed_operations/Until_support"
     "../05_Properties/Invariant"
     "../05_Properties/Loop_invariant"
   document_files

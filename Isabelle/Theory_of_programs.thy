@@ -14,9 +14,13 @@ theorem "used_states p\<^sub>1 \<inter> used_states p\<^sub>2 = {} \<Longrightar
   using distinct_state_range_dist_from_pre cond_for_commutative_1
   by fastforce
 
-theorem "x; while_loop a C b n \<equiv>\<^sub>p while_loop (x;a) C b n"
-  by (metis compose_assoc_3 equiv_is_symetric while_loop_def)
+theorem "x; until_loop a C b n \<equiv>\<^sub>p until_loop (x;a) C b n"
+  by (metis compose_assoc_3 equiv_is_symetric until_loop_def)
 
 theorem "p;q \<equiv>\<^sub>p p; (q \<sslash>\<^sub>p (Range_p p))"
+  apply (auto simp: composition_def equiv_def restrict_p_def restrict_r_def Range_p_def corestrict_p_def corestrict_r_def restr_post_def Domain_iff Range_iff relcomp_unfold) 
+  apply fastforce 
+  by fastforce
+
 
 end

@@ -26,6 +26,10 @@ theorem compose_absorb_2 : "(p\<^sub>1;p\<^sub>2)\<sslash>\<^sub>pC \<triangleq>
 theorem compose_absorb_3 : "(p\<^sub>1;p\<^sub>2)\<sslash>\<^sub>pC \<equiv>\<^sub>p p\<^sub>1\<sslash>\<^sub>pC;p\<^sub>2" \<comment> \<open>/Compose_absorb/\<close>
   by (simp add: compose_absorb_1 equiv_is_reflexive)
 
+theorem range_p_composition: "Range_p(a) \<inter> C = {} \<Longrightarrow> a;b\<sslash>\<^sub>p(-C) \<equiv>\<^sub>p a;b"
+  apply (auto simp: Range_p_def composition_def restrict_p_def equiv_def corestrict_r_def restrict_r_def Int_def Range_iff Domain_iff restr_post_def relcomp_unfold)
+  by fastforce
+
 subsubsection \<open>Restriction choice\<close>
 theorem restrict_distrib_1 : "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC = (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)" \<comment> \<open>/Restrict_distrib/ restriction distributes over choice\<close>
   oops
@@ -71,7 +75,7 @@ theorem compose_distrib2_3 : "(p\<^sub>1\<union>\<^sub>pp\<^sub>2);q \<equiv>\<^
 theorem choice_distributes_over_composition : "q\<union>\<^sub>p(p\<^sub>1;p\<^sub>2) \<equiv>\<^sub>p (q\<union>\<^sub>pp\<^sub>1) ; (q\<union>\<^sub>pp\<^sub>2)" \<comment> \<open>Does not hold. Line: 143\<close>
   oops
 subsubsection \<open>Composition corestriction\<close>
-theorem corestriction_restriction_on_composition : "p\<^sub>1 \<setminus>\<^sub>p s\<^sub>1 ; p\<^sub>2 = p\<^sub>1 ; p\<^sub>2 \<sslash>\<^sub>p s\<^sub>1" \<comment> \<open>NEW\<close>
+theorem corestriction_on_composition : "p\<^sub>1 \<setminus>\<^sub>p s\<^sub>1 ; p\<^sub>2 = p\<^sub>1 ; p\<^sub>2 \<sslash>\<^sub>p s\<^sub>1" \<comment> \<open>NEW\<close>
   by (auto simp: restrict_p_def corestrict_p_def composition_def corestrict_r_def restrict_r_def S_def Field_def restr_post_def)
 
 theorem corestrict_compose: "(p\<^sub>1 ; p\<^sub>2) \<setminus>\<^sub>p C \<equiv>\<^sub>p p\<^sub>1 ; (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_compose/\<close>
@@ -160,7 +164,7 @@ theorem choice_distributes_over_composition_4 : "q\<union>\<^sub>p(p\<^sub>1;\<^
   oops
 
 subsubsection \<open>Relation between more than two operations\<close>
-lemma while_simplification_1: "a;n\<setminus>\<^sub>pC \<union>\<^sub>p a;m\<setminus>\<^sub>pC \<equiv>\<^sub>p a;(n \<union>\<^sub>p m)\<setminus>\<^sub>pC"
+lemma until_simplification_1: "a;n\<setminus>\<^sub>pC \<union>\<^sub>p a;m\<setminus>\<^sub>pC \<equiv>\<^sub>p a;(n \<union>\<^sub>p m)\<setminus>\<^sub>pC"
   by (meson compose_distrib1_3 corestrict_union equiv_is_reflexive equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_composition)
 
 (* locale two_elements = *)
