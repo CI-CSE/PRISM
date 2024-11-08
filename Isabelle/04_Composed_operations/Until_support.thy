@@ -7,34 +7,33 @@ section \<open>Until support for top\<close>
 
 subsection \<open>Step cases\<close>
 lemma until_decomp_1: "until_support a C b 0 n \<equiv>\<^sub>p until_support a C b 0 0 \<union>\<^sub>p until_support a C b (Suc 0) n"
-  apply (simp add: until_support_def)                   
+  apply (simp add: until_support_def)
 proof (induction n)
   case 0
   have right_1: "loop (b \<sslash>\<^sub>p (- C)) (Suc 0) 0 \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail (S b)"
-    by (metis corestriction_prop equiv_is_transitive fail_compose_l loop_l2_01 restriction_state)
+    by (metis corestrict_false corestrict_subprog corestriction_state loop_l2_01 restriction_state subprogram_is_antisymetric)
   from right_1 have right_2: "a; loop (b \<sslash>\<^sub>p (- C)) (Suc 0) 0 \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail (S b)"
     by (metis equiv_def composition_def corestriction_state fail_compose_r loop_l2_01 restriction_state)
   from right_2 have right_3: "a ; Skip (S b) \<setminus>\<^sub>p C \<union>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) (Suc 0) 0 \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; Skip (S b) \<setminus>\<^sub>p C \<union>\<^sub>p Fail (S b)"
-    by (simp add: equiv_is_reflexive equivalence_is_maintained_by_choice)
+    by (simp add: equiv_is_reflexive choice_equiv)
   from right_3 have right_4: "a ; Skip (S b) \<setminus>\<^sub>p C \<union>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) (Suc 0) 0 \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; Skip (S b) \<setminus>\<^sub>p C"
-    by (meson equiv_is_transitive fail_union_r)
-  from right_2 have left_1: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 0 \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; Skip (Pre (b \<sslash>\<^sub>p (- C))) \<setminus>\<^sub>p C"
-    by (simp add: equals_equiv_relation_3 restrict_p_def)
+    by (meson equiv_is_transitive fail_choice_r)
   have l1: "a ; Fail (S b) \<setminus>\<^sub>p C \<equiv>\<^sub>p Fail (S b)"
     using right_2 by auto
   from right_3 show ?case
     by (auto simp: equiv_def Skip_def Fail_def composition_def corestrict_p_def corestrict_r_def choice_def restr_post_def restrict_r_def)
 next
   case (Suc n)
-  assume IH: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; Skip (Pre (b \<sslash>\<^sub>p (- C))) \<setminus>\<^sub>p C \<union>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) (Suc 0) n \<setminus>\<^sub>p C"
-  have l2: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; (Skip (Pre (b \<sslash>\<^sub>p (- C))) \<union>\<^sub>p loop (b \<sslash>\<^sub>p (- C)) (Suc 0) (Suc n)) \<setminus>\<^sub>p C"
-    by (metis One_nat_def equals_equiv_relation_3 equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction loop_l6 zero_less_Suc)
+  have l2: "a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; ((Skip (S (b \<sslash>\<^sub>p (- C)))) \<sslash>\<^sub>p (Pre (b \<sslash>\<^sub>p (- C))) \<union>\<^sub>p loop (b \<sslash>\<^sub>p (- C)) (Suc 0) (Suc n)) \<setminus>\<^sub>p C"
+    by (metis One_nat_def equals_equiv_relation_3 composition_equiv equivalence_is_maintained_by_corestriction loop_l6 zero_less_Suc)
   have l3: "a ; (Skip (Pre (b \<sslash>\<^sub>p (- C))) \<union>\<^sub>p loop (b \<sslash>\<^sub>p (- C)) (Suc 0) (Suc n)) \<setminus>\<^sub>p C \<equiv>\<^sub>p ((a ; Skip (Pre (b \<sslash>\<^sub>p (- C)))) \<union>\<^sub>p (a ; loop (b \<sslash>\<^sub>p (- C)) (Suc 0) (Suc n))) \<setminus>\<^sub>p C"
-    using corestrict_compose equiv_is_symetric equivalence_is_maintained_by_corestriction equiv_is_transitive compose_distrib1_3 by blast
+    using corestrict_compose equiv_is_symetric equivalence_is_maintained_by_corestriction equiv_is_transitive compose_distrib1_3
+    by (smt (verit, del_insts))
   then have l4: "((a ; Skip (Pre (b \<sslash>\<^sub>p (- C)))) \<union>\<^sub>p (a ; loop (b \<sslash>\<^sub>p (- C)) (Suc 0) (Suc n))) \<setminus>\<^sub>p C \<equiv>\<^sub>p ((a ; Skip (Pre (b \<sslash>\<^sub>p (- C))) \<setminus>\<^sub>p C) \<union>\<^sub>p (a ; loop (b \<sslash>\<^sub>p (- C)) (Suc 0) (Suc n) \<setminus>\<^sub>p C))"
-    by (meson corestrict_union corestrict_compose equiv_is_transitive equivalence_is_maintained_by_choice)
-  from compose_distrib1_3 corestrict_union l2 show ?case
-    using equiv_is_transitive l3 l4 by blast
+    by (metis corestrict_choice_3 corestrict_compose)
+  from compose_distrib1_3 l2 show ?case
+    using equiv_is_transitive l3 l4
+    by (smt (verit) choice_commute equiv_is_symetric restriction_state until_simplification_1) 
 qed
 
 lemma until_decomp_2: "until_support a C b 0 (Suc n) \<equiv>\<^sub>p until_support a C b 0 n \<union>\<^sub>p until_support a C b (Suc n) (Suc n)"
@@ -49,12 +48,12 @@ next
     apply (auto simp: until_support_def)
   proof -
     have l1: "a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ n ; (b \<sslash>\<^sub>p (- C) ; b \<sslash>\<^sub>p (- C))) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; (Fail (S b) \<union>\<^sub>p (b \<sslash>\<^sub>p (- C)) \<^bold>^ n ; (b \<sslash>\<^sub>p (- C) ; b \<sslash>\<^sub>p (- C))) \<setminus>\<^sub>p C"
-      by (simp add: equiv_is_reflexive equiv_is_symetric equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction fail_union_l)
+      by (simp add: equiv_is_reflexive equiv_is_symetric composition_equiv equivalence_is_maintained_by_corestriction fail_choice_l)
     have l2: "a ; (loop (b \<sslash>\<^sub>p (- C)) 0 n \<union>\<^sub>p b \<sslash>\<^sub>p (- C) ; (b \<sslash>\<^sub>p (- C)) \<^bold>^ n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; (loop (b \<sslash>\<^sub>p (- C)) 0 n \<union>\<^sub>p b \<sslash>\<^sub>p (- C) ; (b \<sslash>\<^sub>p (- C)) \<^bold>^ n) \<setminus>\<^sub>p C"
       by (simp add: equiv_is_reflexive)
     from l1 l2 until_simplification_1 show "a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ n ; (b \<sslash>\<^sub>p (- C) ; b \<sslash>\<^sub>p (- C)) \<union>\<^sub>p (loop (b \<sslash>\<^sub>p (- C)) 0 n \<union>\<^sub>p (b \<sslash>\<^sub>p (- C)) \<^bold>^ n ; b \<sslash>\<^sub>p (- C))) \<setminus>\<^sub>p C \<equiv>\<^sub>p
     a ; (loop (b \<sslash>\<^sub>p (- C)) 0 n \<union>\<^sub>p (b \<sslash>\<^sub>p (- C)) \<^bold>^ n ; b \<sslash>\<^sub>p (- C)) \<setminus>\<^sub>p C \<union>\<^sub>p a ; (Fail (S b) \<union>\<^sub>p (b \<sslash>\<^sub>p (- C)) \<^bold>^ n ; (b \<sslash>\<^sub>p (- C) ; b \<sslash>\<^sub>p (- C))) \<setminus>\<^sub>p C"
-      by (smt (verit, ccfv_threshold) choice_commute equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice)
+      by (smt (verit, ccfv_threshold) choice_commute equiv_is_symetric equiv_is_transitive choice_equiv)
   qed
   then show "until_support a C b 0 (Suc (Suc n)) \<equiv>\<^sub>p until_support a C b 0 (Suc n) \<union>\<^sub>p until_support a C b (Suc (Suc n)) (Suc (Suc n))"
     by (simp add: until_support_def)
@@ -73,9 +72,9 @@ next
   have IH2: "a ; loop (b \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) s s \<setminus>\<^sub>p C \<union>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) (Suc s) f \<setminus>\<^sub>p C"
     by (simp add: IH Suc_leD a1)
   from IH2 have l1: "a ; loop (b \<sslash>\<^sub>p (- C)) (Suc s) f \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; (loop (b \<sslash>\<^sub>p (- C)) (Suc s) (Suc s) \<union>\<^sub>p loop (b \<sslash>\<^sub>p (- C)) (Suc (Suc s)) f) \<setminus>\<^sub>p C"
-    by (metis a1 equiv_is_reflexive equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction le_refl loop_l5)
+    by (metis a1 equiv_is_reflexive composition_equiv equivalence_is_maintained_by_corestriction le_refl loop_l5)
   then have l2: "a ; (loop (b \<sslash>\<^sub>p (- C)) (Suc s) (Suc s) \<union>\<^sub>p loop (b \<sslash>\<^sub>p (- C)) (Suc (Suc s)) f) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) (Suc s) (Suc s) \<setminus>\<^sub>p C \<union>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) (Suc (Suc s)) f \<setminus>\<^sub>p C"
-    using compose_distrib1_3 corestrict_union equiv_is_reflexive equiv_is_transitive equivalence_is_maintained_by_composition by blast
+    by (simp add: compose_distrib1_3 corestrict_choice_1)
   then show ?case
     using equiv_is_transitive l1 by blast
 qed
@@ -99,13 +98,13 @@ next
   have l3: "until_support a C b (Suc (Suc f)) (Suc (Suc f)) \<union>\<^sub>p until_support a C b s (Suc f) \<equiv>\<^sub>p a ; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc (Suc f)) \<union>\<^sub>p loop (b\<sslash>\<^sub>p(-C)) s (Suc f))\<setminus>\<^sub>p C"
   proof -
     have l3_1: "until_support a C b (Suc (Suc f)) (Suc (Suc f)) \<equiv>\<^sub>p a ; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc (Suc f))) \<setminus>\<^sub>p C"
-      by (metis equiv_is_reflexive equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction loop_l2_1 until_support_def)
+      by (metis equiv_is_reflexive composition_equiv equivalence_is_maintained_by_corestriction loop_l2_1 until_support_def)
     have l3_2: "until_support a C b s (Suc f) \<equiv>\<^sub>p a ; (loop (b\<sslash>\<^sub>p(-C)) s (Suc f))\<setminus>\<^sub>p C"
       by (simp add: equiv_is_reflexive until_support_def)
     from l3_1 l3_2 have l3_3: "until_support a C b (Suc (Suc f)) (Suc (Suc f)) \<union>\<^sub>p until_support a C b s (Suc f) \<equiv>\<^sub>p a ; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc (Suc f))) \<setminus>\<^sub>p C \<union>\<^sub>p a ; (loop (b\<sslash>\<^sub>p(-C)) s (Suc f))\<setminus>\<^sub>p C"
-      using equivalence_is_maintained_by_choice by blast
+      using choice_equiv by blast
     then show ?thesis
-      by (meson compose_distrib1_3 corestrict_union equiv_is_reflexive equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_composition)
+      by (meson equiv_is_transitive until_simplification_1)
   qed
   then show "until_support a C b s (Suc (Suc f)) \<equiv>\<^sub>p until_support a C b (Suc (Suc f)) (Suc (Suc f)) \<union>\<^sub>p until_support a C b s (Suc f)"
     using equiv_is_symetric equiv_is_transitive l2 by blast
@@ -130,9 +129,9 @@ next
   have l3: "until_support a C b (Suc k) n \<equiv>\<^sub>p until_support a C b (Suc k) (Suc k) \<union>\<^sub>p until_support a C b (Suc (Suc k)) n"
     by (simp add: a2 until_decomp_3)
   then have l4: "until_support a C b 0 n \<equiv>\<^sub>p until_support a C b 0 k \<union>\<^sub>p (until_support a C b (Suc k) (Suc k) \<union>\<^sub>p until_support a C b (Suc (Suc k)) n)"
-    by (meson equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l2 until_decomp_1)
+    by (meson equiv_is_symetric equiv_is_transitive choice_equiv l2 until_decomp_1)
   from IH a1 a2 show "until_support a C b 0 n \<equiv>\<^sub>p until_support a C b 0 (Suc k) \<union>\<^sub>p until_support a C b (Suc (Suc k)) n"
-    by (smt (verit, ccfv_SIG) choice_assoc_1 equiv_is_reflexive equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l1 l4)
+    by (smt (verit, ccfv_SIG) choice_assoc_1 equiv_is_reflexive equiv_is_symetric equiv_is_transitive choice_equiv l1 l4)
 qed
 
 lemma until_decomp_6: "s \<le> k \<Longrightarrow> k \<le> f \<Longrightarrow> until_support a C b s f \<equiv>\<^sub>p until_support a C b s k \<union>\<^sub>p until_support a C b (Suc k) f"
@@ -156,11 +155,11 @@ next
     have l4: "until_support a C b s (Suc k) \<equiv>\<^sub>p until_support a C b s k \<union>\<^sub>p until_support a C b (Suc k) (Suc k)"
       using True until_decomp_4 by fastforce
     have l5: "until_support a C b s f \<equiv>\<^sub>p until_support a C b s k \<union>\<^sub>p (until_support a C b (Suc k) (Suc k) \<union>\<^sub>p until_support a C b (Suc (Suc k)) f)"
-      using equiv_is_reflexive equiv_is_transitive equivalence_is_maintained_by_choice l2 l3 by blast
+      using equiv_is_reflexive equiv_is_transitive choice_equiv l2 l3 by blast
     have l6: "until_support a C b s f \<equiv>\<^sub>p (until_support a C b s k \<union>\<^sub>p until_support a C b (Suc k) (Suc k)) \<union>\<^sub>p until_support a C b (Suc (Suc k)) f"
       by (metis choice_assoc_1 l5)
     from l2 l3 l4 l5 l6 show "until_support a C b s f \<equiv>\<^sub>p until_support a C b s (Suc k) \<union>\<^sub>p until_support a C b (Suc (Suc k)) f"
-      by (meson equiv_is_reflexive equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice)
+      by (meson equiv_is_reflexive equiv_is_symetric equiv_is_transitive choice_equiv)
   next
     case False
     then show ?thesis
@@ -169,13 +168,14 @@ next
 qed
 
 lemma until_decomp_7: "s = f \<Longrightarrow> until_support a C b s f \<equiv>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C))\<^bold>^f) \<setminus>\<^sub>p C"
-  by (simp add: equiv_is_reflexive equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction loop_l2_1 until_support_def)
+  by (simp add: equiv_is_reflexive composition_equiv equivalence_is_maintained_by_corestriction loop_l2_1 until_support_def)
 
 lemma until_support_feasible: "all_feasible [a, b] \<Longrightarrow> is_feasible (until_support a C b s f)"
 proof (induction f)
   case 0
   then show ?case
-    by (simp add: until_support_def compose_feasible corestrict_feasible fail_is_feasible skip_is_feasible)
+    apply (auto simp add: until_support_def compose_feasible corestrict_feasible fail_is_feasible skip_is_feasible)
+    by (simp add: compose_feasible corestrict_feasible restrict_feasible skip_is_feasible)
 next
   case (Suc f)
   assume IH: "all_feasible [a, b] \<Longrightarrow> is_feasible (until_support a C b s f)"
@@ -188,11 +188,11 @@ next
     from a2 until_decomp_4 until_decomp_7 have l2: "until_support a C b s (Suc f) \<equiv>\<^sub>p until_support a C b s f \<union>\<^sub>p until_support a C b (Suc f) (Suc f)"
       using choice_commute by fastforce
     from l2 until_decomp_7 have l3: "until_support a C b s (Suc f) \<equiv>\<^sub>p until_support a C b s f \<union>\<^sub>p (a ; ((b \<sslash>\<^sub>p (- C))\<^bold>^(Suc f)) \<setminus>\<^sub>p C)"
-      by (smt (verit, ccfv_SIG) equals_equiv_relation_3 equiv_is_transitive equivalence_is_maintained_by_choice)
+      by (smt (verit, ccfv_SIG) equals_equiv_relation_3 equiv_is_transitive choice_equiv)
     have l4: "is_feasible (a ; ((b \<sslash>\<^sub>p (- C))\<^bold>^(Suc f)) \<setminus>\<^sub>p C)"
       by (meson a1 all_feasible.simps(2) compose_feasible corestrict_feasible fixed_rep_feasibility restrict_feasible)
     then show ?thesis
-      by (meson all_feasible.simps(1) all_feasible.simps(2) union_feasible equiv_is_symetric equiv_maintains_feasiblity l1 l3)
+      by (meson all_feasible.simps(1) all_feasible.simps(2) choice_feasible equiv_is_symetric equiv_maintains_feasiblity l1 l3)
   next
     case False
     assume a2: "\<not> s \<le> f"
@@ -228,18 +228,19 @@ theorem equiv_is_maintained_by_until_support_1:
   apply (auto simp: until_support_def)
   apply (induction f)
   apply (auto) [1]
-  apply (simp add: assms(1) assms(3) equals_equiv_relation_3 equivalence_is_maintained_by_composition)
-  apply (metis (no_types, opaque_lifting) Definitions.equiv_def assms(1) assms(2) equivalence_is_maintained_by_composition equivalence_is_maintained_by_restriction)
+  apply (auto simp add: assms(1) assms(3) equals_equiv_relation_3 composition_equiv)
+  apply (smt (verit, ccfv_SIG) Definitions.equiv_def assms(1) assms(2) equiv_is_symetric composition_equiv equivalence_is_maintained_by_corestriction restriction_equiv)
 proof -
   fix f assume IH: "a\<^sub>1 ; loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C"
   have l1: "b\<^sub>1 \<sslash>\<^sub>p (- C) \<equiv>\<^sub>p b\<^sub>2 \<sslash>\<^sub>p (- C)"
-    by (simp add: assms(2) equivalence_is_maintained_by_restriction)
+    by (simp add: assms(2) restriction_equiv)
   have l2: "S (b\<^sub>1 \<sslash>\<^sub>p (- C)) = S (b\<^sub>2 \<sslash>\<^sub>p (- C))"
     by (simp add: assms(3))
   from l1 l2 assms (2) assms (3) assms (4)  have l3: "loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<equiv>\<^sub>p loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f)"
     by (meson all_feasible.simps(2) equiv_is_maintained_by_arbitrary_repetition_1 restrict_feasible)
-  show "a\<^sub>1 ; loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f) \<setminus>\<^sub>p C"
-    using assms(1) equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction l3 by blast
+  show "\<not> Suc f < s \<Longrightarrow> a\<^sub>1 ; (loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s f \<union>\<^sub>p (b\<^sub>1 \<sslash>\<^sub>p (- C)) \<^bold>^ f ; b\<^sub>1 \<sslash>\<^sub>p (- C)) \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; (loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s f \<union>\<^sub>p (b\<^sub>2 \<sslash>\<^sub>p (- C)) \<^bold>^ f ; b\<^sub>2 \<sslash>\<^sub>p (- C)) \<setminus>\<^sub>p C"
+    using assms(1) composition_equiv equivalence_is_maintained_by_corestriction l3
+    by fastforce
 qed
 
 theorem equiv_is_maintained_by_until_support_2: 
@@ -251,17 +252,17 @@ theorem equiv_is_maintained_by_until_support_2:
   apply (auto simp: until_support_def)
   apply (induction f)
   apply (auto) [1]
-  apply (simp add: assms(1) assms(3) equals_equiv_relation_3 equivalence_is_maintained_by_composition)
-  apply (simp add: assms(1) equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction fail_is_equivalent_independant_of_arg)
+  apply (simp add: assms(1) assms(3) equals_equiv_relation_3 composition_equiv)
+  apply (simp add: assms(1) composition_equiv equivalence_is_maintained_by_corestriction fail_equiv)
   using assms(3) apply auto[1]
 proof -
   fix f assume IH: "a\<^sub>1 ; loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C"
   have l1: "b\<^sub>1 \<sslash>\<^sub>p (- C) \<equiv>\<^sub>p b\<^sub>2 \<sslash>\<^sub>p (- C)"
-    by (simp add: assms(2) equivalence_is_maintained_by_restriction)
+    by (simp add: assms(2) restriction_equiv)
   from l1 assms (2) assms (3) assms (4)  have l3: "loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<equiv>\<^sub>p loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f)"
     by (metis all_feasible.simps(2) assms(3) assms(4) equiv_is_maintained_by_arbitrary_repetition_2 l1 restrict_feasible)
   show "a\<^sub>1 ; loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f) \<setminus>\<^sub>p C"
-    using assms(1) equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction l3 by blast
+    using assms(1) composition_equiv equivalence_is_maintained_by_corestriction l3 by blast
 qed
 
 theorem bad_index_is_fail_support: "f < s \<Longrightarrow> until_support a C b s f \<equiv>\<^sub>p Fail {}"
@@ -270,7 +271,7 @@ proof -
   then have "loop (b\<sslash>\<^sub>p(-C)) s f \<equiv>\<^sub>p Fail {}"
     by (simp add: bad_index_is_fail_arbitrary)
   then have l1: "until_support a C b s f \<equiv>\<^sub>p a ; (Fail {})\<setminus>\<^sub>p C"
-    by (simp add: equiv_is_reflexive equivalence_is_maintained_by_composition equivalence_is_maintained_by_corestriction until_support_def)
+    by (simp add: equiv_is_reflexive composition_equiv equivalence_is_maintained_by_corestriction until_support_def)
   have l2: "a ; (Fail {})\<setminus>\<^sub>p C \<equiv>\<^sub>p Fail {}"
     by (metis corestrict_idem fail_compose_r infeas_corestriction)
   then show "until_support a C b s f \<equiv>\<^sub>p Fail {}"
@@ -326,11 +327,11 @@ proof (cases "s'\<le>f'")
         have "suc \<equiv>\<^sub>p head \<union>\<^sub>p butfst" using \<open>s = 0\<close> until_decomp_3
           by (metis \<open>s' - 1 = 0\<close> a3 o1 o3 o8)
         then have "suc \<equiv>\<^sub>p (head \<union>\<^sub>p head) \<union>\<^sub>p butfst" using choice_idem_3
-          by (smt (verit, del_insts) Definitions.equiv_def equivalence_is_maintained_by_choice)
+          by (smt (verit, del_insts) Definitions.equiv_def choice_equiv)
         then have "suc \<equiv>\<^sub>p head \<union>\<^sub>p (head \<union>\<^sub>p butfst)"
           by (metis choice_assoc_1)
         then show ?thesis
-          by (metis True \<open>head \<equiv>\<^sub>p until_support a C b 0 0\<close> \<open>suc \<equiv>\<^sub>p head \<union>\<^sub>p butfst\<close> equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice o1 o6)
+          by (metis True \<open>head \<equiv>\<^sub>p until_support a C b 0 0\<close> \<open>suc \<equiv>\<^sub>p head \<union>\<^sub>p butfst\<close> equiv_is_symetric equiv_is_transitive choice_equiv o1 o6)
       next
         case False
         obtain temp where o7: "temp = (s'-1)" by simp
@@ -346,13 +347,13 @@ proof (cases "s'\<le>f'")
       have l3: "ptail \<equiv>\<^sub>p prime \<union>\<^sub>p tail"
         by (simp add: a2 a4 o4 o5 o6 until_decomp_6) 
       have l4: "suc \<equiv>\<^sub>p (head \<union>\<^sub>p prime) \<union>\<^sub>p tail"
-        by (metis choice_assoc_1 equiv_is_reflexive equiv_is_transitive equivalence_is_maintained_by_choice l2 l3)
+        by (metis choice_assoc_1 equiv_is_reflexive equiv_is_transitive choice_equiv l2 l3)
       have l5: "suc \<equiv>\<^sub>p ((head \<union>\<^sub>p (prime \<union>\<^sub>p prime)) \<union>\<^sub>p tail)"
-        by (meson choice_idem_3 equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l4)
+        by (meson choice_idem_3 equiv_is_symetric equiv_is_transitive choice_equiv l4)
       have l6: "suc \<equiv>\<^sub>p ((head \<union>\<^sub>p prime) \<union>\<^sub>p tail) \<union>\<^sub>p prime"
         by (metis choice_assoc_1 choice_commute l5)
       have l7: "suc \<equiv>\<^sub>p suc \<union>\<^sub>p prime"
-        by (smt (verit) choice_assoc_1 choice_commute choice_idem_3 equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l4 l5)
+        by (smt (verit) choice_assoc_1 choice_commute choice_idem_3 equiv_is_symetric equiv_is_transitive choice_equiv l4 l5)
       then show ?thesis
         by (simp add: o1 o4)
     next
@@ -363,7 +364,7 @@ proof (cases "s'\<le>f'")
         then have "head \<equiv>\<^sub>p Fail{}" using o3 False
           by (simp add: bad_index_is_fail_support)
         then show ?thesis using True o6 o1
-          by (meson equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice fail_union_l)
+          by (meson equiv_is_symetric equiv_is_transitive choice_equiv fail_choice_l)
       next
         case False
         obtain temp where o7: "temp = (s'-1)" by simp
@@ -379,13 +380,13 @@ proof (cases "s'\<le>f'")
       have l3: "ptail \<equiv>\<^sub>p prime \<union>\<^sub>p tail"
         by (simp add: a2 a4 o4 o5 o6 until_decomp_6) 
       have l4: "suc \<equiv>\<^sub>p (head \<union>\<^sub>p prime) \<union>\<^sub>p tail"
-        by (metis choice_assoc_1 equiv_is_reflexive equiv_is_transitive equivalence_is_maintained_by_choice l2 l3)
+        by (metis choice_assoc_1 equiv_is_reflexive equiv_is_transitive choice_equiv l2 l3)
       have l5: "suc \<equiv>\<^sub>p ((head \<union>\<^sub>p (prime \<union>\<^sub>p prime)) \<union>\<^sub>p tail)"
-        by (meson choice_idem_3 equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l4)
+        by (meson choice_idem_3 equiv_is_symetric equiv_is_transitive choice_equiv l4)
       have l6: "suc \<equiv>\<^sub>p ((head \<union>\<^sub>p prime) \<union>\<^sub>p tail) \<union>\<^sub>p prime"
         by (metis choice_assoc_1 choice_commute l5)
       have l7: "suc \<equiv>\<^sub>p suc \<union>\<^sub>p prime"
-        by (smt (verit) choice_assoc_1 choice_commute choice_idem_3 equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice l4 l5)
+        by (smt (verit) choice_assoc_1 choice_commute choice_idem_3 equiv_is_symetric equiv_is_transitive choice_equiv l4 l5)
       then show ?thesis
         by (simp add: o1 o4)
     qed
@@ -397,7 +398,8 @@ next
   moreover have "until_support a C b s' f' \<equiv>\<^sub>p Fail {}"
     by (simp add: bad_index_is_fail_support calculation)
   then show ?thesis
-    by (meson equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_choice fail_union_r)
+    by (meson equiv_is_symetric equiv_is_transitive choice_equiv fail_choice_r)
 qed
+
 
 end

@@ -24,7 +24,7 @@ lemma loop_correct_1: "is_loop_invariant I a C b \<Longrightarrow> Range_p (a ; 
     assume a2: "is_loop_invariant I a C b"
     from IH a2 have IH2: "Range_p (a ; loop (b \<sslash>\<^sub>p (- C)) n n) \<subseteq> I" by simp
     have l1: "a ; loop (b \<sslash>\<^sub>p (- C)) (Suc n) (Suc n) \<equiv>\<^sub>p (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^n) ; (b \<sslash>\<^sub>p (- C))"
-      by (metis compose_assoc equiv_is_reflexive equivalence_is_maintained_by_composition fixed_repetition.simps(2) loop_l2_1)
+      by (metis compose_assoc equiv_is_reflexive composition_equiv fixed_repetition.simps(2) loop_l2_1)
     then have "\<forall> y \<in> Range_p (a ; (b \<sslash>\<^sub>p (- C))\<^bold>^(Suc n)). y \<in> I"
       by (meson a2 composition_pre fixed_repetition_invariant_preserve in_mono invariant_preserve is_loop_invariant_def range_p_explicit_1)
     then show "Range_p (a ; loop (b \<sslash>\<^sub>p (- C)) (Suc n) (Suc n)) \<subseteq> I"
@@ -95,5 +95,51 @@ next
   from a1 a2 show "x \<in> I"
     by (metis bot_nat_0.extremum in_mono loop_correct_3 until_conncetion)
 qed
+
+theorem is_invariant_is_preserved: "p \<equiv>\<^sub>p q \<Longrightarrow> is_invariant I p \<Longrightarrow> is_invariant I q"
+  by (auto simp: equiv_def is_invariant_def restr_post_def Range_p_def restrict_p_def restrict_r_def)
+
+theorem is_loop_invariant_is_preserved: "a \<equiv>\<^sub>p a' \<Longrightarrow> b \<equiv>\<^sub>p b' \<Longrightarrow> is_loop_invariant I a C b \<Longrightarrow> is_loop_invariant I a' C b'"
+  apply (auto simp: equiv_def is_loop_invariant_def restr_post_def is_invariant_def Range_p_def restrict_r_def restrict_p_def Range_iff subset_iff)
+  apply (metis (no_types, lifting) fst_conv mem_Collect_eq)
+  by (metis (no_types, lifting) fst_conv mem_Collect_eq)
+
+theorem loop_inv_is_inv_for_a: "is_loop_invariant I a C b \<Longrightarrow> is_invariant I a"
+  by (auto simp: is_loop_invariant_def is_invariant_def Range_p_def restrict_p_def restrict_r_def)
+
+theorem Loop_inv_1: "is_loop_invariant I a C b \<Longrightarrow> is_invariant I (b \<sslash>\<^sub>p (- C))" \<comment> \<open>Loop_inv\<close>
+  by (simp add: is_loop_invariant_def)
+
+theorem loop_inv_is_inv_of_loop: "is_loop_invariant I a C b \<Longrightarrow> is_invariant I (loop (b\<sslash>\<^sub>p(-C)) 0 n)"
+  apply (induction n)
+  apply (auto simp: is_loop_invariant_def is_invariant_def Range_p_def restrict_p_def restrict_r_def Skip_def) [1]
+  using arbitrary_repetition_invariant_preserve is_loop_invariant_def by blast
+
+theorem Loop_invinv: "is_loop_invariant I a C b \<Longrightarrow> is_invariant I (until_loop a C b n)"
+proof (induction n)
+  case 0
+  then show ?case by (auto simp: is_loop_invariant_def is_invariant_def until_loop_def Range_p_def restrict_p_def composition_def Skip_def restr_post_def corestrict_p_def restrict_r_def corestrict_r_def)[1]
+next
+  case (Suc n)
+  have IH: "is_invariant I (until_loop a C b n)"
+    by (simp add: Suc.IH Suc.prems)
+  have "until_loop a C b (Suc n) = a ; (loop (b\<sslash>\<^sub>p(-C)) 0 (Suc n))\<setminus>\<^sub>p C" by (simp add:until_loop_def)
+  have "... = a ; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n) \<union>\<^sub>p loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>p C"
+    by simp
+  have "... \<equiv>\<^sub>p a ; (loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n))\<setminus>\<^sub>p C"
+    by (simp add: compose_distrib1_3 corestrict_choice_1)
+  have "is_invariant I (a ; (loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>p C)"
+    by (metis \<open>is_invariant I (until_loop a C b n)\<close> until_loop_def)
+  have "is_invariant I a" using Suc(2)
+    by (simp add: loop_inv_is_inv_for_a)
+  have "is_invariant I (a ; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n))\<setminus>\<^sub>p C)"
+    by (meson Suc.prems \<open>is_invariant I a\<close> composition_invariant_preserve corestriction_invariant_preserve is_invariant_is_preserved loop_invariant_is_invariant_of_loop loop_l2_1 zero_less_Suc)
+  have "is_invariant I (a ; (loop (b\<sslash>\<^sub>p(-C)) 0 n)\<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b\<sslash>\<^sub>p(-C))\<^bold>^(Suc n))\<setminus>\<^sub>p C)"
+    using \<open>is_invariant I (a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ Suc n) \<setminus>\<^sub>p C)\<close> \<open>is_invariant I (a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C)\<close> choice_invariant_preserve_4 by auto
+  then show "is_invariant I (until_loop a C b (Suc n))"
+    using \<open>a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ Suc n \<union>\<^sub>p loop (b \<sslash>\<^sub>p (- C)) 0 n) \<setminus>\<^sub>p C \<equiv>\<^sub>p a ; loop (b \<sslash>\<^sub>p (- C)) 0 n \<setminus>\<^sub>p C \<union>\<^sub>p a ; ((b \<sslash>\<^sub>p (- C)) \<^bold>^ Suc n) \<setminus>\<^sub>p C\<close> \<open>until_loop a C b (Suc n) = a ; loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) \<setminus>\<^sub>p C\<close>
+    by (simp add: equiv_inv)
+qed
+  
 
 end

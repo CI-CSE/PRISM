@@ -10,24 +10,10 @@ theorem unsafe_compose_assoc [simp]: "(p\<^sub>1 ;\<^sub>p p\<^sub>2) ;\<^sub>p 
 proof -
   have compose_assoc_S: "State (p\<^sub>1 ;\<^sub>p (p\<^sub>2 ;\<^sub>p p\<^sub>3)) = State ((p\<^sub>1 ;\<^sub>p p\<^sub>2) ;\<^sub>p p\<^sub>3)"
     by (metis Program.select_convs(1) sup_assoc unsafe_composition_def unsafe_composition_state)
-
   have compose_assoc_pre: "Pre (p\<^sub>1 ;\<^sub>p (p\<^sub>2 ;\<^sub>p p\<^sub>3)) = Pre ((p\<^sub>1 ;\<^sub>p p\<^sub>2) ;\<^sub>p p\<^sub>3)"
     by (simp add: unsafe_composition_def)
-
   have compose_assoc_post: "post (p\<^sub>1 ;\<^sub>p (p\<^sub>2 ;\<^sub>p p\<^sub>3)) = post ((p\<^sub>1 ;\<^sub>p p\<^sub>2) ;\<^sub>p p\<^sub>3)"
-    proof -
-      have compose_assoc_post_1: "post (p\<^sub>1 ;\<^sub>p (p\<^sub>2 ;\<^sub>p p\<^sub>3)) = {(a,d). \<exists>b c. (a,b) \<in> post p\<^sub>1 \<and> b \<in> Pre p\<^sub>2 \<and> (b,c) \<in> post p\<^sub>2 \<and> c \<in> Pre p\<^sub>3 \<and> (c,d) \<in> post p\<^sub>3}"
-        apply (auto simp: unsafe_composition_def corestrict_r_def restr_post_def restrict_r_def)
-        apply (auto)
-        by fastforce
-      have compose_assoc_post_2: "post ((p\<^sub>1 ;\<^sub>p p\<^sub>2) ;\<^sub>p p\<^sub>3) = {(a,d). \<exists>b c. (a,b) \<in> post p\<^sub>1 \<and> b \<in> Pre p\<^sub>2 \<and> (b,c) \<in> post p\<^sub>2 \<and> c \<in> Pre p\<^sub>3 \<and> (c,d) \<in> post p\<^sub>3}"
-        apply (auto simp: unsafe_composition_def corestrict_r_def restr_post_def restrict_r_def)
-        apply (auto)
-        by fastforce
-      show ?thesis
-        by (auto simp: compose_assoc_post_1 compose_assoc_post_2)
-    qed
-
+    by (auto simp: unsafe_composition_def corestrict_r_def restr_post_def restrict_r_def relcomp_unfold)
   from compose_assoc_S compose_assoc_pre compose_assoc_post show ?thesis
     by fastforce
 qed
@@ -55,38 +41,12 @@ proof -
   assume a2: "Range_p p\<^sub>1 \<subseteq> Pre p\<^sub>2"
   have l1: "Pre (p\<^sub>1 ;\<^sub>p p\<^sub>2) = {a. \<exists>c. (a,c) \<in> post p\<^sub>1 \<and> a \<in> Pre p\<^sub>1 \<and> c \<in> Pre p\<^sub>2}"
     using a1 a2 apply (auto simp: unsafe_composition_def is_feasible_def Range_p_def restrict_r_def)
-    proof -
-      fix x :: 'a
-      assume a1_1: "Range {r \<in> post p\<^sub>1. fst r \<in> Pre p\<^sub>1} \<subseteq> Pre p\<^sub>2"
-      assume a1_2: "Pre p\<^sub>1 \<subseteq> Domain (post p\<^sub>1)"
-      assume a1_3: "x \<in> Pre p\<^sub>1"
-      then have "x \<in> Domain (post p\<^sub>1)"
-        using a1_2 by force
-      then have l1_1: "x \<in> Domain {p \<in> post p\<^sub>1. fst p \<in> Pre p\<^sub>1}"
-        using a1_3 by fastforce
-      have "Range {p \<in> post p\<^sub>1. fst p \<in> Pre p\<^sub>1} \<subseteq> Pre p\<^sub>2"
-        using a1_1 by auto
-      then show "\<exists>a. (x, a) \<in> post p\<^sub>1 \<and> a \<in> Pre p\<^sub>2"
-        using l1_1 by blast
-    qed
+    by (meson Domain_iff a2 range_p_explicit_2 subsetD)
   have l2: "Domain (post (p\<^sub>1 ;\<^sub>p p\<^sub>2)) = {a. \<exists>c. (a,c) \<in> post p\<^sub>1 \<and> c \<in> Pre p\<^sub>2}"
-    proof -
-      have l2_1: "post (p\<^sub>1 ;\<^sub>p p\<^sub>2) = {(a,b). \<exists>c. (a,c) \<in> post p\<^sub>1 \<and> (c,b) \<in> post p\<^sub>2 \<and> c \<in> Pre p\<^sub>2}"
-        using a1 a2 by (auto simp: Range_p_def is_feasible_def unsafe_composition_def restr_post_def restrict_r_def)
-      then have l2_2: "Domain (post (p\<^sub>1 ;\<^sub>p p\<^sub>2)) = {a. \<exists>b c. (a,c) \<in> post p\<^sub>1 \<and> (c,b) \<in> post p\<^sub>2 \<and> c \<in> Pre p\<^sub>2}"
-        using a1 a2 by (auto simp: l2_1)
-      then show "Domain (post (p\<^sub>1 ;\<^sub>p p\<^sub>2)) = {a. \<exists>c. (a,c) \<in> post p\<^sub>1 \<and> c \<in> Pre p\<^sub>2}"
-        apply (auto simp: l2_2)
-        using a1 a2 l2_1 apply auto[1]
-        using a1 a2 apply (auto simp: is_feasible_def)
-        by (meson Domain_iff subsetD)
-    qed
-  have l3: "{a. \<exists>c. (a,c) \<in> post p\<^sub>1 \<and> a \<in> Pre p\<^sub>1 \<and> c \<in> Pre p\<^sub>2} \<subseteq> {a. \<exists>c. (a,c) \<in> post p\<^sub>1 \<and> c \<in> Pre p\<^sub>2}"
-    by auto
-  have l4: "Pre (p\<^sub>1 ;\<^sub>p p\<^sub>2) \<subseteq>  Domain (post (p\<^sub>1 ;\<^sub>p p\<^sub>2))"
-    using a1 a2 l1 l2 by auto
+    using a1 a2 apply (auto simp: unsafe_composition_def is_feasible_def Range_p_def restrict_r_def restr_post_def relcomp_unfold)
+    by (meson Domain_iff subsetD)
   show "is_feasible (p\<^sub>1 ;\<^sub>p p\<^sub>2)"
-    by (simp add: is_feasible_def l4)
+    using is_feasible_def l1 l2 by force
 qed
 
 end

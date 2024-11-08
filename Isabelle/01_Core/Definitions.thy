@@ -1,5 +1,5 @@
 theory Definitions
-  imports Relation_operations
+  imports Relation_operations HOL.Finite_Set
 begin
 section \<open>Definitions for top\<close>
 
@@ -91,7 +91,7 @@ definition strengthens :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> boo
   
 definition refines :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<subseteq>\<^sub>p" 50) \<comment> \<open>D7\<close>
   where
-    "p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 = (extends p\<^sub>2 p\<^sub>1 \<and> weakens p\<^sub>2 p\<^sub>1 \<and> strengthens p\<^sub>2 p\<^sub>1)"
+    "p\<^sub>1 \<subseteq>\<^sub>p p\<^sub>2 = (extends p\<^sub>1 p\<^sub>2 \<and> weakens p\<^sub>1 p\<^sub>2 \<and> strengthens p\<^sub>1 p\<^sub>2)"
 
 definition refines_c :: "'a Contracted_Program \<Rightarrow> 'a Contracted_Program \<Rightarrow> bool" (infix "\<subseteq>\<^sub>c" 50)
   where
@@ -123,37 +123,70 @@ definition is_correct :: "'a Contracted_Program \<Rightarrow> bool"
 
 definition strongest_postcondition :: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a rel" (infix "sp" 150)
   where
-    "strongest_postcondition p Pre' \<equiv> post (p) \<sslash>\<^sub>r Pre'"
+    "p sp Pre' \<equiv> post (p) \<sslash>\<^sub>r Pre'"
 
 definition new_behavior :: "'a Program \<Rightarrow> 'a rel \<Rightarrow> 'a rel"
   where
-    "new_behavior p post' \<equiv> post p - post'"
+    "new_behavior p post' \<equiv> post p - post'" \<comment> \<open>Behavior to exclude\<close>
 
 definition weakest_precondition :: "'a Program \<Rightarrow> 'a rel \<Rightarrow> 'a set" (infix "wp" 150)
   where
-    "weakest_precondition p post' \<equiv> Pre p - Domain (new_behavior p post')"
+    "p wp post' \<equiv> Pre p - Domain (new_behavior p post')"
 
 definition choice :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<union>\<^sub>p" 151) \<comment> \<open>D9 NEW DEFINITION\<close>
   where
-    "choice p\<^sub>1 p\<^sub>2 = \<lparr>State= S p\<^sub>1 \<union> S p\<^sub>2, Pre = Pre p\<^sub>1 \<union> Pre p\<^sub>2, post = restr_post p\<^sub>1 \<union> restr_post p\<^sub>2\<rparr>"
+    "p\<^sub>1 \<union>\<^sub>p p\<^sub>2 = \<lparr>State= S p\<^sub>1 \<union> S p\<^sub>2, Pre = Pre p\<^sub>1 \<union> Pre p\<^sub>2, post = restr_post p\<^sub>1 \<union> restr_post p\<^sub>2\<rparr>"
+
+definition is_prime :: "'a Program \<Rightarrow> bool" 
+  where
+    "is_prime p \<equiv> card (Pre p) = 1 \<and> card (post p) = 1 \<and> Pre p \<union> Field (post p) = State p"
+
+value "is_prime (\<lparr>State={1,2}, Pre={1}, post={(1,2)}\<rparr>::nat Program)"
+
+theorem "\<lparr>State={}, Pre={1::nat}, post={(1,2)}\<rparr> \<preceq>\<^sub>p \<lparr>State={}, Pre={1::nat}, post={(1,2)}\<rparr>"
+  by (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def)
 
 definition composition :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix ";" 152) \<comment> \<open>D10\<close>
   where
-    "composition p\<^sub>1 p\<^sub>2 = \<lparr>
+    "p\<^sub>1 ; p\<^sub>2 = \<lparr>
       State = S p\<^sub>1 \<union> S p\<^sub>2,
       Pre = Pre p\<^sub>1 \<inter> Domain (post p\<^sub>1 \<setminus>\<^sub>r Pre p\<^sub>2),
       post = (post p\<^sub>1) O (restr_post p\<^sub>2)\<rparr>" \<comment> \<open>IS THE SAME BECAUSE: r1\s O r2 = r1 O r2/s\<close>
 
-definition commute_programs :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
+definition commute_programs1 :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
   where
-    "commute_programs p\<^sub>1 p\<^sub>2 \<equiv> (p\<^sub>1 ; p\<^sub>2) \<equiv>\<^sub>p (p\<^sub>2 ; p\<^sub>1)"
+    "commute_programs1 p\<^sub>1 p\<^sub>2 \<equiv> (p\<^sub>1 ; p\<^sub>2) = (p\<^sub>2 ; p\<^sub>1)"
 
-definition unsafe_composition ::"'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix ";\<^sub>p" 152)
+definition commute_programs2 :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
   where
-    "unsafe_composition p\<^sub>1 p\<^sub>2 = \<lparr>
+    "commute_programs2 p\<^sub>1 p\<^sub>2 \<equiv> (p\<^sub>1 ; p\<^sub>2) \<triangleq> (p\<^sub>2 ; p\<^sub>1)"
+
+definition commute_programs3 :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool"
+  where
+    "commute_programs3 p\<^sub>1 p\<^sub>2 \<equiv> (p\<^sub>1 ; p\<^sub>2) \<equiv>\<^sub>p (p\<^sub>2 ; p\<^sub>1)"
+
+definition unsafe_composition :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix ";\<^sub>p" 152)
+  where
+    "p\<^sub>1 ;\<^sub>p p\<^sub>2 = \<lparr>
       State = S p\<^sub>1 \<union> S p\<^sub>2,
       Pre = Pre p\<^sub>1,
       post = (post p\<^sub>1) O (restr_post p\<^sub>2)\<rparr>"
+
+definition unsafe_composition2 :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix ";\<^sup>p" 152)
+  where
+    "p\<^sub>1 ;\<^sup>p p\<^sub>2 = \<lparr>
+      State = S p\<^sub>1 \<union> S p\<^sub>2,
+      Pre = Pre p\<^sub>1 \<inter> Domain (post p\<^sub>1 \<setminus>\<^sub>r Pre p\<^sub>2),
+      post = (post p\<^sub>1) O (post p\<^sub>2)\<rparr>"
+
+
+definition unsafe_composition3 :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix ";\<^sub>P" 152)
+  where
+    "p\<^sub>1 ;\<^sub>P p\<^sub>2 = \<lparr>
+      State = S p\<^sub>1 \<union> S p\<^sub>2,
+      Pre = Pre p\<^sub>1,
+      post = (post p\<^sub>1) O (post p\<^sub>2)\<rparr>"
+
 
 value "({(1,2)}::nat rel) O ({(2,3)} ::nat rel)"
 
@@ -187,26 +220,10 @@ definition Infeas :: "'a set \<Rightarrow> 'a Program"
   where
     "Infeas s = \<lparr> State = s, Pre = s, post = {} \<rparr>"
 
-definition atomic_conc  :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "||" 150)
-  where
-    "p\<^sub>1 || p\<^sub>2 \<equiv> (p\<^sub>1 ; p\<^sub>2) \<union>\<^sub>p (p\<^sub>2 ; p\<^sub>1)"
-
-definition non_atomic_conc:: "('a Program \<times> 'a Program) \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>" 50)
-  where
-    "p \<parallel> q \<equiv> ((fst p || q) ; snd p) \<union>\<^sub>p (fst p ; (snd p || q))"
-
 primrec generalized_non_atomic_conc:: "('a Program) list \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>\<^sub>G" 50)
   where
     "[]     \<parallel>\<^sub>G q = q" |
     "(x#xs) \<parallel>\<^sub>G q = ((xs \<parallel>\<^sub>G q) ; x) \<union>\<^sub>p (x ; (xs \<parallel>\<^sub>G q))"
-
-definition guarded_conditional :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
-  where
-    "guarded_conditional C\<^sub>1 p\<^sub>1 C\<^sub>2 p\<^sub>2 \<equiv> (p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) \<union>\<^sub>p (p\<^sub>2 \<sslash>\<^sub>p C\<^sub>2)"
-
-abbreviation GC :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
-  where
-    "GC \<equiv> guarded_conditional"
 
 definition if_then_else :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
   where
@@ -228,6 +245,14 @@ definition FALSE:: "'a set"
   where
     "FALSE = {}"
 
+definition TRUE\<^sub>r:: "'a set \<Rightarrow> 'a rel"
+  where
+    "TRUE\<^sub>r s \<equiv> {(a,b) . a \<in> s \<and> b \<in> s}"
+
+definition ID :: "'a set \<Rightarrow> 'a rel"
+  where
+    "ID s \<equiv> {(a,b) . a \<in> s \<and> b \<in> s \<and> a = b}"
+
 definition AND\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" (infix "\<and>\<^sub>s" 50)
   where
     "AND\<^sub>s s\<^sub>1 s\<^sub>2 = s\<^sub>1 \<inter> s\<^sub>2"
@@ -246,6 +271,7 @@ definition IMPLIES\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" 
   where
     "IMPLIES\<^sub>s s\<^sub>1 s\<^sub>2 \<equiv> (\<not>\<^sub>s s\<^sub>1) \<or>\<^sub>s  s\<^sub>2"
 
+
 primrec fixed_repetition_helper:: "'a Program \<Rightarrow> nat \<Rightarrow> 'a Program" (infix "^\<^sup>p" 153)
   where
     "fixed_repetition_helper p 0       = Skip (S p)" |
@@ -254,33 +280,115 @@ primrec fixed_repetition_helper:: "'a Program \<Rightarrow> nat \<Rightarrow> 'a
 
 primrec fixed_repetition:: "'a Program \<Rightarrow> nat \<Rightarrow> 'a Program" (infix "\<^bold>^" 153)
   where
-    "p\<^bold>^0       = Skip (Pre p)" |
+    "p\<^bold>^0       = Skip (S p) \<sslash>\<^sub>p (Pre p)" |
     "p\<^bold>^(Suc i) = p\<^bold>^i;p"
 
-primrec Choice:: "('a Program) list \<Rightarrow> 'a Program"
+fun Choice:: "('a Program) list \<Rightarrow> 'a Program"
   where
     "Choice [] = (Fail {})" |
-    "Choice (x#xs) = x \<union>\<^sub>p (Choice xs)"
+    "Choice [x] = x" |
+    "Choice (x#xs) = foldl (\<union>\<^sub>p) x xs"
 
 notation
   Choice ("\<Union>\<^sub>p")
 
-primrec Union:: "('a set) list \<Rightarrow> 'a set"
+fun Concat:: "('a Program) list \<Rightarrow> 'a Program"
   where
-    "Union [] = {}" |
-    "Union (x#xs) = x \<union> Union xs"
+    "Concat [] = (Skip {})" |
+    "Concat [x] = x" |
+    "Concat (x#xs) = foldl (;) x xs"
 
+definition Choice_set:: "('a Program) set \<Rightarrow> 'a Program"
+  where
+    "Choice_set P \<equiv> Finite_Set.fold (\<union>\<^sub>p) (Fail {}) P"
+                                       
 notation
-  Union ("\<Union>\<^sub>s")
+  Choice_set ("\<Union>\<^sub>P")
 
-fun arbitrary_repetition:: "'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a Program"
+definition is_minimal:: "'a Program \<Rightarrow> bool"
+  where
+    "is_minimal p \<equiv> (\<forall>a b. (a,b) \<in> post p \<longrightarrow> a \<in> Pre p) \<and> is_valid p \<and> (\<forall> s \<in> State p. s \<in> Field (post p))" \<comment> \<open>No dead code\<close>
+
+
+
+definition guarded_conditional :: "('a set \<times> 'a Program) list \<Rightarrow>  'a Program"
+  where
+    "guarded_conditional xs = \<Union>\<^sub>p [snd t \<sslash>\<^sub>p fst t. t \<leftarrow> xs]"
+
+(*
+primrec guarded_conditional :: "('a set \<times> 'a Program) list \<Rightarrow>  'a Program"
+  where
+    "guarded_conditional [] = Fail {}" |
+    "guarded_conditional (x#xs) = snd x \<sslash>\<^sub>p fst x \<union>\<^sub>p guarded_conditional xs"
+*)
+
+abbreviation GC :: "('a set \<times> 'a Program) list \<Rightarrow> 'a Program"
+  where
+    "GC \<equiv> guarded_conditional"
+
+(*
+primrec insert_all_positions :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a list list" where
+  base: "insert_all_positions x [] = [[x]]" |
+  step: "insert_all_positions x (y#ys) = (x#y#ys) # [(y#t). t <- (insert_all_positions x ys)]"
+*)
+(*
+definition permutations :: "'a list \<Rightarrow> 'a list set" where
+  "permutations xs = {t. \<forall>x. List.count_list t x = List.count_list xs x}"
+*)
+
+primrec  insert_all :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a list list" where
+  "insert_all x [] = [[x]]" |
+  "insert_all x (y#ys) = (x#y#ys) # (map (\<lambda>zs. y#zs) (insert_all x ys))"
+
+fun permutations :: "'a list \<Rightarrow> 'a list list" where
+  "permutations [] = [[]]" |
+  "permutations (x#xs) = concat (map (insert_all x) (permutations xs))"
+
+value "permutations [a\<^sub>1, a\<^sub>2, a\<^sub>3]"
+value "permutations ([]::nat list)"
+
+definition complete_state :: "'a Program list \<Rightarrow> 'a set"
+  where
+    "complete_state xs \<equiv> fold (\<lambda> p s. S p \<union> s) xs {}"
+
+primrec n_comp :: "'a Program list \<Rightarrow> 'a Program"
+  where
+    "n_comp [] = Fail {}" |
+    "n_comp (x#xs) = x ; (n_comp xs)"
+
+definition conc_elems :: "'a Program list \<Rightarrow> 'a Program list"
+  where
+    "conc_elems xs \<equiv> [Concat t. t <- permutations xs]"
+
+definition atomic_conc :: "'a Program list \<Rightarrow> 'a Program"
+  where
+    "atomic_conc xs \<equiv> \<Union>\<^sub>p (conc_elems xs)"
+
+(*
+definition non_atomic_conc:: "('a Program \<times> 'a Program) \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>" 50)
+  where
+    "p \<parallel> q \<equiv> (atomic_conc [fst p, q] ; snd p) \<union>\<^sub>p (fst p ; atomic_conc [snd p, q])"
+*)
+
+definition non_atomic_conc:: "'a Program list \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>" 50)
+  where
+    "non_atomic_conc xs x \<equiv> \<Union>\<^sub>p [Concat t. t \<leftarrow> insert_all x xs]"
+
+definition arbitrary_repetition_set :: "'a Program \<Rightarrow> 'a Program set"
+  where
+    "arbitrary_repetition_set p \<equiv> {p\<^bold>^i | i . 0\<le>i}"
+
+fun arbitrary_repetition :: "'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a Program"
   where
     "arbitrary_repetition p s 0 = (if s>0 then Fail (S p) else p\<^bold>^0)" |
     "arbitrary_repetition p s (Suc f) = (if s>(Suc f) then Fail (S p) else p\<^bold>^(Suc f) \<union>\<^sub>p arbitrary_repetition p s f)"
 
+(* definition arbitrary_repetition :: "'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a Program" *)
+  (* where *)
+    (* "arbitrary_repetition p s 0 \<equiv> " *)
+
 abbreviation loop :: "'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a Program" where
   "loop \<equiv> arbitrary_repetition"
-
 
 definition until_support:: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a Program"
   where
@@ -323,4 +431,19 @@ definition is_relevant :: "'a rel \<Rightarrow> 'a \<Rightarrow> bool"
 definition is_programming_language :: "'a set \<Rightarrow> ('a Program) set \<Rightarrow> bool"
   where
     "is_programming_language s P \<equiv> \<forall>p \<in> P. is_feasible p \<and> S p \<subseteq> s"
+
+fun occurs :: "'a \<Rightarrow> 'a list \<Rightarrow> nat" where
+  "occurs _ [] = 0" |
+  "occurs x (y # ys) = (if x = y then 1 else 0) + occurs x ys"
+
+definition inter :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<inter>\<^sub>p" 50)
+  where
+    "p \<inter>\<^sub>p q \<equiv> \<lparr>State=S p \<inter> S q,Pre=Pre p \<inter> Pre q,post=post p \<inter> post q\<rparr>"
+
+theorem "a \<union>\<^sub>p (a \<inter>\<^sub>p b) \<equiv>\<^sub>p a"
+  by (auto simp: equiv_def choice_def inter_def restr_post_def restrict_r_def)
+
+theorem "a \<inter>\<^sub>p (a \<union>\<^sub>p b) \<equiv>\<^sub>p a"
+  by (auto simp: equiv_def choice_def inter_def restr_post_def restrict_r_def)
+
 end

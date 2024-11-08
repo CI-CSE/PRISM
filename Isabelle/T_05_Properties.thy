@@ -7,4 +7,6 @@ theory T_05_Properties
 begin
 section \<open>Complete theory of composed operations of top\<close>
 
+
+
 end

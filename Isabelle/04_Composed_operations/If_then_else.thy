@@ -24,9 +24,11 @@ theorem cond_refine3: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow>
   apply (auto simp: weakens_def if_then_else_def restrict_p_def restrict_r_def choice_def S_def) [1]
   by (auto simp: strengthens_def if_then_else_def restrict_p_def restrict_r_def choice_def restr_post_def)
 
-
-theorem ite_commutative: "ITE C p\<^sub>1 p\<^sub>2 = ITE (-C) p\<^sub>2 p\<^sub>1"
-  by (auto simp: if_then_else_def)
+theorem cond_refine4: "q\<^sub>1 \<preceq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<preceq>\<^sub>p p\<^sub>2 \<Longrightarrow> ITE C q\<^sub>1 q\<^sub>2 \<preceq>\<^sub>p ITE C p\<^sub>1 p\<^sub>2" 
+  apply (auto simp: subprogram_def)
+  apply (auto simp: extends_def if_then_else_def) [1]
+  apply (auto simp: weakens_def if_then_else_def restrict_p_def) [1]
+  by (auto simp: strengthens_def if_then_else_def restrict_p_def restr_post_def restrict_r_def)
 
 
 

@@ -18,10 +18,10 @@ theorem havoc_is_idempondent_composition: "Havoc C ; Havoc C = Havoc C" \<commen
 theorem havoc_is_idempondent_unsafe_composition: "Havoc C ;\<^sub>p Havoc C = Havoc C" \<comment> \<open>NEW\<close>
   by (auto simp: unsafe_composition_def Havoc_def S_def corestrict_r_def restr_post_def restrict_r_def)
 
-theorem havoc_union_l: "S p \<subseteq> C \<Longrightarrow> Havoc C \<union>\<^sub>p p = Havoc C" \<comment> \<open>/Havoc_union/\<close>
+theorem havoc_choice_l: "S p \<subseteq> C \<Longrightarrow> Havoc C \<union>\<^sub>p p = Havoc C" \<comment> \<open>/Havoc_choice/\<close>
   by (auto simp: Havoc_def choice_def restr_post_def restrict_r_def S_def Field_def)
 
-theorem havoc_union_r: "S p \<subseteq> C \<Longrightarrow> p \<union>\<^sub>p Havoc C = Havoc C" \<comment> \<open>/Havoc_union/\<close>
+theorem havoc_choice_r: "S p \<subseteq> C \<Longrightarrow> p \<union>\<^sub>p Havoc C = Havoc C" \<comment> \<open>/Havoc_choice/\<close>
   by (auto simp: Havoc_def choice_def restr_post_def restrict_r_def S_def Field_def)
 
 lemma havoc_pre_State: "State (p ; Havoc (S p)) = State (Havoc (S p) \<sslash>\<^sub>p Pre p)"
@@ -59,8 +59,8 @@ theorem NOT_havoc_pre: "p ; Havoc (S p) \<equiv>\<^sub>p Havoc (S p) \<sslash>\<
 
 theorem havoc_pre: "S p \<subseteq> C \<Longrightarrow>is_feasible p \<Longrightarrow> (p ; Havoc C) \<equiv>\<^sub>p Havoc C \<sslash>\<^sub>p Pre p" \<comment> \<open>/Havoc_pre/\<close>
   apply (auto simp: equiv_def havoc_pre_Pre)
-  apply (metis char_rel_composition char_rel_def char_rel_is_unique_in_equiv_1 char_rel_restriction compose_absorb_1 havoc_pre_post restr_post_def skip_compose_l skip_compose_l_Pre skip_compose_l_post)
-  by (metis char_rel_composition char_rel_def char_rel_is_unique_in_equiv_1 char_rel_restriction compose_absorb_1 havoc_pre_post restr_post_def skip_compose_l skip_compose_l_Pre skip_compose_l_post)
+  apply (metis char_rel_composition char_rel_def equiv_charrel1 char_rel_restriction compose_absorb_1 havoc_pre_post restr_post_def skip_compose3 skip_compose_l_Pre skip_compose_l_post)
+  by (metis char_rel_composition char_rel_def equiv_charrel1 char_rel_restriction compose_absorb_1 havoc_pre_post restr_post_def skip_compose3 skip_compose_l_Pre skip_compose_l_post)
 
 theorem havoc_pre_unsafe: "S p \<subseteq> C \<Longrightarrow> (p ;\<^sub>p Havoc C) \<equiv>\<^sub>p Havoc C \<sslash>\<^sub>p Pre p"
   oops
@@ -73,7 +73,7 @@ theorem havoc_co_restricted: "(Havoc C \<sslash>\<^sub>p D) \<setminus>\<^sub>p 
   (* by (simp add: is_feasible_def composition_def Havoc_def corestrict_p_def) *)
 
 lemma havoc_from_left_S: "S p \<subseteq> C \<Longrightarrow> is_feasible p \<Longrightarrow> S (Havoc C ; p) = S(Havoc C \<setminus>\<^sub>p Range_p (p))"
-  by (metis choice_state composition_state corestriction_state havoc_union_l)
+  by (metis choice_state composition_state corestriction_state havoc_choice_l)
 
 lemma havoc_from_left_Pre: "S p \<subseteq> C \<Longrightarrow> is_feasible p \<Longrightarrow> \<not>p \<equiv>\<^sub>p Fail C \<Longrightarrow> Pre (Havoc C ; p) = C"
   by (auto simp: is_feasible_def composition_def corestrict_p_def corestrict_r_def Field_def Range_p_def restrict_r_def Havoc_def Fail_def equiv_def restr_post_def S_def)
@@ -162,8 +162,10 @@ proof -
   show "strengthens p (Havoc (S p) \<sslash>\<^sub>p Pre p)"
     by (auto simp: strengthens_def restrict_p_def restrict_r_def S_def Havoc_def Field_def)
 qed
+theorem subprogram_havoc: "p \<preceq>\<^sub>p Havoc (S p) \<sslash>\<^sub>p Pre p" \<comment> \<open>/Subprogram_havoc/\<close>
+  by (auto simp: subprogram_def extends_def weakens_def strengthens_def Havoc_def S_def restrict_p_def restrict_r_def Field_def)
 
-theorem total_refine_havoc: "is_total p \<Longrightarrow> p \<subseteq>\<^sub>p Havoc (S p)" \<comment> \<open>/Total_refine_havoc/\<close>
+theorem refine_havoc2: "is_total p \<Longrightarrow> p \<subseteq>\<^sub>p Havoc (S p)" \<comment> \<open>/refine_havoc2/\<close>
   apply (auto simp: refines_def is_total_def)
 proof -
   show "Pre p = S p \<Longrightarrow> extends p (Havoc (S p))"
@@ -173,4 +175,9 @@ proof -
   show "Pre p = S p \<Longrightarrow> strengthens p (Havoc (S p))"
     by (auto simp: S_def strengthens_def Havoc_def restrict_p_def restrict_r_def Field_def)
 qed
+
+theorem subprogram_havoc2: "S p \<subseteq> C \<Longrightarrow> p \<preceq>\<^sub>p Havoc (C)" \<comment> \<open>/Subprogram_havoc2/\<close>
+  by (auto simp: S_def subprogram_def extends_def weakens_def strengthens_def Havoc_def restrict_r_def Field_def)
+
+
 end

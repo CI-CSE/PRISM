@@ -19,7 +19,7 @@ theorem infeas_is_idempondent_unsafe_composition: "Infeas C ;\<^sub>p Infeas C =
   by (simp add: unsafe_composition_def Infeas_def S_def)
 
 
-theorem fail_is_equivalent_independant_of_arg: "Infeas C \<equiv>\<^sub>p Infeas D"
+theorem fail_equiv: "Infeas C \<equiv>\<^sub>p Infeas D"
   oops
 
 theorem not_total_infeas_makes_infeasible: "\<not>is_total p \<Longrightarrow> \<not>is_feasible (p \<union>\<^sub>p Infeas (S p))"

@@ -79,7 +79,7 @@ theorem composition_simplification_1 : "p\<^sub>1 ; p\<^sub>2 = p\<^sub>1 \<setm
 theorem composition_simplification_2 : "p\<^sub>1 ; p\<^sub>2 = p\<^sub>1 ; p\<^sub>2 \<sslash>\<^sub>p Pre p\<^sub>2"
   by (auto simp: restrict_p_def composition_def corestrict_r_def restrict_r_def S_def Field_def restr_post_def)
 
-theorem equivalence_is_maintained_by_composition: "f\<^sub>1 \<equiv>\<^sub>p p\<^sub>1 \<Longrightarrow> f\<^sub>2 \<equiv>\<^sub>p p\<^sub>2 \<Longrightarrow> f\<^sub>1 ; f\<^sub>2 \<equiv>\<^sub>p p\<^sub>1 ; p\<^sub>2" \<comment> \<open>NEW\<close>
+theorem composition_equiv: "f\<^sub>1 \<equiv>\<^sub>p p\<^sub>1 \<Longrightarrow> f\<^sub>2 \<equiv>\<^sub>p p\<^sub>2 \<Longrightarrow> f\<^sub>1 ; f\<^sub>2 \<equiv>\<^sub>p p\<^sub>1 ; p\<^sub>2" \<comment> \<open>Composition_equiv\<close>
   apply (auto simp: equiv_def restr_post_def restrict_r_def composition_def corestrict_r_def)
   using mem_Collect_eq relcomp.relcompI snd_conv apply fastforce
   using mem_Collect_eq relcomp.relcompI snd_conv by fastforce
@@ -98,7 +98,7 @@ proof -
   show ?thesis using a1 by (auto simp: is_feasible_def compose_feasible_2 compose_feasible_1)
 qed
 
-theorem compose_feasible: "all_feasible [p\<^sub>1, p\<^sub>2] \<Longrightarrow> is_feasible (p\<^sub>1 ; p\<^sub>2)" \<comment> \<open>Compose_feasible\<close>
+theorem compose_feasible2: "all_feasible [p\<^sub>1, p\<^sub>2] \<Longrightarrow> is_feasible (p\<^sub>1 ; p\<^sub>2)" \<comment> \<open>/Compose_feasible2/\<close>
 proof -
   assume a1: "all_feasible [p\<^sub>1, p\<^sub>2]"
   show "is_feasible (p\<^sub>1 ; p\<^sub>2)"
@@ -112,7 +112,7 @@ theorem composition_removes_dead_code_1: "p \<sslash>\<^sub>p (Pre p) ; q \<equi
 theorem composition_removes_dead_code_2: "p ; q \<sslash>\<^sub>p (Pre q) \<equiv>\<^sub>p p ; q"
   by (auto simp: composition_def equiv_def restrict_p_def restr_post_def)
 
-theorem composition_makes_feasible: "is_feasible p\<^sub>2 \<Longrightarrow> is_feasible (p\<^sub>1 ; p\<^sub>2)"
+theorem compose_feasible: "is_feasible p\<^sub>2 \<Longrightarrow> is_feasible (p\<^sub>1 ; p\<^sub>2)" \<comment> \<open>Compose_feasible\<close>
   apply (auto simp: is_feasible_def composition_def restr_post_def restrict_r_def relcomp_unfold corestrict_r_def subset_iff Domain_iff)
   by blast
 
@@ -122,7 +122,16 @@ theorem "p\<^sub>1 ; p\<^sub>2 \<equiv>\<^sub>p \<lparr>State ={}, Pre=Pre p\<^s
 lemma range_decreases_composition: "Range_p (y;x) \<subseteq> Range_p x"
   by (auto simp: Range_p_def composition_def corestrict_r_def restrict_r_def restr_post_def)
 
-text \<open>Refinement is not refinement-safe due to the example below. All involved programs are feasible and q1 is independant from p2 and q2 from p1\<close>
+text \<open>Composition is not refinement-safe due to the example below. All involved programs are feasible and q1 is independant from p2 and q2 from p1\<close>
+theorem "p \<subseteq>\<^sub>p q \<Longrightarrow> p;a \<subseteq>\<^sub>p q;a"
+  oops
+
+theorem composition_subsafety: "a \<preceq>\<^sub>p b \<Longrightarrow> a;c \<preceq>\<^sub>p b;c" \<comment> \<open>Composition_subsafety\<close>
+  apply (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def composition_def restr_post_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
+  by fastforce
+
+theorem composition_subsafety2: "a \<preceq>\<^sub>p b \<Longrightarrow> c;a \<preceq>\<^sub>p c;b" \<comment> \<open>Composition_subsafety\<close>
+  by (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def composition_def restr_post_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
 
 value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr>" \<comment> \<open>q1\<close>
 value "\<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr>" \<comment> \<open>q2\<close>
@@ -150,5 +159,6 @@ theorem connecting_element: "(x,y) \<in> post (a;b) \<Longrightarrow> \<exists>z
 
 theorem knowing_pre_composition: "x \<in> Pre (a) \<Longrightarrow> (x, y) \<in> post (a; b) \<Longrightarrow> x \<in> Pre (a ; b)"
   by (auto simp: composition_def restr_post_def corestrict_r_def restrict_r_def)
+
 
 end

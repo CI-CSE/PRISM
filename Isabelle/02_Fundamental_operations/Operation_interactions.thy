@@ -18,6 +18,10 @@ theorem unsafe_compose_absorb_2 : "(p\<^sub>1;\<^sub>pp\<^sub>2)\<sslash>\<^sub>
 theorem unsafe_compose_absorb_3 : "(p\<^sub>1;\<^sub>pp\<^sub>2)\<sslash>\<^sub>pC \<equiv>\<^sub>p p\<^sub>1\<sslash>\<^sub>pC;\<^sub>pp\<^sub>2"
   by (simp add: equiv_is_reflexive unsafe_compose_absorb)
 
+theorem range_p_unsafe_composition: "Range_p(a) \<inter> C = {} \<Longrightarrow> a;\<^sub>pb\<sslash>\<^sub>p(-C) \<equiv>\<^sub>p a;\<^sub>pb"
+  apply (auto simp: Range_p_def unsafe_composition_def restrict_p_def equiv_def corestrict_r_def restrict_r_def Int_def Range_iff Domain_iff restr_post_def relcomp_unfold)
+  by fastforce
+
 subsubsection \<open>Restriction composition\<close>
 theorem compose_absorb_1 : "(p\<^sub>1;p\<^sub>2)\<sslash>\<^sub>pC = p\<^sub>1\<sslash>\<^sub>pC;p\<^sub>2" \<comment> \<open>/Compose_absorb/\<close>
   by (auto simp: equal_def S_def Field_def composition_def restrict_p_def restrict_r_def corestrict_r_def restr_post_def)
@@ -30,13 +34,20 @@ theorem range_p_composition: "Range_p(a) \<inter> C = {} \<Longrightarrow> a;b\<
   apply (auto simp: Range_p_def composition_def restrict_p_def equiv_def corestrict_r_def restrict_r_def Int_def Range_iff Domain_iff restr_post_def relcomp_unfold)
   by fastforce
 
+value "(\<lparr>State = {a\<^sub>1}, Pre = {a\<^sub>1}, post = {(a\<^sub>1, a\<^sub>1)}\<rparr> \<union>\<^sub>p \<lparr>State = {a\<^sub>1}, Pre = {a\<^sub>1}, post = {(a\<^sub>1, a\<^sub>1)}\<rparr>)\<sslash>\<^sub>p{}"
+value "(\<lparr>State = {a\<^sub>1}, Pre = {a\<^sub>1}, post = {(a\<^sub>1, a\<^sub>1)}\<rparr>\<sslash>\<^sub>p{} \<union>\<^sub>p \<lparr>State = {a\<^sub>1}, Pre = {a\<^sub>1}, post = {(a\<^sub>1, a\<^sub>1)}\<rparr>\<sslash>\<^sub>p{})"
+
 subsubsection \<open>Restriction choice\<close>
 theorem restrict_distrib_1 : "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC = (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)" \<comment> \<open>/Restrict_distrib/ restriction distributes over choice\<close>
+  \<comment> \<open>nitpick\<close>
   oops
 theorem restrict_distrib_2 : "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC \<triangleq> (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)" \<comment> \<open>/Restrict_distrib/ restriction distributes over choice\<close>
   oops
 theorem restrict_distrib_3 : "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC \<equiv>\<^sub>p (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)" \<comment> \<open>/Restrict_distrib/ restriction distributes over choice\<close>
   by (auto simp: equiv_def S_def Field_def restrict_p_def restrict_r_def choice_def restr_post_def)
+
+theorem restrict_distrib_4 : "a \<union>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC = a \<union>\<^sub>p (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)"
+  by (auto simp: choice_def restrict_p_def restr_post_def restrict_r_def S_def Field_def)
 
 subsubsection \<open>Restriction corestriction\<close>
 
@@ -59,8 +70,19 @@ value "\<lparr>State = {}, Pre = {}, post = {(1::nat, 1)}\<rparr> ; (\<lparr>Sta
 value "(\<lparr>State = {}, Pre = {}, post = {(1::nat, 1)}\<rparr> ; \<lparr>State = {}, Pre = {1::nat}, post = {(1, 1)}\<rparr>) \<union>\<^sub>p (\<lparr>State = {}, Pre = {}, post = {(1::nat, 1)}\<rparr> ; \<lparr>State = {}, Pre = {}, post = {}\<rparr>::nat Program)"
 
 lemma compose_distrib1_1: "q;(p\<^sub>1\<union>\<^sub>pp\<^sub>2) = (q;p\<^sub>1) \<union>\<^sub>p (q;p\<^sub>2)" \<comment> \<open>/Compose_distrib1/\<close>
+  \<comment> \<open>nitpick\<close>
   oops
+
+\<comment> \<open>
+definition p1 :: "nat Program" where "p1 = \<lparr>State = {1}, Pre = {1}, post = {(1, 1)}\<rparr>"
+definition p2 :: "nat Program" where "p2= \<lparr>State = {1}, Pre = {}, post = {}\<rparr>"
+definition q :: "nat Program" where "q = \<lparr>State = {}, Pre = {}, post = {(1, 1)}\<rparr>"
+value "(q;p1) \<union>p (q;p2)"
+value "q;(p1\<union>pp2)"
+value "(p1\<union>pp2)"\<close>
+
 theorem compose_distrib1_2 : "q;(p\<^sub>1\<union>\<^sub>pp\<^sub>2) \<triangleq> (q;p\<^sub>1) \<union>\<^sub>p (q;p\<^sub>2)" \<comment> \<open>/Compose_distrib1/\<close>
+  \<comment> \<open>nitpick\<close>
   oops
 theorem compose_distrib1_3 : "q;(p\<^sub>1\<union>\<^sub>pp\<^sub>2) \<equiv>\<^sub>p (q;p\<^sub>1) \<union>\<^sub>p (q;p\<^sub>2)" \<comment> \<open>/Compose_distrib1/\<close>
   by (auto simp: choice_def equiv_def restr_post_def restrict_r_def composition_def corestrict_r_def)
@@ -78,11 +100,13 @@ subsubsection \<open>Composition corestriction\<close>
 theorem corestriction_on_composition : "p\<^sub>1 \<setminus>\<^sub>p s\<^sub>1 ; p\<^sub>2 = p\<^sub>1 ; p\<^sub>2 \<sslash>\<^sub>p s\<^sub>1" \<comment> \<open>NEW\<close>
   by (auto simp: restrict_p_def corestrict_p_def composition_def corestrict_r_def restrict_r_def S_def Field_def restr_post_def)
 
-theorem corestrict_compose: "(p\<^sub>1 ; p\<^sub>2) \<setminus>\<^sub>p C \<equiv>\<^sub>p p\<^sub>1 ; (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_compose/\<close>
-  apply (auto simp: equiv_def restr_post_def)
-  by (auto simp: corestrict_p_def corestrict_r_def composition_def relcomp_unfold restrict_r_def restr_post_def Domain_iff) 
+theorem corestrict_compose: "(p\<^sub>1 ; p\<^sub>2) \<setminus>\<^sub>p C = p\<^sub>1 ; (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_compose/\<close>
+  apply (auto simp: composition_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def S_def Field_def Domain_iff relcomp_unfold) 
+    apply blast 
+   apply blast 
+  by blast
 
-subsubsection \<open>Composition unsafe composition\<close>
+subsubsection \<open>Composition unsafCompose_distrib1e composition\<close>
 theorem unsafe_gets_safe_1: "(p\<^sub>1;\<^sub>pp\<^sub>2);p\<^sub>3 = (p\<^sub>1;p\<^sub>2);p\<^sub>3"
   by (auto simp: composition_def unsafe_composition_def restr_post_def corestrict_r_def restrict_r_def S_def)
 theorem unsafe_gets_safe_2: "(p\<^sub>1;\<^sub>pp\<^sub>2);p\<^sub>3 \<triangleq> (p\<^sub>1;p\<^sub>2);p\<^sub>3"
@@ -111,9 +135,9 @@ subsubsection \<open>Choice inverse\<close>
 theorem choice_inverse_1: "(p \<union>\<^sub>p q)\<^sup>-\<^sup>1 = (p\<^sup>-\<^sup>1) \<union>\<^sub>p (q\<^sup>-\<^sup>1)"
   by (auto simp: choice_def inverse_def converse_def Range_p_def S_def restr_post_def restrict_r_def Field_def)
 theorem choice_inverse_2: "(p \<union>\<^sub>p q)\<^sup>-\<^sup>1 \<triangleq> (p\<^sup>-\<^sup>1) \<union>\<^sub>p (q\<^sup>-\<^sup>1)"
-  by (simp add: choice_inverse_1 equal_is_reflexive)
+  by (metis choice_inverse_1 equal_is_reflexive)
 theorem choice_inverse_3: "(p \<union>\<^sub>p q)\<^sup>-\<^sup>1 \<equiv>\<^sub>p (p\<^sup>-\<^sup>1) \<union>\<^sub>p (q\<^sup>-\<^sup>1)"
-  by (simp add: choice_inverse_1 equiv_is_reflexive)
+  using choice_inverse_1 equals_equiv_relation_3 by blast
 
 subsubsection \<open>Corestriction unsafe composition\<close>
 theorem corestriction_restriction_on_unsafe_composition_1 : "p\<^sub>1 \<setminus>\<^sub>p s\<^sub>1 ;\<^sub>p p\<^sub>2 \<equiv>\<^sub>p p\<^sub>1 ;\<^sub>p p\<^sub>2 \<sslash>\<^sub>p s\<^sub>1" \<comment> \<open>NEW\<close>
@@ -122,6 +146,15 @@ theorem corestrict_gets_absorbed_by_unsafe_composition_1: "(p\<^sub>1 ;\<^sub>p 
   oops
 theorem corestrict_gets_absorbed_by_unsafe_composition_2: "(p\<^sub>1 ;\<^sub>p p\<^sub>2) \<setminus>\<^sub>p C \<equiv>\<^sub>p p\<^sub>1 ;\<^sub>p (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>T30\<close>
   oops
+
+
+theorem corestriction_on_unsafe_composition : "p\<^sub>1 \<setminus>\<^sub>p s ;\<^sub>p p\<^sub>2 = p\<^sub>1 ;\<^sub>p p\<^sub>2 \<sslash>\<^sub>p s" \<comment> \<open>NEW\<close>
+  oops \<comment> \<open>making p1 feasible does not help\<close>
+
+theorem corestrict_unsafe_compose: "is_feasible p\<^sub>1 \<Longrightarrow> (p\<^sub>1 ;\<^sub>p p\<^sub>2) \<setminus>\<^sub>p C \<equiv>\<^sub>p p\<^sub>1 ;\<^sub>p (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_unsafe_compose/\<close>
+  oops \<comment> \<open>making p1 feasible does not help\<close>
+
+
 subsubsection \<open>Corestriction inverse\<close>
 theorem corestriction_absorbed_by_inverse_1: "(p\<^sup>-\<^sup>1)\<setminus>\<^sub>pC = ((p\<sslash>\<^sub>pC)\<^sup>-\<^sup>1)"
   by (auto simp: inverse_def Range_p_def restrict_r_def corestrict_p_def corestrict_r_def restr_post_def restrict_p_def S_def Field_def)
@@ -134,9 +167,12 @@ subsubsection \<open>Unsafe composition inverse\<close>
 theorem unsafe_composition_inverse_1: "(p;\<^sub>pq)\<^sup>-\<^sup>1 \<equiv>\<^sub>p (q\<^sup>-\<^sup>1);\<^sub>p(p\<^sup>-\<^sup>1)"
   oops
 subsubsection \<open>Choice corestriction\<close>
-theorem corestrict_union: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<setminus>\<^sub>p C \<equiv>\<^sub>p (p\<^sub>1 \<setminus>\<^sub>p C) \<union>\<^sub>p (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_union/\<close>
-  apply (auto simp: equiv_def restr_post_def)
-  by (auto simp: choice_def restr_post_def corestrict_p_def restrict_r_def corestrict_r_def)
+theorem corestrict_choice_1: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<setminus>\<^sub>p C = (p\<^sub>1 \<setminus>\<^sub>p C) \<union>\<^sub>p (p\<^sub>2 \<setminus>\<^sub>p C)"
+  by (auto simp: choice_def restr_post_def corestrict_p_def restrict_r_def S_def Field_def corestrict_r_def)
+theorem corestrict_choice_2: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<setminus>\<^sub>p C \<triangleq> (p\<^sub>1 \<setminus>\<^sub>p C) \<union>\<^sub>p (p\<^sub>2 \<setminus>\<^sub>p C)"
+  by (simp add: corestrict_choice_1 equal_is_reflexive)
+theorem corestrict_choice_3: "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<setminus>\<^sub>p C \<equiv>\<^sub>p (p\<^sub>1 \<setminus>\<^sub>p C) \<union>\<^sub>p (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_choice/\<close>
+  by (simp add: corestrict_choice_1 equiv_is_reflexive)
 
 subsubsection \<open>Choice unsafe composition\<close>
 
@@ -165,17 +201,17 @@ theorem choice_distributes_over_composition_4 : "q\<union>\<^sub>p(p\<^sub>1;\<^
 
 subsubsection \<open>Relation between more than two operations\<close>
 lemma until_simplification_1: "a;n\<setminus>\<^sub>pC \<union>\<^sub>p a;m\<setminus>\<^sub>pC \<equiv>\<^sub>p a;(n \<union>\<^sub>p m)\<setminus>\<^sub>pC"
-  by (meson compose_distrib1_3 corestrict_union equiv_is_reflexive equiv_is_symetric equiv_is_transitive equivalence_is_maintained_by_composition)
+  apply (auto simp: equiv_def)
+  apply (auto simp: composition_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def Domain_iff) [2]
+  apply (auto simp: composition_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def Domain_iff) [2]
+  apply (simp add: restr_post_def composition_def corestrict_p_def corestrict_r_def restrict_r_def Domain_iff relcomp_unfold)
+  by metis
 
-(* locale two_elements = *)
-  (* fixes a b :: 'a *)
-  (* assumes "a \<noteq> b" *)
 
-(* theorem (in two_elements) choice_distributes_over_composition_3 : "\<exists>q p\<^sub>1 p\<^sub>2. \<not> q\<union>\<^sub>p(p\<^sub>1;\<^sub>pp\<^sub>2) \<equiv>\<^sub>p (q\<union>\<^sub>pp\<^sub>1) ;\<^sub>p (q\<union>\<^sub>pp\<^sub>2)" *)
-  (* sorry *)
-(* theorem (in two_elements) choice_distributes_over_composition_2 : "\<exists>q p\<^sub>1 p\<^sub>2. \<not>q\<union>\<^sub>p(p\<^sub>1;\<^sub>pp\<^sub>2) \<triangleq> (q\<union>\<^sub>pp\<^sub>1) ;\<^sub>p (q\<union>\<^sub>pp\<^sub>2)" *)
-  (* using choice_distributes_over_composition_3 equals_equiv_relation_2 by blast *)
-(* theorem (in two_elements) choice_distributes_over_composition_1 : "\<exists>q p\<^sub>1 p\<^sub>2. \<not>q\<union>\<^sub>p(p\<^sub>1;\<^sub>pp\<^sub>2) = (q\<union>\<^sub>pp\<^sub>1) ;\<^sub>p (q\<union>\<^sub>pp\<^sub>2)" *)
-  (* by (metis choice_distributes_over_composition_2 equal_is_reflexive) *)
-
+lemma until_simplification_2: "a;\<^sub>pn\<setminus>\<^sub>pC \<union>\<^sub>p a;\<^sub>pm\<setminus>\<^sub>pC \<equiv>\<^sub>p a;\<^sub>p(n \<union>\<^sub>p m)\<setminus>\<^sub>pC"
+  apply (auto simp: equiv_def)
+  apply (auto simp: unsafe_composition_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def Domain_iff) [2]
+  apply (auto simp: unsafe_composition_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def Domain_iff) [2]
+  apply (simp add: restr_post_def unsafe_composition_def corestrict_p_def corestrict_r_def restrict_r_def Domain_iff relcomp_unfold)
+  by metis
 end

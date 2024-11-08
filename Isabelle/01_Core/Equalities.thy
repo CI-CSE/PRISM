@@ -41,4 +41,9 @@ theorem inverse_equality_2: "\<not> p\<^sub>1 \<equiv>\<^sub>p p\<^sub>2 \<Longr
 theorem inverse_equality_3: "\<not> p\<^sub>1 \<triangleq> p\<^sub>2 \<Longrightarrow> \<not> p\<^sub>1 = p\<^sub>2"
   using equal_is_reflexive by auto
 
+theorem empty_state_space_equal: "S a = {} \<Longrightarrow> S b = {} \<Longrightarrow> a = b"
+  apply (auto simp: S_def Field_def Domain_iff Range_iff)
+  by (simp add: Range_empty_iff)
+
+
 end
