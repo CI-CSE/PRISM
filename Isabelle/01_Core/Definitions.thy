@@ -516,7 +516,6 @@ termination
 definition cnf_concurrency :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> 'a Normal_form" (infix "\<parallel>" 151) where
   "cnf_concurrency xs ys = concat [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]"
 
-theorem "cnf_concurrency xs ys = concat [interleave path_m path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]" sorry
 value "interleave [a,b] [c,d]"
 
 value "cnf_concurrency ([a,b]#[[c,d]]) [[e,f],[g,h]]"
