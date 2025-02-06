@@ -3137,12 +3137,12 @@ proof (induction "size a" arbitrary: a rule: "less_induct")
   qed
 qed
 
-theorem civilized_thm1: "civilized_n p B n \<Longrightarrow> \<exists>(y::'a Normal_form). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+theorem civilized_thm1: "civilized_n p B n \<Longrightarrow> \<exists>(y::'a CNF). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
 proof -
   assume a1: "civilized_n p B n"
   have finite_b: "finite B"
     using a1 civilized_finite by auto 
-  from a1 finite_b show "\<exists>(y::'a Normal_form). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+  from a1 finite_b show "\<exists>(y::'a CNF). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
   proof (induction n arbitrary: p B)
     case 0
     obtain B' where o0: "B' = insert (Fail{}) B" by simp
@@ -3210,7 +3210,7 @@ proof -
   qed
 qed
 
-theorem civilized_thm2: "civilized p B \<Longrightarrow> \<exists>(y::'a Normal_form). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+theorem civilized_thm2: "civilized p B \<Longrightarrow> \<exists>(y::'a CNF). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
   using civilized_def civilized_thm1 by blast
 
 
@@ -3219,9 +3219,9 @@ theorem fail_is_civilized: "finite B \<Longrightarrow> civilized (Fail{}) B"
   using civ_prop_1 civilized_empty3 apply blast
   by (meson civ_prop_1 civilized_empty3 finite_insert)
 
-theorem civilized_thm3: "\<exists>(y::'a Normal_form). evaluate y = p \<and> normal_of y B \<Longrightarrow> civilized p B"
+theorem civilized_thm3: "\<exists>(y::'a CNF). evaluate y = p \<and> normal_of y B \<Longrightarrow> civilized p B"
 proof -
-  assume a1: "\<exists>(y::'a Normal_form). evaluate y = p \<and> normal_of y B"
+  assume a1: "\<exists>(y::'a CNF). evaluate y = p \<and> normal_of y B"
   have "finite B"
     using a1 normal_prop4 by auto
   obtain y where "evaluate y = p \<and> normal_of y B"

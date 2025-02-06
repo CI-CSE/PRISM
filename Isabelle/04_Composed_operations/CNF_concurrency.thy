@@ -464,4 +464,116 @@ theorem assoc_cnf1: "equal_cnf ((xs \<parallel> ys) \<parallel> zs)  (xs \<paral
 theorem assoc_cnf: "evaluate ((xs \<parallel> ys) \<parallel> zs) = evaluate (xs \<parallel> (ys \<parallel> zs))"
   by (simp add: assoc_cnf1 equal_eval)
 
+theorem cnf_prop: "xs \<noteq> [] \<Longrightarrow> evaluate [x#xs] = x ; (evaluate [xs])"
+  apply (auto simp: evaluate_def)
+  by (simp add: Concat_prop_10)
+
+theorem cnf_prop2: "xs \<noteq> [] \<Longrightarrow> evaluate [xs@[x]] = (evaluate [xs]) ; x"
+  apply (auto simp: evaluate_def)
+  by (simp add: Concat_prop_2)
+
+lemma restrict_cnf1: "evaluate ([x] \<sslash>\<^sub>c C) = (evaluate [x]) \<sslash>\<^sub>p C"
+proof (cases x)
+  case Nil
+  then show ?thesis by (auto simp: evaluate_def Skip_def restriction_cnf_def restrict_p_def restrict_r_def S_def)
+next
+  case (Cons xx x)
+  have "evaluate ([xx#x] \<sslash>\<^sub>c C) = evaluate [xx#x] \<sslash>\<^sub>p C"
+  proof (cases "x = []")
+    case True
+    then show ?thesis by (auto simp: evaluate_def restriction_cnf_def)
+  next
+    case False
+    have "evaluate ([xx#x] \<sslash>\<^sub>c C) = xx \<sslash>\<^sub>p C ; evaluate [x]" apply (auto simp: evaluate_def restriction_cnf_def)
+      by (simp add: Concat_prop_10 False)
+    then show ?thesis
+      by (simp add: False cnf_prop compose_absorb_1)
+  qed
+  then show ?thesis using Cons by auto
+qed
+
+theorem restr_distrib: "a \<sslash>\<^sub>p C \<union>\<^sub>p b \<sslash>\<^sub>p C = (a \<union>\<^sub>p b) \<sslash>\<^sub>p C"
+  by (auto simp: choice_def restrict_p_def restr_post_def restrict_r_def S_def Field_def)
+
+theorem restrict_cnf: "evaluate (xs \<sslash>\<^sub>c C) = (evaluate xs) \<sslash>\<^sub>p C"
+proof (induction xs)
+  case Nil
+  then show ?case  apply (auto simp: restriction_cnf_def evaluate_def restrict_p_def Fail_def S_def restrict_r_def) [1] done
+next
+  case (Cons x xs)
+  then show "evaluate ((x#xs) \<sslash>\<^sub>c C) = (evaluate (x#xs)) \<sslash>\<^sub>p C"
+  proof (cases "xs=[]")
+    case True
+    then show ?thesis
+      by (simp add: restrict_cnf1) 
+  next
+    case False
+    have "(x#xs) \<sslash>\<^sub>c C = ([x] \<sslash>\<^sub>c C) @ (xs \<sslash>\<^sub>c C)" by (auto simp: restriction_cnf_def)
+    have "evaluate ((x#xs) \<sslash>\<^sub>c C) = evaluate (([x] \<sslash>\<^sub>c C) @ (xs \<sslash>\<^sub>c C))"
+      by (simp add: \<open>(x # xs) \<sslash>\<^sub>c C = [x] \<sslash>\<^sub>c C @ xs \<sslash>\<^sub>c C\<close>)
+    have "... = evaluate ([x] \<sslash>\<^sub>c C) \<union>\<^sub>p evaluate (xs \<sslash>\<^sub>c C)" using False apply (auto simp: evaluate_def)
+      by (metis Choice_prop_7 choice_commute list.map_disc_iff not_Cons_self2 restriction_cnf_def)
+    have "... = evaluate [x] \<sslash>\<^sub>p C \<union>\<^sub>p evaluate xs \<sslash>\<^sub>p C"
+      by (simp add: local.Cons restrict_cnf1)
+    have "... = (evaluate [x] \<union>\<^sub>p evaluate xs) \<sslash>\<^sub>p C"
+      by (simp add: restr_distrib)
+    have "... = (evaluate (x#xs)) \<sslash>\<^sub>p C"
+      by (simp add: False concat_prop3)
+    then show ?thesis
+      by (metis \<open>(x # xs) \<sslash>\<^sub>c C = [x] \<sslash>\<^sub>c C @ xs \<sslash>\<^sub>c C\<close> \<open>evaluate ([x] \<sslash>\<^sub>c C @ xs \<sslash>\<^sub>c C) = evaluate ([x] \<sslash>\<^sub>c C) \<union>\<^sub>p evaluate (xs \<sslash>\<^sub>c C)\<close> \<open>evaluate [x] \<sslash>\<^sub>p C \<union>\<^sub>p evaluate xs \<sslash>\<^sub>p C = (evaluate [x] \<union>\<^sub>p evaluate xs) \<sslash>\<^sub>p C\<close> local.Cons restrict_cnf1)
+  qed
+qed
+
+lemma corestrict_cnf1: "evaluate ([x] \<setminus>\<^sub>c C) = (evaluate [x]) \<setminus>\<^sub>p C"
+proof (induction x rule: rev_induct)
+  case Nil
+  then show ?case by (auto simp: evaluate_def Skip_def corestriction_cnf_def corestrict_p_def corestrict_r_def restrict_p_def restrict_r_def S_def)
+next
+  case (snoc xx x)
+  have "evaluate ([x@[xx]] \<setminus>\<^sub>c C) = evaluate [x@[xx]] \<setminus>\<^sub>p C"
+  proof (cases "x = []")
+    case True
+    have "Concat (corestrict_path [xx] C) = xx \<setminus>\<^sub>p C"
+      by (metis (no_types, lifting) Concat.simps(2) append1_eq_conv append_self_conv2 corestrict_path.elims list.distinct(1))
+    then show ?thesis apply (auto simp: evaluate_def corestriction_cnf_def corestrict_p_def corestrict_r_def S_def Field_def)
+      using True by auto
+  next
+    case False
+    have "evaluate ([x@[xx]] \<setminus>\<^sub>c C) = evaluate [x] ; xx \<setminus>\<^sub>p C" apply (auto simp: evaluate_def corestriction_cnf_def)
+      by (simp add: Concat_prop_2 False)
+    then show ?thesis
+      by (simp add: False cnf_prop2 corestrict_compose)
+  qed
+  then show ?case using Cons by auto
+qed
+
+theorem corestrict_cnf: "evaluate (xs \<setminus>\<^sub>c C) = (evaluate xs) \<setminus>\<^sub>p C"
+proof (induction xs)
+  case Nil
+  then show ?case  apply (auto simp: corestriction_cnf_def evaluate_def restrict_p_def Fail_def S_def restrict_r_def corestrict_p_def corestrict_r_def) [1] done
+next
+  case (Cons x xs)
+  then show "evaluate ((x#xs) \<setminus>\<^sub>c C) = (evaluate (x#xs)) \<setminus>\<^sub>p C"
+  proof (cases "xs=[]")
+    case True
+    then show ?thesis
+      by (simp add: corestrict_cnf1) 
+  next
+    case False
+    have "(x#xs) \<setminus>\<^sub>c C = ([x] \<setminus>\<^sub>c C) @ (xs \<setminus>\<^sub>c C)" by (auto simp: corestriction_cnf_def)
+    have "evaluate ((x#xs) \<setminus>\<^sub>c C) = evaluate (([x] \<setminus>\<^sub>c C) @ (xs \<setminus>\<^sub>c C))"
+      by (simp add: \<open>(x # xs) \<setminus>\<^sub>c C = [x] \<setminus>\<^sub>c C @ xs \<setminus>\<^sub>c C\<close>)
+    have "... = evaluate ([x] \<setminus>\<^sub>c C) \<union>\<^sub>p evaluate (xs \<setminus>\<^sub>c C)" using False apply (auto simp: evaluate_def)
+      by (metis Choice_prop_7 choice_commute list.map_disc_iff not_Cons_self2 corestriction_cnf_def)
+    have "... = evaluate [x] \<setminus>\<^sub>p C \<union>\<^sub>p evaluate xs \<setminus>\<^sub>p C"
+      by (simp add: local.Cons corestrict_cnf1)
+    have "... = (evaluate [x] \<union>\<^sub>p evaluate xs) \<setminus>\<^sub>p C"
+      by (simp add: corestrict_choice_1)
+    have "... = (evaluate (x#xs)) \<setminus>\<^sub>p C"
+      by (simp add: False concat_prop3)
+    then show ?thesis
+      using \<open>evaluate ((x # xs) \<setminus>\<^sub>c C) = evaluate ([x] \<setminus>\<^sub>c C @ xs \<setminus>\<^sub>c C)\<close> \<open>evaluate ([x] \<setminus>\<^sub>c C @ xs \<setminus>\<^sub>c C) = evaluate ([x] \<setminus>\<^sub>c C) \<union>\<^sub>p evaluate (xs \<setminus>\<^sub>c C)\<close> \<open>evaluate ([x] \<setminus>\<^sub>c C) \<union>\<^sub>p evaluate (xs \<setminus>\<^sub>c C) = evaluate [x] \<setminus>\<^sub>p C \<union>\<^sub>p evaluate xs \<setminus>\<^sub>p C\<close> \<open>evaluate [x] \<setminus>\<^sub>p C \<union>\<^sub>p evaluate xs \<setminus>\<^sub>p C = (evaluate [x] \<union>\<^sub>p evaluate xs) \<setminus>\<^sub>p C\<close> by presburger
+  qed
+qed
+
 end

@@ -12,13 +12,13 @@ record 'a Contracted_Program =
   a_specification :: "'a Program"
   a_implementation :: "'a Program"
 
-type_synonym 'a Normal_form = "'a Program list list"
+type_synonym 'a CNF = "'a Program list list"
 
-definition basic :: "'a Normal_form \<Rightarrow> 'a Program set"
+definition basic :: "'a CNF \<Rightarrow> 'a Program set"
   where
     "basic p \<equiv> foldl (\<union>) ({}::'a Program set) (map (set) p)"
 
-definition normal_of :: "'a Normal_form \<Rightarrow> 'a Program set \<Rightarrow> bool"
+definition normal_of :: "'a CNF \<Rightarrow> 'a Program set \<Rightarrow> bool"
   where
     "normal_of p xs \<equiv> (basic p \<subseteq> (xs \<union> {\<lparr>State={},Pre={},post={}\<rparr>})) \<and> finite xs"
 
@@ -147,21 +147,22 @@ definition choice :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Progr
   where
     "p\<^sub>1 \<union>\<^sub>p p\<^sub>2 = \<lparr>State= S p\<^sub>1 \<union> S p\<^sub>2, Pre = Pre p\<^sub>1 \<union> Pre p\<^sub>2, post = restr_post p\<^sub>1 \<union> restr_post p\<^sub>2\<rparr>"
 
-definition non_empty :: "'a Normal_form \<Rightarrow> 'a Normal_form"
+definition non_empty :: "'a CNF \<Rightarrow> 'a CNF"
   where
     "non_empty xs \<equiv> [t . t \<leftarrow> xs, t \<noteq> []]"
 
-definition non_empty2 :: "'a Normal_form list \<Rightarrow> 'a Normal_form list"
+definition non_empty2 :: "'a CNF list \<Rightarrow> 'a CNF list"
   where
     "non_empty2 xs \<equiv> [prog2. prog2 \<leftarrow> [non_empty prog. prog \<leftarrow> xs], prog2 \<noteq> []]"
 
-definition choice_cnf :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> 'a Normal_form" (infix "\<union>\<^sub>c" 150)
+definition choice_cnf :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> 'a CNF" (infix "\<union>\<^sub>c" 150)
   where
     "choice_cnf a b \<equiv> (non_empty a) @ (non_empty b)"
 
-definition composition_cnf :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> 'a Normal_form" (infix ";\<^sub>c" 150)
+definition composition_cnf :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> 'a CNF" (infix ";\<^sub>c" 150)
   where
     "composition_cnf a b \<equiv> [xs @ ys. xs \<leftarrow> non_empty a, ys \<leftarrow> non_empty b]"
+
 
 definition is_prime :: "'a Program \<Rightarrow> bool" 
   where
@@ -499,7 +500,7 @@ definition get_atomic :: "'a Program \<Rightarrow> ('a Program) set"
   where
     "get_atomic p = {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<in> Pre p}"
 
-definition evaluate :: "'a Normal_form \<Rightarrow> 'a Program"
+definition evaluate :: "'a CNF \<Rightarrow> 'a Program"
   where
     "evaluate p \<equiv> \<Union>\<^sub>p (map (Concat) p)"
 
@@ -513,7 +514,7 @@ by pat_completeness auto
 termination
   by (relation "measure (\<lambda>(xs, ys). length xs + length ys)") auto
 
-definition cnf_concurrency :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> 'a Normal_form" (infix "\<parallel>" 151) where
+definition cnf_concurrency :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> 'a CNF" (infix "\<parallel>" 151) where
   "cnf_concurrency xs ys = concat [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]"
 
 value "interleave [a,b] [c,d]"
@@ -525,7 +526,7 @@ value "cnf_concurrency [[a,b],[]] [[]]"
 
 
 (*
-definition cnf_concurrency :: "'a Normal_form list \<Rightarrow> 'a Normal_form" where
+definition cnf_concurrency :: "'a CNF list \<Rightarrow> 'a CNF" where
   "cnf_concurrency progs = (if size (non_empty2 progs) \<noteq> 1 then concat (concat [[interleave path_m path_n. path_m \<leftarrow> prog_i, path_n \<leftarrow> prog_j]. (i, prog_i) \<leftarrow> zip [0..<length (non_empty2 progs)] (non_empty2 progs), (j, prog_j) \<leftarrow> zip [0..<length (non_empty2 progs)] (non_empty2 progs), i \<noteq> j]) else hd (non_empty2 progs))"
 
 notation cnf_concurrency ("\<interleave> _" [51] 51)
@@ -564,8 +565,31 @@ definition civilized :: "'a Program \<Rightarrow> 'a Program set \<Rightarrow> b
   where
     "civilized x B \<equiv> (\<exists>n. civilized_n x B n) \<and> finite B"
 
-definition equal_cnf :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> bool"
+definition equal_cnf :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> bool"
   where
     "equal_cnf a b \<equiv> (set a = set b) \<and> (size a = 1) = (size b = 1)"
+
+primrec restrict_path :: "'a Program list \<Rightarrow> 'a set \<Rightarrow> 'a Program list"
+  where
+    "restrict_path [] C = []" |
+    "restrict_path (x#xs) C = (x \<sslash>\<^sub>p C)#xs"
+
+definition restriction_cnf :: "'a CNF \<Rightarrow> 'a set \<Rightarrow> 'a CNF" (infix "\<sslash>\<^sub>c" 150)
+  where
+    "restriction_cnf p C \<equiv> [restrict_path path_p C. path_p \<leftarrow> p]"
+
+function corestrict_path :: "'a Program list \<Rightarrow> 'a set \<Rightarrow> 'a Program list"
+  where
+    "corestrict_path [] C = []" |
+    "corestrict_path (xs@[x]) C = xs@[x \<setminus>\<^sub>p C]"
+  apply auto
+  using rev_exhaust by blast
+termination corestrict_path
+  using "termination" by blast
+
+
+definition corestriction_cnf :: "'a CNF \<Rightarrow> 'a set \<Rightarrow> 'a CNF" (infix "\<setminus>\<^sub>c" 150)
+  where
+    "corestriction_cnf p C \<equiv> [corestrict_path path_p C. path_p \<leftarrow> p]"
 
 end
