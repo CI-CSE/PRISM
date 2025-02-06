@@ -888,4 +888,353 @@ next
 qed
 
 
+theorem elements_atomic: "x \<in> get_atomic p \<Longrightarrow> is_atomic x"
+  by (auto simp: get_atomic_def is_atomic_def S_def) 
+
+theorem empty_prop1: "finite s \<Longrightarrow> set_to_list s = [] \<equiv> s = {}"
+  apply (auto simp: set_to_list_def)
+  by (smt (verit) finite_distinct_list set_empty some_eq_imp)
+
+theorem empty_prop2: "is_feasible p \<Longrightarrow> get_atomic p = {} \<Longrightarrow> Pre p = {}"
+  by (auto simp: get_atomic_def equal_def Fail_def Domain_iff Field_def Range_iff is_feasible_def)
+
+theorem finite_prop1: "finite xs \<Longrightarrow> finite ys \<Longrightarrow> finite {f a b | a b . a \<in> xs \<and> b \<in> ys}"
+proof (induction xs rule: "finite_induct")
+  case empty
+  then show ?case by simp
+next
+  case (insert x xs')
+  have IH: "finite {f a b |a b. a \<in> xs' \<and> b \<in> ys}" using insert(4) insert(3) by simp
+  moreover have "{f a b |a b. a \<in> insert x xs' \<and> b \<in> ys} = {f a b |a b. a \<in> xs' \<and> b \<in> ys} \<union> {f a b |a b. a \<in> {x} \<and> b \<in> ys}" by auto
+  moreover have "finite {f a b |a b. a \<in> {x} \<and> b \<in> ys}"
+    using insert(4) apply (induction ys rule: "finite_induct") by auto
+  ultimately show "finite {f a b |a b. a \<in> insert x xs' \<and> b \<in> ys}" by auto 
+qed
+
+theorem finite_prop2: "finite xs \<Longrightarrow> finite ys \<Longrightarrow> finite {f a b | a b . (a, b) \<in> xs \<and> a \<notin> ys}"
+proof (induction xs rule: "finite_induct")
+  case empty
+  then show ?case by simp
+next
+  case (insert x xs)
+  have IH: "finite {f a b |a b. (a, b) \<in> xs \<and> a \<notin> ys}"
+    by (simp add: insert.IH insert.prems)
+  moreover have "{f a b |a b. (a, b) \<in> insert x xs \<and> a \<notin> ys} = {f a b |a b. (a, b) \<in> xs \<and> a \<notin> ys} \<union> {f a b |a b. (a, b) \<in> {x} \<and> a \<notin> ys}" by auto
+  moreover from insert(4) have "finite {f a b |a b. (a, b) \<in> {x} \<and> a \<notin> ys}"
+    apply (cases "\<exists>t. t \<in> {f a b |a b. (a, b) \<in> {x} \<and> a \<notin> ys}")
+    apply auto
+    using not_finite_existsD by force
+  ultimately show ?case by auto
+qed
+
+theorem finite_relation: "finite r \<equiv> finite (Field r)"
+proof -
+  have "finite r \<Longrightarrow> finite (Field r)"
+    by (simp add: finite_Field)
+  moreover have "finite (Field r) \<Longrightarrow> finite r"
+  proof (induction "Field r" rule: "finite_induct")
+    case empty
+    then show ?case by (simp add: Field_def Range_empty_iff)
+  next
+    case (insert x F)
+    obtain old_r where o1: "old_r = {(a,b)| a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> r}" by simp
+    obtain diff_r where o2: "diff_r = {(a,b)| a b. ((a = x \<and> b \<in> F) \<or> (a \<in> F \<and> b = x) \<or> (a=x \<and> b=x)) \<and> (a,b) \<in> r}" by simp
+    have "old_r \<union> diff_r = r" using insert(2) insert(4) by (auto simp: o1 o2 Field_def Un_def Domain_iff Range_iff)
+    have "finite old_r" using o1 insert apply auto
+      by (metis \<open>old_r \<union> diff_r = r\<close> finite.insertI finite_SigmaI finite_trancl inf_sup_ord(3) rev_finite_subset trancl_subset_Field2)
+    have "finite diff_r" using o2 insert apply auto
+      by (metis \<open>old_r \<union> diff_r = r\<close> finite.insertI finite_SigmaI finite_trancl inf_sup_ord(4) rev_finite_subset trancl_subset_Field2)
+    then show ?case
+      using \<open>finite old_r\<close> \<open>old_r \<union> diff_r = r\<close> by auto
+  qed
+  ultimately show "finite r \<equiv> finite (Field r)"
+    by argo
+qed
+
+theorem decomp_program: 
+  assumes "finite (S p)"
+  assumes "x \<notin> F"
+  assumes "S p = insert x F"
+  assumes "q = \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr>"
+  assumes "r = \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr>"
+  shows "p \<equiv>\<^sub>p q \<union>\<^sub>p r"
+  using assms by (auto simp: choice_def restr_post_def S_def restrict_r_def Field_def equiv_def)
+
+
+theorem decomp_program2: 
+  assumes "finite (S p)"
+  assumes "x \<notin> F"
+  assumes "S p = insert x F"
+  shows "finite (S \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr>)"
+proof-
+  obtain r where o1: "r = \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr>" by simp
+  have l1: "finite F" using assms by auto
+  from l1 have "finite (S r)" using assms(1) by (auto simp: o1 S_def Field_def)
+  then show ?thesis using o1 by auto
+qed
+
+
+theorem decomp_program3: 
+  assumes "finite (S p)"
+  assumes "x \<notin> F"
+  assumes "S p = insert x F"
+  shows "finite (S \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr>)"
+proof-
+  obtain r where o1: "r = \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr>" by simp
+  have l1: "finite F" using assms by auto
+  have l2: "finite (post p)" using assms finite_relation by (auto simp: S_def Field_def Domain_iff)
+  have l3: "finite (State r)" using assms by (auto simp: o1 S_def)
+  have l4: "finite (Pre r)" using assms by (auto simp: o1 S_def)
+  have l5: "post r \<subseteq> post p" by (auto simp: o1)
+  have l6: "finite (post p)" using assms(1) finite_relation
+    by (simp add: l2)
+  have l7: "finite (post r)"
+    using l5 l6 rev_finite_subset by auto
+  from l1 have "finite (S r)"
+    by (simp add: S_def finite_Field l3 l4 l7)
+  then show ?thesis using o1 by auto
+qed
+
+theorem card_prop: assumes "finite a" shows "b \<inter> c = {} \<Longrightarrow> a = b \<union> c \<Longrightarrow> card a = card b + card c"
+  using assms (1) apply (induction a rule: "finite_induct") apply auto
+  by (metis card_Un_disjoint finite_Un finite_insert)
+
+theorem card_prop2: assumes "finite b" assumes "finite c" shows "b \<inter> c = {} \<Longrightarrow> a = b \<union> c \<Longrightarrow> card a = card b + card c"
+  using assms (1) proof (induction b rule: "finite_induct")
+  case empty
+  then show ?case by auto
+next
+  case (insert x F)
+  have "finite (insert x F)" using insert by auto
+  show "card a = card (insert x F) + card c"
+    using \<open>finite (insert x F)\<close> assms(2) card_Un_disjoint insert.prems(1) insert.prems(2) by blast
+qed
+
+theorem finite_prop3: "finite x \<Longrightarrow> finite {f a |a . a \<in> x}" by auto
+
+theorem finite_prop4: "finite x \<Longrightarrow> finite {f a b |a b. (a, b) \<in> x}"
+proof -
+  assume a1: "finite x"
+  obtain f' where "f' = (\<lambda> t. f (fst t) (snd t))" by simp
+  have "{f a b |a b. (a, b) \<in> x} = {f' y |y. y \<in> x}"
+    using \<open>f' = (\<lambda>t. f (fst t) (snd t))\<close> by auto
+  have "finite {f' y |y. y \<in> x}" using a1 finite_prop3 by blast
+  show ?thesis
+    using \<open>finite {f' y |y. y \<in> x}\<close> \<open>{f a b |a b. (a, b) \<in> x} = {f' y |y. y \<in> x}\<close> by presburger
+qed
+
+theorem finite_prop5: "finite (S p) \<Longrightarrow> finite (get_atomic p)"
+proof -
+  assume a1: "finite (S p)"
+  show "finite (get_atomic p)"
+  using a1 proof (induction "S p" rule: "finite_induct")
+    case empty
+    have l1: "Pre p = {}" using empty by (auto simp: S_def)
+    have l2: "post p = {}" using empty by (auto simp: S_def Field_def)
+    have l3: "State p = {}" using empty by (auto simp: S_def)
+    from l1 l2 l3 have "{\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<in> Pre p} = {}" by auto
+    moreover from l1 l2 l3 have "{\<lparr>State={a,b}, Pre={},  post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<notin> Pre p} = {}" by auto
+    moreover from l1 l2 l3 have "{\<lparr>State={a  }, Pre={a}, post={}      \<rparr> | a   . a \<notin> Domain (post p) \<and> a \<in> Pre p} = {}" by auto
+    moreover from l1 l2 l3 have "{\<lparr>State={a  }, Pre={},  post={}      \<rparr> | a   . a \<notin> Field (restr_post p) \<and> a \<notin> Pre p \<and> a \<in> State p} = {}" by auto
+    ultimately show ?case by (auto simp: get_atomic_def)
+  next
+    case (insert x F)
+    have l1: "finite (Pre p)" using insert 
+      apply (auto simp: S_def)
+      using a1 insert.hyps(4) by auto
+    have l2: "finite (post p)" using insert  
+      apply (auto simp: S_def)
+      using a1 finite_relation insert.hyps(4) by auto
+    have l3: "finite (State p)" using insert
+      by (metis S_def a1 finite_Un)
+    have l4: "\<forall>f::('a \<Rightarrow> 'a \<Rightarrow> 'a Program). finite {f a b | a b . (a,b) \<in> post p}"
+      using l2 apply (induction "post p" rule: "finite_induct")
+      by (auto simp: finite_prop4 l2)
+    from l1 l2 l3 have "finite {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b .  (a,b) \<in> post p \<and> a \<in> Pre p}"
+    proof -
+      have "finite {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b . (a,b) \<in> post p}" using l4 by auto
+      moreover have "{\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b . (a,b) \<in> post p \<and> a \<in> Pre p} \<subseteq> {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b . (a,b) \<in> post p}" by blast
+      ultimately show "finite {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b . (a,b) \<in> post p \<and> a \<in> Pre p}"
+        by (meson finite_subset)
+    qed
+    moreover from l1 l2 l3 have "finite {\<lparr>State={a,b}, Pre={},  post={(a, b)}\<rparr> | a b . (a,b) \<in> post p \<and> a \<notin> Pre p}"
+    proof -
+      have "finite {\<lparr>State={a,b}, Pre={}, post={(a, b)}\<rparr> | a b . (a,b) \<in> post p}" using l4 by auto
+      moreover have "{\<lparr>State={a,b}, Pre={},  post={(a, b)}\<rparr> | a b . (a,b) \<in> post p \<and> a \<notin> Pre p} \<subseteq> {\<lparr>State={a,b}, Pre={}, post={(a, b)}\<rparr> | a b . (a,b) \<in> post p}" by blast
+      ultimately show "finite {\<lparr>State={a,b}, Pre={}, post={(a, b)}\<rparr> | a b . (a,b) \<in> post p \<and> a \<notin> Pre p}"
+        by (meson finite_subset)
+    qed
+    moreover from l1 l2 l3 have "finite {\<lparr>State={a  }, Pre={a}, post={} \<rparr> | a . a \<notin> Domain (post p) \<and> a \<in> Pre p}" by auto
+    moreover from l1 l2 l3 have "finite {\<lparr>State={a  }, Pre={},  post={} \<rparr> | a . a \<notin> Field (restr_post p) \<and> a \<notin> Pre p \<and> a \<in> State p}" by auto
+    ultimately show ?case by (auto simp: get_atomic_def)
+  qed
+qed
+
+theorem atomic_idem: "is_atomic p \<Longrightarrow> (get_atomic p) \<union> {p} = get_atomic (p \<union>\<^sub>p p)"
+  apply (auto simp: get_atomic_def is_atomic_def choice_def restr_post_def restrict_r_def S_def Field_def Domain_iff Range_iff Un_def)
+proof-
+  fix p::"'a Program"
+  assume a1: "card (post p) = Suc 0" and
+    a2: "card (Pre p) = Suc 0" and
+    a3: "State p = {x. x \<in> Pre p \<or> (\<exists>y. (x, y) \<in> post p) \<or> (\<exists>y. (y, x) \<in> post p)}" and 
+    a4: "fst (THE x. x \<in> post p) = (THE x. x \<in> Pre p)"
+  then obtain x where o1: "Pre p = {x}"
+    by (meson card_1_singleton_iff)
+  then obtain x' y where o2: "post p = {(x',y)}" using a4 a1 apply auto
+    by (metis One_nat_def is_singleton_altdef is_singleton_the_elem old.prod.exhaust)
+  have l1: "x' = x" using o1 o2 a4 by (auto simp: )
+  have o2: "post p = {(x,y)}" using o2 l1 by auto
+  have "State p = {x, y}" using a3 o1 o2 apply simp by auto
+  then have "p = \<lparr>State = {x, y}, Pre = {x}, post = {(x, y)}\<rparr>" using o2 o1 by auto
+  then have "p = \<lparr>State = {x, y}, Pre = {x}, post = {(x, y)}\<rparr> \<and> (x, y) \<in> post p \<and> x \<in> Pre p"
+    using o1 o2 by blast
+  then show "\<exists>a b. p = \<lparr>State = {a, b}, Pre = {a}, post = {(a, b)}\<rparr> \<and> (a, b) \<in> post p \<and> a \<in> Pre p" by auto
+qed
+
+theorem atomic_state: "is_atomic x \<Longrightarrow> S x = State x"
+  by (auto simp: S_def is_atomic_def)
+
+theorem atomic_prop1: "is_atomic x \<Longrightarrow> \<exists>a b. \<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> = x"
+proof -
+  assume a1: "is_atomic x"
+  obtain a where o1: "Pre x = {a}" using a1 apply (auto simp: is_atomic_def)
+    by (meson card_1_singleton_iff)
+  obtain a' b where o2: "post x = {(a',b)}" using a1 apply (auto simp: is_atomic_def)
+    by (metis One_nat_def is_singletonE is_singleton_altdef old.prod.exhaust)
+  have l1: "a' = a" using o1 o2 a1 by (auto simp: is_atomic_def)
+  have "State x = {a,b}" using a1 o1 o2 l1 apply (simp add: is_atomic_def)
+    by (simp add: insert_commute)
+  have "\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> = x"
+    by (simp add: \<open>State x = {a, b}\<close> l1 o1 o2)
+  then show ?thesis by auto
+qed
+
+theorem atomic_prop2: "\<exists>a b. \<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> = x \<Longrightarrow> is_atomic x"
+  by (auto simp: is_atomic_def S_def)
+
+theorem atomic_prop3: "\<exists>a b. \<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> = x \<equiv> is_atomic x"
+  using atomic_prop1 atomic_prop2
+  by (smt (verit, ccfv_SIG))
+
+theorem atomic_post: "is_atomic x \<Longrightarrow> restr_post x = post x"
+proof -
+  assume a1: "is_atomic x"
+  obtain a b where o1: "\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> = x"
+    by (meson a1 atomic_prop1)
+  have "restr_post \<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> = post \<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr>" by (auto simp: restr_post_def restrict_r_def)
+  then show ?thesis using o1 by auto
+qed
+
+theorem atomic_monotone: "get_atomic p \<subseteq> get_atomic (p \<union>\<^sub>p q)"
+  by (auto simp: get_atomic_def choice_def restr_post_def restrict_r_def)
+
+theorem atomic_split: "finite (get_atomic p) \<Longrightarrow> finite (get_atomic q) \<Longrightarrow> (get_atomic p) \<union> (get_atomic q) = get_atomic (p \<union>\<^sub>p q)"
+  by (auto simp: get_atomic_def choice_def restr_post_def restrict_r_def)
+
+
+theorem assumes "is_atomic x" shows "(get_atomic p) \<union> {x} = get_atomic (p \<union>\<^sub>p x)"
+  apply (auto simp: get_atomic_def choice_def restr_post_def restrict_r_def)
+  using assms(1) atomic_prop1 apply force
+  using assms(1) atomic_prop1 apply fastforce
+  using assms(1) atomic_prop1 apply fastforce
+  using assms(1) atomic_prop1 by fastforce
+
+theorem fail_atomic: "get_atomic (Fail {}) = {}" by (auto simp: get_atomic_def Fail_def)
+
+theorem set_list_set: "finite xs \<Longrightarrow> set (set_to_list xs) = xs" apply (auto simp: set_to_list_def)
+  apply (metis (mono_tags, lifting) finite_distinct_list some_eq_imp)
+  by (metis (mono_tags, lifting) finite_distinct_list some_eq_imp)
+
+theorem set_list_prop: "finite F \<Longrightarrow> xs = set_to_list (insert x F) \<Longrightarrow> \<exists>a b. a@x#b = xs"
+proof -
+  assume a1: "finite F"
+  assume a2: "xs = set_to_list (insert x F)"
+  have "x \<in> set xs" using a1 a2 set_list_set
+    by (metis finite.insertI insertI1)
+  show ?thesis
+    by (metis \<open>x \<in> set xs\<close> in_set_conv_decomp_first)
+qed
+
+theorem set_to_list_distinct: "xs = set_to_list F \<Longrightarrow> distinct xs"
+  apply (cases "finite F") apply (auto simp: set_to_list_def)
+  by (metis (mono_tags, lifting) finite_distinct_list verit_sko_ex')
+
+
+theorem set_to_list_size: "size (set_to_list F) = card F"
+proof (cases "finite F")
+  case True
+  obtain xs where o1: "xs = set_to_list F" by simp
+  have "distinct xs"
+    by (simp add: o1 set_to_list_distinct)
+  have "\<forall>x. x \<in> set xs \<longrightarrow> x \<in> F"
+    by (simp add: True o1 set_list_set)
+  have "\<forall>x. x \<in> F \<longrightarrow> x \<in> set xs"
+    by (simp add: True o1 set_list_set)
+  then show ?thesis
+    by (metis True \<open>distinct xs\<close> distinct_card o1 set_list_set)
+next
+  case False
+  then show ?thesis by (auto simp: set_to_list_def)
+qed
+
+theorem set_to_list_one: "set_to_list {x} = [x]"
+proof -
+  have "set (set_to_list {x}) = {x}"
+    by (simp add: set_list_set)
+  have "size (set_to_list {x}) = 1" using card_1_singleton_iff distinct_card distinct_singleton apply (auto simp: set_to_list_def)
+    by (smt (z3) Collect_empty_eq_bot bot_nat_def card_1_singleton_iff card_distinct distinct_card empty_Collect_eq empty_def length_replicate set_replicate_Suc singleton_conv some_eq_imp)
+  show ?thesis
+    by (metis One_nat_def \<open>length (set_to_list {x}) = 1\<close> \<open>set (set_to_list {x}) = {x}\<close> append_Nil append_butlast_last_id append_eq_append_conv diff_Suc_1' empty_set insert_not_empty last_in_set length_butlast list.size(3) singleton_iff)
+qed
+
+theorem atomic_prop_1: "is_atomic x \<Longrightarrow> get_atomic x = {x}"
+proof-
+  assume a1: "is_atomic x"
+  obtain a b where o1: "x = \<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr>"
+    using a1 atomic_prop1 by blast
+  have "get_atomic \<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> = {\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr>}" by (auto simp: get_atomic_def)
+  then show ?thesis using o1 by auto
+qed
+
+theorem Consistent_feasible: "is_feasible (feasible_version p)"
+  by (auto simp: is_feasible_def feasible_version_def)
+
+theorem Consistent_round: "is_rounded (rounded_version p)"
+  by (auto simp: is_rounded_def rounded_version_def restrict_r_def)
+
+theorem Consistent_exact: "is_exact (exact_version p)"
+  by (auto simp: is_exact_def exact_version_def is_rounded_def is_feasible_def restrict_r_def)
+
+theorem Feas_round: "is_feasible p \<Longrightarrow> is_feasible (rounded_version p)"
+  by (auto simp: is_feasible_def rounded_version_def restrict_r_def Domain_iff subset_iff)
+
+theorem Round_feas: "is_rounded p \<Longrightarrow> is_rounded (feasible_version p)"
+  by (auto simp: is_rounded_def feasible_version_def)
+
+theorem Equiv_prog: "a \<equiv>\<^sub>p b \<equiv> (Pre (rounded_version a) = Pre (rounded_version b) \<and> post (rounded_version a) = post (rounded_version b))"
+  by (auto simp: rounded_version_def restrict_r_def equiv_def restr_post_def)
+
+theorem Charrel_restriction: "rounded_version (p \<sslash>\<^sub>p C) = rounded_version p \<sslash>\<^sub>p C" \<comment> \<open>/Charrel_restriction/\<close>
+  by (auto simp: rounded_version_def restrict_p_def restrict_r_def S_def Field_def)
+
+theorem Charrel_choice: "rounded_version (p \<union>\<^sub>p q) = rounded_version p \<union>\<^sub>p rounded_version q"
+  by (auto simp: rounded_version_def choice_def restr_post_def restrict_r_def S_def)
+
+theorem Charrel_composition: "rounded_version (p ; q) = rounded_version p ; rounded_version q"
+  by (auto simp: rounded_version_def composition_def restr_post_def restrict_r_def S_def Field_def corestrict_r_def)
+
+theorem Charrel_corestriction: "rounded_version (p \<setminus>\<^sub>p C) = rounded_version p \<setminus>\<^sub>p C"
+  by (auto simp: rounded_version_def corestrict_p_def corestrict_r_def restrict_r_def S_def Field_def)
+
+theorem Restrict_rounded: "is_rounded p \<Longrightarrow> is_rounded (p \<sslash>\<^sub>p C)"
+  by (auto simp: is_rounded_def restrict_p_def restrict_r_def)
+
+theorem Choice_rounded: "is_rounded (p \<union>\<^sub>p q)"
+  by (auto simp: is_rounded_def choice_def restr_post_def restrict_r_def)
+
+theorem "is_rounded q \<Longrightarrow> is_rounded p \<Longrightarrow> is_rounded (p;q)"
+  by (auto simp: is_rounded_def composition_def corestrict_r_def restr_post_def restrict_r_def)
+
+theorem Corestrict_feasible: "is_feasible p \<Longrightarrow> is_feasible ((p \<sslash>\<^sub>p (Pre p \<inter> Domain (post p \<setminus>\<^sub>r C))) \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_feasible/\<close>
+  by (auto simp: is_feasible_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def)
 end

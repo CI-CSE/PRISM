@@ -172,7 +172,7 @@ qed
 theorem loop_prop1: "S (loop (b\<sslash>\<^sub>p(-C)) 0 n) = S b"
 proof (induction n)
   case 0
-  then show ?case by (auto simp: S_def restrict_p_def Skip_def Field_def)
+  then show ?case by (auto simp: S_def restrict_p_def Skip_def Field_def restrict_r_def)
 next
   case (Suc n)
   have l1: "loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) = (if 0>(Suc n) then Fail (S b) else (b \<sslash>\<^sub>p (- C))\<^bold>^(Suc n) \<union>\<^sub>p loop ((b \<sslash>\<^sub>p (- C))) 0 n)"
@@ -192,7 +192,7 @@ qed
 theorem loop_prop2: "State (loop (b\<sslash>\<^sub>p(-C)) 0 n) = S b"
 proof (induction n)
   case 0
-  then show ?case by (auto simp: restrict_p_def S_def Field_def Skip_def)
+  then show ?case by (auto simp: restrict_p_def S_def Field_def Skip_def restrict_r_def)
 next
   case (Suc n)
   have "loop (b \<sslash>\<^sub>p (- C)) 0 (Suc n) = (if 0>(Suc n) then Fail (S b) else (b \<sslash>\<^sub>p (- C))\<^bold>^(Suc n) \<union>\<^sub>p loop ((b \<sslash>\<^sub>p (- C))) 0 n)"

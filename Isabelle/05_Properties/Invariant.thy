@@ -11,9 +11,9 @@ theorem false_is_invariant: "is_invariant FALSE p"
   by (simp add: FALSE_def invariant_disjoint_from_pre)
 
 theorem equiv_inv: "p\<^sub>1 \<equiv>\<^sub>p p\<^sub>2 \<Longrightarrow> is_invariant I p\<^sub>1 = is_invariant I p\<^sub>2" \<comment> \<open>Equiv_inv\<close>
-  apply (auto simp: is_invariant_def equiv_def restr_post_def restrict_r_def Range_p_def subset_iff Range_iff restrict_p_def)
-  apply fastforce
-  by fastforce
+  apply (auto simp: is_invariant_def equiv_def restr_post_def restrict_r_def)
+   apply (auto simp add: restrict_p_def restrict_r_def)
+  by (auto simp: Range_p_def restrict_r_def)
 
 theorem invariant_relation_1: "is_invariant I p \<Longrightarrow> is_invariant J p \<Longrightarrow> is_invariant (I \<union> J) p" \<comment> \<open>Inv_prop1\<close>
   by (auto simp: is_invariant_def Range_p_def restrict_p_def restrict_r_def)
@@ -49,8 +49,9 @@ theorem invariant_prop_subprogram: "is_invariant I p\<^sub>1 \<Longrightarrow> p
   (* apply (auto simp: is_invariant_def subprogram_def weakens_def) [1] *)
   (* apply (auto simp: is_invariant_def subprogram_def strengthens_def Range_p_def restrict_r_def subset_iff Range_iff weakens_def) [1] *)
   (* by blast *)
-  apply (simp add: is_invariant_def Range_p_def subprogram_def restrict_r_def weakens_def strengthens_def restrict_p_def subset_iff Range_iff extends_def S_def Field_def Domain_iff)
-  by meson
+  apply (simp add: is_invariant_def Range_p_def subprogram_def restrict_r_def weakens_def strengthens_def restrict_p_def extends_def)
+  apply (auto simp: S_def Range_iff Field_def Domain_iff Un_def)
+  by fastforce
 
 theorem invariant_prop_2: "is_invariant I (Fail C)"
   (* by (auto simp: Fail_def is_invariant_def Range_p_def restrict_r_def) *)
@@ -65,12 +66,12 @@ theorem invariant_prop_3: "C \<subseteq> I \<Longrightarrow> is_invariant I (Hav
 theorem invariant_prop_4: "is_invariant I (Skip C)"
   by (auto simp: Skip_def is_invariant_def Range_p_def restrict_p_def restrict_r_def)
 
-theorem composition_invariant_preserve: "is_invariant I p\<^sub>1 \<Longrightarrow> is_invariant I p\<^sub>2 \<Longrightarrow> is_invariant I (p\<^sub>1 ; p\<^sub>2)" \<comment> \<open>Gen_inv\<close>
+theorem composition_invariant_preserve: "is_invariant I p\<^sub>1 \<Longrightarrow> is_invariant I p\<^sub>2 \<Longrightarrow> is_invariant I (p\<^sub>1 ; p\<^sub>2)" \<comment> \<open>Inv_preserving\<close>
   (* by (auto simp: is_invariant_def composition_def Range_p_def restrict_p_def restrict_r_def restr_post_def ) *)
   apply (auto simp: is_invariant_def composition_def Range_p_def restrict_p_def restrict_r_def restr_post_def corestrict_r_def)
   by (smt (verit, ccfv_threshold) Range.intros fst_conv mem_Collect_eq subsetD)
 
-theorem choice_invariant_preserve: "is_invariant I p\<^sub>1 \<Longrightarrow> is_invariant I p\<^sub>2 \<Longrightarrow> is_invariant I (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>Gen_inv\<close>
+theorem choice_invariant_preserve: "is_invariant I p\<^sub>1 \<Longrightarrow> is_invariant I p\<^sub>2 \<Longrightarrow> is_invariant I (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>Inv_preserving\<close>
   by (auto simp: is_invariant_def choice_def Range_p_def restrict_p_def restrict_r_def restr_post_def)
 
 theorem choice_invariant_preserve_2: "is_invariant I (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<Longrightarrow> is_invariant I p\<^sub>1" \<comment> \<open>NEW\<close>
@@ -82,14 +83,14 @@ theorem choice_invariant_preserve_3: "is_invariant I (p\<^sub>1 \<union>\<^sub>p
 theorem choice_invariant_preserve_4: "is_invariant I (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) = (is_invariant I p\<^sub>1 \<and> is_invariant I p\<^sub>2)" \<comment> \<open>NEW\<close>
   by (meson choice_invariant_preserve choice_invariant_preserve_2 choice_invariant_preserve_3)
 
-theorem restriction_invariant_preserve: "is_invariant I p \<Longrightarrow> is_invariant I (p \<sslash>\<^sub>p C)" \<comment> \<open>Gen_inv\<close>
+theorem restriction_invariant_preserve: "is_invariant I p \<Longrightarrow> is_invariant I (p \<sslash>\<^sub>p C)" \<comment> \<open>Inv_preserving\<close>
   by (auto simp: is_invariant_def Range_p_def restrict_p_def restrict_r_def)
 
 theorem restriction_invariant_preserve_2: "I \<subseteq> C \<Longrightarrow> is_invariant I (p \<sslash>\<^sub>p C) \<Longrightarrow> is_invariant I p"
   (* oops *)
   by (auto simp: is_invariant_def restrict_p_def Range_p_def restrict_r_def)
 
-theorem corestriction_invariant_preserve: "is_invariant I p \<Longrightarrow> is_invariant I (p \<setminus>\<^sub>p C)" \<comment> \<open>Gen_inv\<close>
+theorem corestriction_invariant_preserve: "is_invariant I p \<Longrightarrow> is_invariant I (p \<setminus>\<^sub>p C)" \<comment> \<open>Inv_preserving\<close>
   by (auto simp: is_invariant_def Range_p_def corestrict_p_def corestrict_r_def restrict_p_def restrict_r_def)
 
 theorem c_is_invariant: "is_invariant C (p \<setminus>\<^sub>p C)"
@@ -99,17 +100,20 @@ theorem c_is_invariant: "is_invariant C (p \<setminus>\<^sub>p C)"
 theorem guarded_conditional_invariant_preserve: "is_invariant I p \<Longrightarrow> is_invariant I q \<Longrightarrow> is_invariant I (GC [(C, p), (D, q)])" \<comment> \<open>Gen_inv\<close>
   by (simp add: guarded_conditional_def choice_invariant_preserve restriction_invariant_preserve invariant_prop_2)
 
-theorem if_then_else_invariant_preserve: "is_invariant I p \<Longrightarrow> is_invariant I q \<Longrightarrow> is_invariant I (ITE C p q)" \<comment> \<open>Gen_inv\<close>
+theorem if_then_else_invariant_preserve: "is_invariant I p \<Longrightarrow> is_invariant I q \<Longrightarrow> is_invariant I (ITE C p q)" \<comment> \<open>Inv_preserving\<close>
   by (simp add: if_then_else_def choice_invariant_preserve restriction_invariant_preserve)
 
+(*
 theorem atomic_conc_invariant_preserve: "is_invariant I p\<^sub>1 \<Longrightarrow> is_invariant I p\<^sub>2 \<Longrightarrow> is_invariant I ([p\<^sub>1] \<parallel> p\<^sub>2)" \<comment> \<open>Gen_inv\<close>
   apply (simp add: non_atomic_conc_def)
   by (meson choice_invariant_preserve composition_invariant_preserve)
+*)
 
+(*
 theorem non_atomic_conc_invariant_preserve: "is_invariant I p\<^sub>1 \<Longrightarrow> is_invariant I p\<^sub>2 \<Longrightarrow> is_invariant I q \<Longrightarrow> is_invariant I ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>Gen_inv\<close>
   by (simp add: non_atomic_conc_def atomic_conc_invariant_preserve choice_invariant_preserve composition_invariant_preserve)
-
-(* theorem fixed_repetition_invariant_preserve: "0<n \<Longrightarrow> is_invariant I p \<Longrightarrow> is_invariant I (p\<^bold>^n)" \<comment> \<open>General_invariant\<close> *)
+*)
+(* theorem fixed_repetition_invariant_preserve: "0<n \<Longrightarrow> is_invariant I p \<Longrightarrow> is_invariant I (p\<^bold>^n)" \<comment> \<open>Gen_inv\<close> *)
   (* apply (induction n) *)
    (* apply (simp) *)
 (* proof - *)
@@ -194,14 +198,12 @@ theorem true_is_invariant: "S p \<subseteq> C \<Longrightarrow> is_invariant (TR
   by (auto simp: TRUE_def is_invariant_def Range_p_def restrict_p_def restrict_r_def S_def Field_def)
 
 theorem invariant_exp: "is_invariant I b \<Longrightarrow> x \<in> Pre b \<Longrightarrow> (x,y) \<in> post b  \<Longrightarrow> x \<in> I \<Longrightarrow> y \<in> I"
-  by (auto simp: is_invariant_def restrict_p_def Range_p_def restrict_r_def Range_iff subset_iff)
+  apply (auto simp: is_invariant_def restrict_p_def Range_p_def restrict_r_def)
+  by fastforce
 
 theorem invariant_preserve: "is_invariant I b \<Longrightarrow> Range_p a \<subseteq> I \<Longrightarrow> x \<in> Pre a \<Longrightarrow> (x,y) \<in> post (a;b) \<Longrightarrow> y \<in> I"
-  apply (auto simp: is_invariant_def Range_p_def composition_def restr_post_def restrict_p_def restrict_r_def subset_iff Range_iff)
+  apply (auto simp: is_invariant_def Range_p_def composition_def restr_post_def restrict_p_def restrict_r_def)
   by fastforce
 
-theorem invariant_prop: "is_invariant I p \<and> q \<preceq>\<^sub>p p \<Longrightarrow> is_invariant I q"
-  apply (auto simp: is_invariant_def subprogram_def extends_def weakens_def strengthens_def Range_p_def restrict_p_def restrict_r_def S_def Field_def)
-  by fastforce
 
 end

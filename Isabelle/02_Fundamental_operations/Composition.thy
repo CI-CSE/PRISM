@@ -107,10 +107,10 @@ proof -
 qed
 
 theorem composition_removes_dead_code_1: "p \<sslash>\<^sub>p (Pre p) ; q \<equiv>\<^sub>p p ; q"
-  by (auto simp: composition_def equiv_def restrict_p_def restr_post_def)
+  by (auto simp: composition_def equiv_def restrict_p_def restr_post_def restrict_r_def corestrict_r_def)
 
 theorem composition_removes_dead_code_2: "p ; q \<sslash>\<^sub>p (Pre q) \<equiv>\<^sub>p p ; q"
-  by (auto simp: composition_def equiv_def restrict_p_def restr_post_def)
+  by (auto simp: composition_def equiv_def restrict_p_def restr_post_def restrict_r_def)
 
 theorem compose_feasible: "is_feasible p\<^sub>2 \<Longrightarrow> is_feasible (p\<^sub>1 ; p\<^sub>2)" \<comment> \<open>Compose_feasible\<close>
   apply (auto simp: is_feasible_def composition_def restr_post_def restrict_r_def relcomp_unfold corestrict_r_def subset_iff Domain_iff)

@@ -6,7 +6,7 @@ section \<open>Fixed repetition for top\<close>
 
 
 theorem state_space_is_same: "S p = S (p \<^bold>^ n)"
-  apply (induction n) apply (auto simp: Skip_def S_def restrict_p_def Field_def) [1]
+  apply (induction n) apply (auto simp: Skip_def S_def restrict_p_def Field_def restrict_r_def) [1]
   by simp
 
 theorem state_space_is_same2: "State (p\<^bold>^n) = S p"
@@ -60,7 +60,7 @@ next
     have l6: "p \<^bold>^ 1 ; p \<equiv>\<^sub>p p \<sslash>\<^sub>p (Pre p) ; p"
       by (meson equals_equiv_relation_3 composition_equiv fixed_rep_one_1)
     have l8: "p \<sslash>\<^sub>p (Pre p) ; p \<equiv>\<^sub>p p ; p"
-      by (auto simp: restrict_p_def equiv_def composition_def restr_post_def)
+      by (auto simp: restrict_p_def equiv_def composition_def restr_post_def restrict_r_def corestrict_r_def)
     have l9: "p \<^bold>^ 2 \<equiv>\<^sub>p p ; p \<^bold>^ 1"
       by (metis One_nat_def a2 composition_simplification_2 equiv_is_symetric equiv_is_transitive fixed_repetition.simps(2) l1 l3 l6 l8)
     then show ?thesis
@@ -85,7 +85,7 @@ theorem fixed_rep_decomp_back: "is_feasible p \<Longrightarrow> p\<^bold>^(Suc i
 theorem fixed_rep_feasibility: "is_feasible p \<Longrightarrow> is_feasible (p\<^bold>^n)"
 proof (induction n)
   case 0
-  then show ?case by (auto simp: is_feasible_def Skip_def restrict_p_def)
+  then show ?case by (auto simp: is_feasible_def Skip_def restrict_p_def restrict_r_def)
 next
   case (Suc n)
   assume IH: "is_feasible p \<Longrightarrow> is_feasible (p \<^bold>^ n)"
@@ -169,7 +169,7 @@ qed*)
 
 theorem comp_prop: "Range_p a \<inter> Pre d = {} \<Longrightarrow> Range_p c \<inter> Pre b = {} \<Longrightarrow> a;b \<union>\<^sub>p c;d = (a \<union>\<^sub>p c);(b \<union>\<^sub>p d)"
   apply (auto simp: Range_p_def restrict_r_def choice_def composition_def S_def relcomp_unfold)
-                      apply (auto simp: restr_post_def restrict_r_def Field_def)
+                      apply (auto simp: restr_post_def restrict_r_def Field_def corestrict_r_def)
   by (auto simp: corestrict_r_def Range_iff Int_def Domain_iff)
 
 lemma arbitrary_repetition_simplification: "0<n \<Longrightarrow> all_feasible [x,y] \<Longrightarrow> Range_p x \<inter> Pre y = {} \<Longrightarrow> Range_p y \<inter> Pre x = {} \<Longrightarrow> x\<^bold>^n \<union>\<^sub>p y\<^bold>^n = (x \<union>\<^sub>p y)\<^bold>^n" \<comment> \<open>NEW\<close>
@@ -212,7 +212,8 @@ lemma arbitrary_repetition_simplification2: "0<n \<Longrightarrow> all_feasible 
 theorem equality_is_maintained_by_fixed_repetition: "p\<^sub>1 \<triangleq> p\<^sub>2 \<Longrightarrow> p\<^sub>1\<^bold>^n \<triangleq> p\<^sub>2\<^bold>^n"
   apply (induction n)
   apply (auto simp: equal_def) [1]
-  by (simp add: equality_is_maintained_by_composition)
+  apply (simp add: Definitions.equal_def)
+  by (simp add: equality_is_maintained_by_composition restrict_p_def restrict_r_def)
 
 theorem equiv_is_maintained_by_fixed_repetition: "0<n \<Longrightarrow> all_feasible [p\<^sub>1, p\<^sub>2] \<Longrightarrow> p\<^sub>1 \<equiv>\<^sub>p p\<^sub>2 \<Longrightarrow> p\<^sub>1\<^bold>^n \<equiv>\<^sub>p p\<^sub>2\<^bold>^n"
   apply (induction n)

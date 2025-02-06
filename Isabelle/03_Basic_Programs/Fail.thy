@@ -37,16 +37,16 @@ theorem NOT_fail_choice_l: "Fail (S p) \<union>\<^sub>p p \<triangleq> p"
 theorem fail_choice_l: "Fail C \<union>\<^sub>p p \<equiv>\<^sub>p p" \<comment> \<open>/Fail_choice/\<close>
   by (auto simp: equiv_def choice_def Fail_def restr_post_def restrict_r_def)
 
-theorem fail_compose_l_2: "Fail (S p) ; p \<triangleq> Fail (S p)" \<comment> \<open>/Fail_compose/\<close>
+theorem fail_compose_l_2: "Fail (S p) ; p \<triangleq> Fail (S p)" \<comment> \<open>/Fail_comp/\<close>
   by (auto simp: Fail_def composition_def S_def corestrict_r_def equal_def restr_post_def)
 
-theorem fail_compose_l: "Fail C ; p \<triangleq> Fail (C \<union> S p)" \<comment> \<open>/Fail_compose/\<close>
+theorem fail_compose_l: "Fail C ; p \<triangleq> Fail (C \<union> S p)" \<comment> \<open>/Fail_comp/\<close>
   by (auto simp: Fail_def composition_def S_def corestrict_r_def equal_def restr_post_def)
 
-theorem fail_compose_r_2: "p ; Fail C \<triangleq> Fail (C \<union> S p)" \<comment> \<open>/Fail_compose/\<close>
+theorem fail_compose_r_2: "p ; Fail C \<triangleq> Fail (C \<union> S p)" \<comment> \<open>/Fail_comp/\<close>
   by (auto simp: Fail_def composition_def S_def corestrict_r_def equal_def restr_post_def restrict_r_def)
 
-theorem fail_compose_r: "p ; Fail C \<equiv>\<^sub>p Fail C" \<comment> \<open>/Fail_compose/\<close>
+theorem fail_compose_r: "p ; Fail C \<equiv>\<^sub>p Fail C" \<comment> \<open>/Fail_compo/\<close>
   by (auto simp: Fail_def composition_def S_def corestrict_r_def  restr_post_def restrict_r_def equiv_def)
 
 theorem only_fail_refines_fail: "(p \<subseteq>\<^sub>p Fail (S p)) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>T26\<close>

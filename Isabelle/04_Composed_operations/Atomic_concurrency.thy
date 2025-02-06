@@ -156,7 +156,7 @@ proof -
   have l1: "S (feas_of p) = S p" by (auto simp: feas_of_def S_def Field_def)
   have l2: "Pre (feas_of p) = Pre p" using a1 by (auto simp: feas_of_def is_feasible_def)
   have l3: "post (feas_of p) = post p" by (auto simp: feas_of_def)
-  show ?thesis using l1 l2 l3 by (auto simp: equal_def)
+  show ?thesis using l1 l2 l3 by (auto simp: Definitions.equal_def)
 qed
 
 theorem skip_prop_4: "a ; Skip (S a) \<equiv>\<^sub>p feas_of a"
@@ -185,7 +185,7 @@ proof -
 qed
 
 theorem skip_prop_8: "(a; Skip (S a)) ; b \<equiv>\<^sub>p a ; b"
-  by (metis equal_def equality_is_maintained_by_composition inverse_equality_1 skip_unsafe_compose_r_1 unsafe_gets_safe_1)
+  by (metis equals_equiv_relation_3 skip_prop_14)
 
 theorem skip_prop_9: "(a; Skip (S b)) ; b \<equiv>\<^sub>p a ; b"
   by (simp add: equals_equiv_relation_3 composition_equiv skip_compose3)
@@ -646,7 +646,7 @@ proof -
 qed
 
 theorem equiv_to_equal: "S a = S b \<Longrightarrow> post a = post b \<Longrightarrow> a \<equiv>\<^sub>p b \<Longrightarrow> a \<triangleq> b"
-  by (auto simp: equal_def equiv_def)
+  by (auto simp: Definitions.equal_def equiv_def)
 
 theorem atomic_prop4: "atomic_conc [a, b \<union>\<^sub>p c] \<equiv>\<^sub>p atomic_conc [a,b] \<union>\<^sub>p atomic_conc [a,c]"
 proof -
@@ -684,7 +684,7 @@ lemma set_to_list_set: "finite xs \<Longrightarrow> set (set_to_list xs) = xs"
 value "drop 3 [1::nat, 2,3,4,5,6,7]"
 
 theorem subprogram_prop: "a \<triangleq> b \<Longrightarrow> b \<preceq>\<^sub>p a \<and> a \<preceq>\<^sub>p b"
-  by (auto simp: subprogram_def extends_def equal_def weakens_def strengthens_def restrict_r_def)
+  by (auto simp: subprogram_def extends_def Definitions.equal_def weakens_def strengthens_def restrict_r_def S_def Field_def)
 
 theorem atomic_prop6: "atomic_conc [a \<union>\<^sub>p b, c] \<equiv>\<^sub>p atomic_conc [a,c] \<union>\<^sub>p atomic_conc [b,c]"
 proof -

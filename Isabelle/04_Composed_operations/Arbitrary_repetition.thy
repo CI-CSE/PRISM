@@ -47,7 +47,7 @@ next
   moreover have "... = p\<^bold>^(Suc s) \<union>\<^sub>p Fail (S p);p"
     by simp
   moreover have "... = p\<^bold>^(Suc s) \<union>\<^sub>p Fail (S p)" using fail_compose
-    by metis
+    by (simp add: Fail.fail_compose)
   moreover have "... = loop p (Suc s) (Suc s)"
     by (simp add: loop_l2_01)
   ultimately show ?thesis
@@ -565,10 +565,10 @@ proof -
     using a1 choice_fail_implication by auto
 qed
 
-theorem "s\<le>f \<Longrightarrow> loop p s (Suc f) \<equiv>\<^sub>p Fail {} \<equiv> loop p s f \<equiv>\<^sub>p Fail {}"
+theorem fail_stays_fail_arbitrary_3: "s\<le>f \<Longrightarrow> loop p s (Suc f) \<equiv>\<^sub>p Fail {} \<equiv> loop p s f \<equiv>\<^sub>p Fail {}"
   by (smt (verit) fail_stays_fail_arbitrary fail_stays_fail_arbitrary_2)
 
-theorem "s\<le>f \<Longrightarrow> loop p s s \<equiv>\<^sub>p Fail {} \<equiv> loop p s f \<equiv>\<^sub>p Fail {}"
+theorem fail_stays_fail_arbitrary_4: "s\<le>f \<Longrightarrow> loop p s s \<equiv>\<^sub>p Fail {} \<equiv> loop p s f \<equiv>\<^sub>p Fail {}"
   apply (induction f)
   apply simp
   by (metis fail_stays_fail_arbitrary fail_stays_fail_arbitrary_2 le_SucE)
@@ -663,7 +663,7 @@ next
   next
     case False
     then show ?thesis
-      by (metis Suc.IH bot_nat_0.not_eq_extremum compose_distrib2_1 fail_compose fixed_repetition.simps(2))
+      by (metis Fail.fail_compose Suc.IH bot_nat_0.not_eq_extremum compose_distrib2_1 fixed_repetition.simps(2))
   qed
 qed
 
@@ -768,4 +768,9 @@ next
     qed
   qed
 qed
+
+theorem Loop_fail: "loop p 0 n \<equiv>\<^sub>p Fail {} \<Longrightarrow> loop p 0 m \<equiv>\<^sub>p Fail{}" \<comment> \<open>/Loop_fail/\<close>
+  apply (cases "n\<le>m")
+  apply (meson bot_nat_0.extremum fail_stays_fail_arbitrary_4)
+  by (meson bot_nat_0.extremum fail_stays_fail_arbitrary_4)
 end

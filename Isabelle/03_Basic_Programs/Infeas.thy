@@ -52,7 +52,7 @@ theorem infeas_unsafe_composition_2: "p ;\<^sub>p Infeas (S p) \<equiv>\<^sub>p 
   by (auto simp: Infeas_def equiv_def unsafe_composition_def restr_post_def restrict_r_def)
 
 theorem infeas_restriction: "Infeas (C) \<sslash>\<^sub>p D \<equiv>\<^sub>p Infeas (C \<inter> D)"
-  by (auto simp: Infeas_def restrict_p_def S_def equiv_def restr_post_def)
+  by (auto simp: Infeas_def restrict_p_def S_def equiv_def restr_post_def restrict_r_def)
 
 theorem infeas_corestriction: "Infeas (C) \<setminus>\<^sub>p D = Fail (C)"
   by (auto simp: Infeas_def corestrict_p_def corestrict_r_def S_def Fail_def)

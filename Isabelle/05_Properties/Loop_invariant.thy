@@ -100,9 +100,10 @@ theorem is_invariant_is_preserved: "p \<equiv>\<^sub>p q \<Longrightarrow> is_in
   by (auto simp: equiv_def is_invariant_def restr_post_def Range_p_def restrict_p_def restrict_r_def)
 
 theorem is_loop_invariant_is_preserved: "a \<equiv>\<^sub>p a' \<Longrightarrow> b \<equiv>\<^sub>p b' \<Longrightarrow> is_loop_invariant I a C b \<Longrightarrow> is_loop_invariant I a' C b'"
-  apply (auto simp: equiv_def is_loop_invariant_def restr_post_def is_invariant_def Range_p_def restrict_r_def restrict_p_def Range_iff subset_iff)
-  apply (metis (no_types, lifting) fst_conv mem_Collect_eq)
-  by (metis (no_types, lifting) fst_conv mem_Collect_eq)
+  apply (auto simp: equiv_def is_loop_invariant_def restr_post_def is_invariant_def Range_p_def restrict_r_def restrict_p_def)
+   apply fastforce
+  apply (auto simp: Range_def)
+  by (smt (verit, ccfv_SIG) RangePI fstI mem_Collect_eq subsetD)
 
 theorem loop_inv_is_inv_for_a: "is_loop_invariant I a C b \<Longrightarrow> is_invariant I a"
   by (auto simp: is_loop_invariant_def is_invariant_def Range_p_def restrict_p_def restrict_r_def)

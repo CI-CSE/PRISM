@@ -1,7 +1,7 @@
-theory Theory_of_programs
+theory PRISM
   imports T_05_Properties
 begin
-section \<open>Theory of programs\<close>
+section \<open>PRISM\<close>
 
 
 theorem cond_for_commutative_1: "Range_p p\<^sub>1 \<inter> Pre p\<^sub>2 = {} \<Longrightarrow> Range_p p\<^sub>2 \<inter> Pre p\<^sub>1 = {} \<Longrightarrow> commute_programs3 p\<^sub>1 p\<^sub>2"
@@ -30,6 +30,8 @@ value "\<lparr>State={}, Pre=A', post=B'\<rparr>"
 theorem law_3_3: "\<lparr>State=mid, Pre=A, post=B\<rparr> \<subseteq>\<^sub>p \<lparr>State={}, Pre=A, post={(x,y). x \<in> Domain B \<and> y \<in> mid}\<rparr> ; \<lparr>State={}, Pre=mid, post={(x,y). x \<in> mid \<and> y \<in> Range B}\<rparr>"
   by (auto simp: refines_def extends_def S_def composition_def Field_def restr_post_def restrict_r_def weakens_def strengthens_def relcomp_unfold corestrict_r_def)
 
+theorem "is_rounded p \<Longrightarrow> p \<union>\<^sub>p p \<triangleq> p"
+  by (auto simp: Definitions.equal_def choice_def is_rounded_def restr_post_def restrict_r_def S_def Field_def)
 
 
 end

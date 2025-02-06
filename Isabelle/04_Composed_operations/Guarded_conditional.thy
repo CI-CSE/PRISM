@@ -4,7 +4,7 @@ begin
 section \<open>Guarded conditional top\<close>
 
 theorem gc_S: "S (GC ((C,p)#xs)) = S p \<union> S (GC xs)"
-  apply (cases "xs = []") apply (auto simp: guarded_conditional_def Fail_def S_def restrict_p_def) [1]
+  apply (cases "xs = []") apply (auto simp: guarded_conditional_def Fail_def S_def restrict_p_def restrict_r_def Field_def) [1]
 proof -
   assume a1: "xs \<noteq> []"
   have "GC ((C,p)#xs) = p\<sslash>\<^sub>pC \<union>\<^sub>p GC (xs)"
@@ -98,7 +98,7 @@ theorem cond_sub2: "q\<^sub>1 \<preceq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^
 theorem cond_distrib: "GC xs \<sslash>\<^sub>p C \<equiv>\<^sub>p GC [(fst t \<inter> C, snd t) . t \<leftarrow> xs]"
 proof (induction xs arbitrary: C)
   case Nil
-  then show ?case by (auto simp: equiv_def guarded_conditional_def Fail_def restrict_p_def restr_post_def)
+  then show ?case by (auto simp: equiv_def guarded_conditional_def Fail_def restrict_p_def restr_post_def restrict_r_def)
 next
   case (Cons x xs)
   then show "GC (x # xs) \<sslash>\<^sub>p C \<equiv>\<^sub>p GC (map (\<lambda>t. (fst t \<inter> C, snd t)) (x # xs))"
@@ -223,7 +223,7 @@ next
 qed
 
 theorem gc_prop4: "S (snd x) \<subseteq> complete_state (map snd (a@b)) \<Longrightarrow> fst x = FALSE \<Longrightarrow> size (a@b) = 0 \<Longrightarrow> GC (a@x#b) = GC(a@b)"
-  by (auto simp: guarded_conditional_def Fail_def FALSE_def restrict_p_def complete_state_def S_def Field_def)
+  by (auto simp: guarded_conditional_def Fail_def FALSE_def restrict_p_def complete_state_def S_def Field_def restrict_r_def)
 
 theorem fail_choice: "S q \<subseteq> S p \<Longrightarrow> q \<equiv>\<^sub>p Fail {} \<Longrightarrow> q \<union>\<^sub>p p = Fail {} \<union>\<^sub>p p"
   by (auto simp: choice_def Fail_def equiv_def restr_post_def restrict_r_def S_def)

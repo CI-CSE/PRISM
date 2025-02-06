@@ -30,7 +30,7 @@ lemma skip_compose_r_Pre_1: "Pre (p ; Skip (S p)) = (Pre p \<inter> Domain (post
 lemma skip_compose_r_S: "S (p ; Skip (S p)) = S p"
   by (auto simp: S_def Skip_def Field_def composition_def corestrict_r_def restr_post_def restrict_r_def)
 
-theorem skip_compose1: "is_feasible p \<Longrightarrow> p ; Skip (S p) \<triangleq> p" \<comment> \<open>/Skip_compose1/\<close>
+theorem Skip_compleft: "is_feasible p \<Longrightarrow> p ; Skip (S p) \<triangleq> p" \<comment> \<open>/Skip_compleft/\<close>
   apply (auto simp: is_feasible_def equal_def S_def composition_def Skip_def restr_post_def corestrict_r_def Field_def Range_iff subset_iff Domain_iff Un_def relcomp_unfold restrict_r_def)
   by blast
 
@@ -38,7 +38,7 @@ theorem "is_feasible p \<Longrightarrow> Skip (S p) ; p \<triangleq> p"
   oops
 
 lemma skip_compose2: "is_feasible p \<Longrightarrow> p ; Skip (S p) \<equiv>\<^sub>p p" \<comment> \<open>/Skip_compose/\<close>
-  by (simp add: equals_equiv_relation_2 skip_compose1)
+  by (simp add: equals_equiv_relation_2 Skip_compleft)
 
 
 lemma skip_compose_r_range2: "is_feasible p \<Longrightarrow> p ; Skip (Range (post p)) \<triangleq>  p"
@@ -91,7 +91,7 @@ theorem skip_prop_2: "Skip (S p) \<sslash>\<^sub>p C ; p \<equiv>\<^sub>p p \<ss
 theorem "Skip (C) ; p \<triangleq> p \<sslash>\<^sub>p C"
   oops
 
-theorem skip_restrict: "Skip (C) ; p \<equiv>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Skip_restrict/\<close>
+theorem Skip_comprestrict: "Skip (C) ; p \<equiv>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Skip_comprestrict/\<close>
 proof -
   have l1: "\<forall>C'. C' \<subseteq> S p \<longrightarrow> Skip (C') ; p \<equiv>\<^sub>p p \<sslash>\<^sub>p C'"
    by (auto simp: S_def composition_def equiv_def corestrict_r_def restrict_p_def Skip_def restr_post_def restrict_r_def)
@@ -147,7 +147,6 @@ theorem skip_prop_17: "S b \<subseteq> C \<Longrightarrow> post ((a ; Skip C); b
   by (auto simp: Skip_def composition_def relcomp_unfold restr_post_def S_def restrict_r_def Field_def corestrict_r_def Range_iff)
 theorem skip_prop_18: "S a \<subseteq> C \<Longrightarrow>  Skip C ; (a ; Skip C) = (Skip (S a); a) ; Skip C"
   apply (auto simp: composition_def Skip_def restr_post_def corestrict_r_def restrict_r_def relcomp_unfold)
-  by (auto simp: S_def Field_def Domain_iff)
-
+  by (auto simp: S_def Field_def Domain_iff)  
 
 end

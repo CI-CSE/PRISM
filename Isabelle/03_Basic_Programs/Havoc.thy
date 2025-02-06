@@ -108,8 +108,7 @@ proof -
     using havoc_from_left_S by auto
 
   from a0 have lg: "Range_p p \<noteq> {} \<Longrightarrow> Pre ?right = C"
-    apply (auto simp: Range_p_def restrict_r_def Havoc_def corestrict_p_def corestrict_r_def S_def Field_def Range_def Domain_def)
-    by blast
+    apply (auto simp: Range_p_def restrict_r_def Havoc_def corestrict_p_def corestrict_r_def S_def Field_def Range_iff Domain_iff subset_iff) by blast
 
   have l2: "Pre ?left = Pre ?right"
   proof -
@@ -125,22 +124,7 @@ proof -
     by (auto simp: restr_post_def Range_p_def Fail_def Havoc_def restrict_r_def composition_def S_def corestrict_r_def)
 
   from a0 have l5: "s \<in> C \<Longrightarrow> t \<in> Range_p p \<Longrightarrow> (s,t) \<in> restr_post ?right"
-    apply (auto simp: equiv_def is_feasible_def Havoc_def Fail_def composition_def corestrict_r_def restr_post_def S_def corestrict_p_def restrict_r_def Range_p_def Field_def relcomp_def)
-  proof -
-    fix a :: 'a
-    assume a1: "s \<in> C"
-    assume a2: "(a, t) \<in> post p"
-    assume a3: "a \<in> Pre p"
-    assume "Range (post p) \<subseteq> C"
-    then have f4: "t \<in> C"
-      using a2 by auto
-    have f5: "\<forall>a aa p. \<not> p (aa::'a, a::'a) \<or> aa \<in> Domain (Collect p)"
-      by (metis (lifting) Relation_operations.restrict_prop_1 mem_Collect_eq split_pairs)
-    have "t \<in> Range {pa \<in> post p. fst pa \<in> Pre p}"
-      using a3 a2 by auto
-    then show "s \<in> Domain {pa \<in> C \<times> C. snd pa \<in> Range {pa \<in> post p. fst pa \<in> Pre p}}"
-      using f5 f4 a1 by simp
-  qed
+    by (auto simp: equiv_def is_feasible_def Havoc_def Fail_def composition_def corestrict_r_def restr_post_def S_def corestrict_p_def restrict_r_def Range_p_def Field_def relcomp_def Domain_iff subset_iff)
     
   from a0 have l3: "restr_post ?left = restr_post ?right"
     by (simp add: a1 havoc_from_left_post l2 restr_post_def)

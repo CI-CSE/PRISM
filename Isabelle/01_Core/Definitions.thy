@@ -12,6 +12,16 @@ record 'a Contracted_Program =
   a_specification :: "'a Program"
   a_implementation :: "'a Program"
 
+type_synonym 'a Normal_form = "'a Program list list"
+
+definition basic :: "'a Normal_form \<Rightarrow> 'a Program set"
+  where
+    "basic p \<equiv> foldl (\<union>) ({}::'a Program set) (map (set) p)"
+
+definition normal_of :: "'a Normal_form \<Rightarrow> 'a Program set \<Rightarrow> bool"
+  where
+    "normal_of p xs \<equiv> (basic p \<subseteq> (xs \<union> {\<lparr>State={},Pre={},post={}\<rparr>})) \<and> finite xs"
+
 definition S :: "'a Program \<Rightarrow> 'a set"
   where
     "S p = State p \<union> Pre p \<union> Field (post p)"
@@ -137,6 +147,22 @@ definition choice :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Progr
   where
     "p\<^sub>1 \<union>\<^sub>p p\<^sub>2 = \<lparr>State= S p\<^sub>1 \<union> S p\<^sub>2, Pre = Pre p\<^sub>1 \<union> Pre p\<^sub>2, post = restr_post p\<^sub>1 \<union> restr_post p\<^sub>2\<rparr>"
 
+definition non_empty :: "'a Normal_form \<Rightarrow> 'a Normal_form"
+  where
+    "non_empty xs \<equiv> [t . t \<leftarrow> xs, t \<noteq> []]"
+
+definition non_empty2 :: "'a Normal_form list \<Rightarrow> 'a Normal_form list"
+  where
+    "non_empty2 xs \<equiv> [prog2. prog2 \<leftarrow> [non_empty prog. prog \<leftarrow> xs], prog2 \<noteq> []]"
+
+definition choice_cnf :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> 'a Normal_form" (infix "\<union>\<^sub>c" 150)
+  where
+    "choice_cnf a b \<equiv> (non_empty a) @ (non_empty b)"
+
+definition composition_cnf :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> 'a Normal_form" (infix ";\<^sub>c" 150)
+  where
+    "composition_cnf a b \<equiv> [xs @ ys. xs \<leftarrow> non_empty a, ys \<leftarrow> non_empty b]"
+
 definition is_prime :: "'a Program \<Rightarrow> bool" 
   where
     "is_prime p \<equiv> card (Pre p) = 1 \<and> card (post p) = 1 \<and> Pre p \<union> Field (post p) = State p"
@@ -192,7 +218,7 @@ value "({(1,2)}::nat rel) O ({(2,3)} ::nat rel)"
 
 definition restrict_p :: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program" (infix "\<sslash>\<^sub>p" 153) \<comment> \<open>D11 NEW DEFINITION\<close>
   where
-    "restrict_p p C = \<lparr>State= S p, Pre=Pre p \<inter> C, post=post p\<rparr>"
+    "restrict_p p C = \<lparr>State= S p, Pre=Pre p \<inter> C, post=post p \<sslash>\<^sub>r C\<rparr>"
 
 definition corestrict_p :: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program" (infix "\<setminus>\<^sub>p" 154) \<comment> \<open>Definition number missing\<close>
   where
@@ -285,7 +311,7 @@ primrec fixed_repetition:: "'a Program \<Rightarrow> nat \<Rightarrow> 'a Progra
 
 fun Choice:: "('a Program) list \<Rightarrow> 'a Program"
   where
-    "Choice [] = (Fail {})" |
+    "Choice [] = Fail {}" |
     "Choice [x] = x" |
     "Choice (x#xs) = foldl (\<union>\<^sub>p) x xs"
 
@@ -370,9 +396,9 @@ definition non_atomic_conc:: "('a Program \<times> 'a Program) \<Rightarrow> 'a 
     "p \<parallel> q \<equiv> (atomic_conc [fst p, q] ; snd p) \<union>\<^sub>p (fst p ; atomic_conc [snd p, q])"
 *)
 
-definition non_atomic_conc:: "'a Program list \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>" 50)
+definition non_atomic_conc:: "'a Program list \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>\<^sub>n" 50)
   where
-    "non_atomic_conc xs x \<equiv> \<Union>\<^sub>p [Concat t. t \<leftarrow> insert_all x xs]"
+    "xs \<parallel>\<^sub>n x \<equiv> \<Union>\<^sub>p [Concat t. t \<leftarrow> insert_all x xs]"
 
 definition arbitrary_repetition_set :: "'a Program \<Rightarrow> 'a Program set"
   where
@@ -445,5 +471,102 @@ theorem "a \<union>\<^sub>p (a \<inter>\<^sub>p b) \<equiv>\<^sub>p a"
 
 theorem "a \<inter>\<^sub>p (a \<union>\<^sub>p b) \<equiv>\<^sub>p a"
   by (auto simp: equiv_def choice_def inter_def restr_post_def restrict_r_def)
+
+definition set_to_list :: "'a set \<Rightarrow> 'a list"
+  where "set_to_list s = (if finite s then SOME l. set l = s \<and> distinct l else [])"
+
+(*
+definition is_atomic :: "'a Program \<Rightarrow> bool"
+where
+  "is_atomic p \<equiv> S p = State p \<and> card (post p) \<le> 1 \<and> card (Pre p) \<le> 1 \<and> card (State p) > 0 \<and>
+   (card (post p) = 1 \<and> card (Pre p) = 1 \<longrightarrow>
+    fst (THE x. x \<in> post p) = (THE x. x \<in> Pre p))"
+*)
+definition is_atomic :: "'a Program \<Rightarrow> bool"
+where
+  "is_atomic p \<equiv> S p = State p \<and> card (post p) = 1 \<and> card (Pre p) = 1 \<and> State p = (Pre p) \<union> (Field (post p)) \<and>
+   (card (post p) = 1 \<and> card (Pre p) = 1 \<longrightarrow>
+    fst (THE x. x \<in> post p) = (THE x. x \<in> Pre p))"
+
+(*definition get_atomic :: "'a Program \<Rightarrow> ('a Program) set"
+  where
+    "get_atomic p = {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<in> Pre p} \<union> 
+                    {\<lparr>State={a,b}, Pre={},  post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<notin> Pre p} \<union> 
+                    {\<lparr>State={a  }, Pre={a}, post={}      \<rparr> | a   . a \<notin> Domain (post p) \<and> a \<in> Pre p} \<union>
+                    {\<lparr>State={a  }, Pre={},  post={}      \<rparr> | a   . a \<notin> Field (post p) \<and> a \<notin> Pre p \<and> a \<in> State p}"*)
+
+definition get_atomic :: "'a Program \<Rightarrow> ('a Program) set"
+  where
+    "get_atomic p = {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<in> Pre p}"
+
+definition evaluate :: "'a Normal_form \<Rightarrow> 'a Program"
+  where
+    "evaluate p \<equiv> \<Union>\<^sub>p (map (Concat) p)"
+
+function interleave :: "'a list \<Rightarrow> 'a list \<Rightarrow> 'a list list" (infix "\<interleave>" 150) where
+  "[] \<interleave> ys = [ys]"
+| "(xs) \<interleave> [] = [xs]"
+| "(x#xs) \<interleave> (y#ys) = 
+     map ((#) x) (xs \<interleave> (y#ys)) @
+     map ((#) y) ((x#xs) \<interleave> ys)"
+by pat_completeness auto
+termination
+  by (relation "measure (\<lambda>(xs, ys). length xs + length ys)") auto
+
+definition cnf_concurrency :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> 'a Normal_form" (infix "\<parallel>" 151) where
+  "cnf_concurrency xs ys = concat [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]"
+
+theorem "cnf_concurrency xs ys = concat [interleave path_m path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]" sorry
+value "interleave [a,b] [c,d]"
+
+value "cnf_concurrency ([a,b]#[[c,d]]) [[e,f],[g,h]]"
+value "cnf_concurrency [[e,f],[g,h]] [[a,b],[c,d]]"
+value "cnf_concurrency [[a,b],[]] [[d],[e,f], []]"
+value "cnf_concurrency [[a,b],[]] [[]]"
+
+
+(*
+definition cnf_concurrency :: "'a Normal_form list \<Rightarrow> 'a Normal_form" where
+  "cnf_concurrency progs = (if size (non_empty2 progs) \<noteq> 1 then concat (concat [[interleave path_m path_n. path_m \<leftarrow> prog_i, path_n \<leftarrow> prog_j]. (i, prog_i) \<leftarrow> zip [0..<length (non_empty2 progs)] (non_empty2 progs), (j, prog_j) \<leftarrow> zip [0..<length (non_empty2 progs)] (non_empty2 progs), i \<noteq> j]) else hd (non_empty2 progs))"
+
+notation cnf_concurrency ("\<interleave> _" [51] 51)
+*)
+definition is_rounded :: "'a Program \<Rightarrow> bool"
+  where
+    "is_rounded p \<equiv> Domain (post p) \<subseteq> Pre p"
+
+definition is_exact :: "'a Program \<Rightarrow> bool"
+  where
+    "is_exact p \<equiv> is_rounded p \<and> is_feasible p"
+
+definition feasible_version :: "'a Program \<Rightarrow> 'a Program"
+  where
+    "feasible_version p \<equiv> \<lparr>State = S p, Pre = Pre p \<inter> Domain (post p), post = post p\<rparr>"
+
+definition rounded_version :: "'a Program \<Rightarrow> 'a Program"
+  where
+    "rounded_version p \<equiv> \<lparr>State = S p, Pre = Pre p , post = post p \<sslash>\<^sub>r Pre p\<rparr>"
+
+definition exact_version :: "'a Program \<Rightarrow> 'a Program"
+  where
+    "exact_version p \<equiv> \<lparr>State = S p, Pre = Pre p \<inter> Domain (post p) , post = post p \<sslash>\<^sub>r Pre p\<rparr>"
+
+function civilized_n :: "'a Program \<Rightarrow> 'a Program set \<Rightarrow> nat \<Rightarrow> bool"
+  where
+    "civilized_n x B 0 = (((x \<in> B) \<or> x = Fail {}) \<and> finite B)" |
+    "civilized_n x B (Suc n) = (((\<exists>a b. civilized_n a B n \<and> civilized_n b B n \<and> (a ; b = x \<or> a \<union>\<^sub>p b = x)) \<and> finite B) \<or> civilized_n x B n)"
+    \<comment> \<open>"civilized_n x B (Suc n) = ((\<exists>a b m m'. m<(Suc n) \<and> m'<(Suc n) \<and> civilized_n a B m \<and> civilized_n b B m' \<and> (a ; b = x \<or> a \<union>p b = x)) \<and> finite B)"\<close>
+  by pat_completeness auto
+termination civilized_n
+  apply (relation "measure (\<lambda>(_, _, n). n)")
+  by auto
+
+definition civilized :: "'a Program \<Rightarrow> 'a Program set \<Rightarrow> bool"
+  where
+    "civilized x B \<equiv> (\<exists>n. civilized_n x B n) \<and> finite B"
+
+definition equal_cnf :: "'a Normal_form \<Rightarrow> 'a Normal_form \<Rightarrow> bool"
+  where
+    "equal_cnf a b \<equiv> (set a = set b) \<and> (size a = 1) = (size b = 1)"
 
 end

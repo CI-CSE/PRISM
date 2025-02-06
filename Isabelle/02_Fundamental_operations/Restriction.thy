@@ -4,13 +4,13 @@ begin
 section \<open>Restriction for top\<close>
 
 theorem restriction_state [simp]: "S (f \<sslash>\<^sub>p C) = S f"
-  by (auto simp: restrict_p_def S_def)
+  by (auto simp: restrict_p_def S_def restrict_r_def Field_def)
 
 theorem restriction_pre [simp]: "Pre (f \<sslash>\<^sub>p C) \<subseteq> Pre f"
   by (auto simp: restrict_p_def)
 
 theorem restriction_post [simp]: "post (f \<sslash>\<^sub>p C) \<subseteq> post f"
-  by (auto simp: restrict_p_def S_def)
+  by (auto simp: restrict_p_def S_def restrict_r_def)
 lemma restrict_prop_1: "Pre (p \<sslash>\<^sub>p D) \<subseteq> D"
   by (auto simp: restrict_p_def)
 
@@ -20,8 +20,8 @@ lemma restrict_prop_2: "Pre (p \<sslash>\<^sub>p D) \<subseteq> Pre p"
 theorem restrict_prop: "Pre (p \<sslash>\<^sub>p D) \<subseteq> Pre p \<inter> D"
   by (auto simp: restrict_p_def)
 
-theorem restrict_idem: "(p \<sslash>\<^sub>p C) \<sslash>\<^sub>p C = p \<sslash>\<^sub>p C" \<comment> \<open>NEW\<close>
-  by (auto simp: restrict_p_def S_def)
+theorem restrict_idem: "(p \<sslash>\<^sub>p C) \<sslash>\<^sub>p C = p \<sslash>\<^sub>p C" \<comment> \<open>/Restrict_idem/\<close>
+  by (auto simp: restrict_p_def S_def restrict_r_def Field_def)
 
 lemma restrict_inter: "(p\<sslash>\<^sub>pC\<^sub>1)\<sslash>\<^sub>pC\<^sub>2 = p\<sslash>\<^sub>p(C\<^sub>1 \<inter> C\<^sub>2)" \<comment> \<open>/Restrict_inter/\<close>
   by (auto simp: equal_def S_def Field_def restrict_p_def restrict_r_def)
@@ -39,7 +39,7 @@ theorem restrict_feasible: "is_feasible p \<Longrightarrow> is_feasible (p \<ssl
   by (auto simp: is_feasible_def restrict_p_def restrict_r_def Domain_def)
 
 theorem restrict_might_make_feasible: "C \<subseteq> Domain (post p) \<Longrightarrow> is_feasible (p \<sslash>\<^sub>p C)"
-  by (auto simp: is_feasible_def restrict_p_def)
+  apply (auto simp: is_feasible_def restrict_p_def restrict_r_def Domain_iff) by auto
 
 theorem restrict_refine_1: "strengthens p  (p \<sslash>\<^sub>p C)"
   by (auto simp: strengthens_def restrict_p_def restrict_r_def)
@@ -79,5 +79,7 @@ theorem restrict_subprogorder1: "D \<subseteq> C \<Longrightarrow> p \<sslash>\<
   by (metis extends_def inf.absorb_iff2 order_refl restrict_inter restrict_refine_2 restrict_refine_4 restriction_state subprogram_def)
 
 theorem restrict_subprog: "p \<sslash>\<^sub>p C \<preceq>\<^sub>p p" \<comment> \<open>Restrict_subprog\<close>
-  by (auto simp: restrict_p_def subprogram_def extends_def weakens_def S_def strengthens_def restrict_r_def)
+  by (auto simp: restrict_p_def subprogram_def extends_def weakens_def S_def strengthens_def restrict_r_def Field_def)
+
+
 end

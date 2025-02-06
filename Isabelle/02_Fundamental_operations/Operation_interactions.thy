@@ -44,10 +44,13 @@ theorem restrict_distrib_1 : "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^
 theorem restrict_distrib_2 : "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC \<triangleq> (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)" \<comment> \<open>/Restrict_distrib/ restriction distributes over choice\<close>
   oops
 theorem restrict_distrib_3 : "(p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC \<equiv>\<^sub>p (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)" \<comment> \<open>/Restrict_distrib/ restriction distributes over choice\<close>
-  by (auto simp: equiv_def S_def Field_def restrict_p_def restrict_r_def choice_def restr_post_def)
+  apply (simp add: equiv_def S_def Field_def restrict_p_def restrict_r_def choice_def restr_post_def)
+  by blast
 
 theorem restrict_distrib_4 : "a \<union>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)\<sslash>\<^sub>pC = a \<union>\<^sub>p (p\<^sub>1\<sslash>\<^sub>pC \<union>\<^sub>p p\<^sub>2\<sslash>\<^sub>pC)"
-  by (auto simp: choice_def restrict_p_def restr_post_def restrict_r_def S_def Field_def)
+  apply (auto simp add: choice_def restrict_p_def restr_post_def restrict_r_def)
+  apply (simp add: S_def Field_def Domain_iff Range_iff)
+  by (simp add: S_def Field_def Domain_iff Range_iff)
 
 subsubsection \<open>Restriction corestriction\<close>
 
