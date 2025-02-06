@@ -55,6 +55,10 @@ theorem infeas_restriction: "Infeas (C) \<sslash>\<^sub>p D \<equiv>\<^sub>p Inf
   by (auto simp: Infeas_def restrict_p_def S_def equiv_def restr_post_def restrict_r_def)
 
 theorem infeas_corestriction: "Infeas (C) \<setminus>\<^sub>p D = Fail (C)"
-  by (auto simp: Infeas_def corestrict_p_def corestrict_r_def S_def Fail_def)
+  oops
+
+theorem infeas_corestriction2: "Infeas (C) \<setminus>\<^sub>p D = Infeas (C)"
+  by (auto simp: Infeas_def corestrict_p_def corestrict_r_def S_def)
+
 
 end

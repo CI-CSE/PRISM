@@ -131,10 +131,10 @@ qed
 
 
 theorem skip_prop_1: "is_feasible a \<Longrightarrow> S a \<subseteq> C \<Longrightarrow> a ; Skip C \<equiv>\<^sub>p a"
-  by (metis Corestriction.corestrict_prop_1 Definitions.equiv_def TRUE_def corestrict_range_prop_2 corestrict_true dual_order.trans same_range_p_3 corestrict_skip)
+  by (smt (verit) Skip_comprestrict compose_assoc composition_equiv equiv_is_transitive skip_compose2 skip_prop_14 skip_prop_5)
 
 theorem skip_prop_2: "is_feasible a \<Longrightarrow>a ; Skip (complete_state (a # xs)) \<equiv>\<^sub>p a"
-  by (metis Corestriction.corestrict_prop_1 TRUE_def Un_upper2 complete_state_prop corestrict_range_prop_2 corestrict_true equiv_is_transitive same_range_p_3 corestrict_skip subset_trans)
+  by (simp add: complete_state_prop skip_prop_1)
 
 theorem skip_restrict: "is_feasible a \<Longrightarrow> fold (;) xs (a ; Skip (complete_state (a # xs))) \<equiv>\<^sub>p fold (;) xs a"
 proof -

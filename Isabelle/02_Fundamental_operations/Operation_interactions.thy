@@ -104,10 +104,7 @@ theorem corestriction_on_composition : "p\<^sub>1 \<setminus>\<^sub>p s\<^sub>1 
   by (auto simp: restrict_p_def corestrict_p_def composition_def corestrict_r_def restrict_r_def S_def Field_def restr_post_def)
 
 theorem corestrict_compose: "(p\<^sub>1 ; p\<^sub>2) \<setminus>\<^sub>p C = p\<^sub>1 ; (p\<^sub>2 \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_compose/\<close>
-  apply (auto simp: composition_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def S_def Field_def Domain_iff relcomp_unfold) 
-    apply blast 
-   apply blast 
-  by blast
+  by (auto simp: composition_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def S_def Field_def Domain_iff relcomp_unfold) 
 
 subsubsection \<open>Composition unsafCompose_distrib1e composition\<close>
 theorem unsafe_gets_safe_1: "(p\<^sub>1;\<^sub>pp\<^sub>2);p\<^sub>3 = (p\<^sub>1;p\<^sub>2);p\<^sub>3"
@@ -120,11 +117,11 @@ theorem unsafe_gets_safe_extended: "((p\<^sub>1;\<^sub>pp\<^sub>2);\<^sub>pp\<^s
   by (simp add: Definitions.equiv_def unsafe_gets_safe_1)
 
 theorem equivalency_of_compositions_1: "(p\<^sub>1\<setminus>\<^sub>pPre p\<^sub>2);\<^sub>pp\<^sub>2 = p\<^sub>1;p\<^sub>2"
-  by (auto simp: corestrict_p_def unsafe_composition_def composition_def corestrict_r_def restr_post_def restrict_r_def S_def Field_def)
+  oops
 theorem equivalency_of_compositions_2: "(p\<^sub>1\<setminus>\<^sub>pPre p\<^sub>2);\<^sub>pp\<^sub>2 \<triangleq> p\<^sub>1;p\<^sub>2"
-  by (simp add: equal_is_reflexive equivalency_of_compositions_1)
+  oops
 theorem equivalency_of_compositions_3: "(p\<^sub>1\<setminus>\<^sub>pPre p\<^sub>2);\<^sub>pp\<^sub>2 \<equiv>\<^sub>p p\<^sub>1;p\<^sub>2"
-  by (simp add: equiv_is_reflexive equivalency_of_compositions_1)
+  oops
 
 subsubsection \<open>Composition inverse\<close>
 theorem composition_inverse_1: "(p;q)\<^sup>-\<^sup>1 = (q\<^sup>-\<^sup>1);(p\<^sup>-\<^sup>1)"
@@ -160,11 +157,11 @@ theorem corestrict_unsafe_compose: "is_feasible p\<^sub>1 \<Longrightarrow> (p\<
 
 subsubsection \<open>Corestriction inverse\<close>
 theorem corestriction_absorbed_by_inverse_1: "(p\<^sup>-\<^sup>1)\<setminus>\<^sub>pC = ((p\<sslash>\<^sub>pC)\<^sup>-\<^sup>1)"
-  by (auto simp: inverse_def Range_p_def restrict_r_def corestrict_p_def corestrict_r_def restr_post_def restrict_p_def S_def Field_def)
+  oops
 theorem corestriction_absorbed_by_inverse_2: "(p\<^sup>-\<^sup>1)\<setminus>\<^sub>pC \<triangleq> ((p\<sslash>\<^sub>pC)\<^sup>-\<^sup>1)"
-  by (simp add: corestriction_absorbed_by_inverse_1 equal_is_reflexive)
+  oops
 theorem corestriction_absorbed_by_inverse_3: "(p\<^sup>-\<^sup>1)\<setminus>\<^sub>pC \<equiv>\<^sub>p (p\<sslash>\<^sub>pC)\<^sup>-\<^sup>1"
-  by (simp add: corestriction_absorbed_by_inverse_1 equiv_is_reflexive)
+  oops
 
 subsubsection \<open>Unsafe composition inverse\<close>
 theorem unsafe_composition_inverse_1: "(p;\<^sub>pq)\<^sup>-\<^sup>1 \<equiv>\<^sub>p (q\<^sup>-\<^sup>1);\<^sub>p(p\<^sup>-\<^sup>1)"

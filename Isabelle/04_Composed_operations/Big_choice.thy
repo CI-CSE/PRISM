@@ -2385,11 +2385,11 @@ theorem choice_cnf_commute: "a \<union>\<^sub>c (b \<union>\<^sub>c c) = (a \<un
   by (simp add: choice_cnf_def non_empty0 non_empty4)
 
 
-theorem equal_sym: "equal a b = equal b a"
-  by (auto simp: equal_def)
+theorem equal_sym: "equal_cnf a b = equal_cnf b a"
+  by (auto simp: equal_cnf_def)
 
-theorem equal_empty: "equal a [] \<Longrightarrow> a = []"
-  by (auto simp: equal_def)
+theorem equal_empty: "equal_cnf a [] \<Longrightarrow> a = []"
+  by (auto simp: equal_cnf_def)
 
 theorem eval_prop1: "e \<noteq>[] \<Longrightarrow> evaluate (e @ [x]) = evaluate e \<union>\<^sub>p evaluate [x]"
   apply (auto simp: evaluate_def choice_def)
@@ -2522,14 +2522,14 @@ next
   qed
 qed
 
-theorem equal_eval: "equal a b \<Longrightarrow> evaluate a = evaluate b"
+theorem equal_eval: "equal_cnf a b \<Longrightarrow> evaluate a = evaluate b"
 proof (induction "size a" arbitrary: b a rule: less_induct)
       case less
-  assume a1: "equal a b"
+  assume a1: "equal_cnf a b"
   show ?case
   proof (cases "size a = 0")
     case zero: True
-    then show ?thesis using a1 by (auto simp: evaluate_def equal_def)
+    then show ?thesis using a1 by (auto simp: evaluate_def equal_cnf_def)
 next
   case ge0: False
   then show ?thesis
@@ -2538,9 +2538,9 @@ next
     obtain a' where "a=[a']" using one apply auto
       by (metis Suc_length_conv length_0_conv)
     obtain b' where "b=[b']"
-      by (metis (no_types, lifting) Big_choice.equal_def One_nat_def a1 add_diff_cancel_left' append_butlast_last_id ge0 length_0_conv length_butlast one plus_1_eq_Suc self_append_conv2)
+      by (metis (no_types, lifting) equal_cnf_def One_nat_def a1 add_diff_cancel_left' append_butlast_last_id ge0 length_0_conv length_butlast one plus_1_eq_Suc self_append_conv2)
     show ?thesis using a1
-      by (simp add: Big_choice.equal_def \<open>a = [a']\<close> \<open>b = [b']\<close>)
+      by (simp add: equal_cnf_def \<open>a = [a']\<close> \<open>b = [b']\<close>)
   next
     case ge1: False
 
@@ -2552,7 +2552,7 @@ next
       have "size a \<noteq> 1"
         using ge1 by auto
       have "size b \<noteq> 1"
-        using Big_choice.equal_def a1 ge1 by auto
+        using equal_cnf_def a1 ge1 by auto
       obtain x xs where o1: "a=x#xs"
         by (metis \<open>1 < length a\<close> length_0_conv less_nat_zero_code neq_Nil_conv)
       obtain ax where o2: "ax = [t. t\<leftarrow>a, t=x]" by simp
@@ -2566,10 +2566,10 @@ next
       have "size b = size bx + size bnx" using o4 o5
         by (simp add: size_prop)
       have l2: "ax\<noteq>[]" by (simp add: \<open>ax = concat (map (\<lambda>t. if t = x then [t] else []) a)\<close> o1)
-      have l3: "bx\<noteq>[]" using a1 \<open>bx = [t. t\<leftarrow>b, t=x]\<close> apply (auto simp: equal_def)
+      have l3: "bx\<noteq>[]" using a1 \<open>bx = [t. t\<leftarrow>b, t=x]\<close> apply (auto simp: equal_cnf_def)
         using ge1 apply presburger
         by (metis (no_types, lifting) Un_iff image_insert insert_iff insert_inter_insert list.simps(15) not_Cons_self2 o1)
-      have l4: "set anx = set bnx" using less(2) \<open>anx = [t. t\<leftarrow>a, t\<noteq>x]\<close> \<open>bnx = [t. t\<leftarrow>b, t\<noteq>x]\<close> by (auto simp: equal_def)
+      have l4: "set anx = set bnx" using less(2) \<open>anx = [t. t\<leftarrow>a, t\<noteq>x]\<close> \<open>bnx = [t. t\<leftarrow>b, t\<noteq>x]\<close> by (auto simp: equal_cnf_def)
       have l5: "evaluate a = evaluate ax \<union>\<^sub>p evaluate anx" using o2 o3 \<open>size a \<noteq> 1\<close> evaluate_split by blast
       have l6: "evaluate b = evaluate bx \<union>\<^sub>p evaluate bnx" using o4 o5 \<open>size b \<noteq> 1\<close> evaluate_split by blast
       then show ?thesis
@@ -2583,7 +2583,7 @@ next
         have "bnx = []"
           using True local.l4 by auto
         have l1: "\<forall>t \<in> set b. t = x" using True o3 less
-          by (simp add: Big_choice.equal_def local.l1)
+          by (simp add: equal_cnf_def local.l1)
         have l2: "\<forall>t \<in> set bx. t = x" using True o4 less l1 by auto
         have l3: "size bx > 1" using l1 o2 o3 True
           by (metis One_nat_def Suc_lessI \<open>bnx = []\<close> \<open>length b = length bx + length bnx\<close> \<open>length b \<noteq> 1\<close> a1 add.right_neutral equal_empty ge0 length_greater_0_conv list.size(3)) 
@@ -2689,10 +2689,10 @@ next
             case False
             have "size bnx > 1"
               using False \<open>bnx \<noteq> []\<close> nat_neq_iff by auto
-            have "equal anx bnx"
-              using Big_choice.equal_def False \<open>1 < length anx\<close> local.l4 by fastforce
+            have "equal_cnf anx bnx"
+              using equal_cnf_def False \<open>1 < length anx\<close> local.l4 by fastforce
             have "evaluate anx = evaluate bnx"
-              by (simp add: \<open>Big_choice.equal anx bnx\<close> \<open>length a = length ax + length anx\<close> less.hyps local.l2)
+              by (simp add: \<open>equal_cnf anx bnx\<close> \<open>length a = length ax + length anx\<close> less.hyps local.l2)
             then show ?thesis
               by (metis \<open>evaluate ax = evaluate [x] \<or> evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> \<open>evaluate bx = evaluate [x] \<or> evaluate bx = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> choice_idem_6)
           qed
@@ -2717,14 +2717,14 @@ theorem comp_prop2: "x \<noteq> [] \<Longrightarrow> y \<noteq> [] \<Longrightar
 theorem choice_prop: "tr \<in> set (xs \<union>\<^sub>c ys) \<Longrightarrow> (tr \<in> set xs \<or> tr \<in> set ys) \<and> tr \<noteq> []"
   by (auto simp: choice_cnf_def non_empty_def)
 
-theorem same_traces_size_equal: "\<forall>tr \<in> set xs. tr \<in> set ys \<Longrightarrow> \<forall>tr \<in> set ys. tr \<in> set xs \<Longrightarrow> size xs = size ys \<Longrightarrow> equal xs ys"
-  by (auto simp: equal_def)
+theorem same_traces_size_equal: "\<forall>tr \<in> set xs. tr \<in> set ys \<Longrightarrow> \<forall>tr \<in> set ys. tr \<in> set xs \<Longrightarrow> size xs = size ys \<Longrightarrow> equal_cnf xs ys"
+  by (auto simp: equal_cnf_def)
 
-theorem same_traces_size_equal2: "size xs = size ys \<Longrightarrow> equal xs ys \<Longrightarrow> \<forall>tr \<in> set xs. tr \<in> set ys"
-  by (auto simp: equal_def)
+theorem same_traces_size_equal2: "size xs = size ys \<Longrightarrow> equal_cnf xs ys \<Longrightarrow> \<forall>tr \<in> set xs. tr \<in> set ys"
+  by (auto simp: equal_cnf_def)
 
-theorem same_traces_size_equal3: "size xs = size ys \<Longrightarrow> equal xs ys \<Longrightarrow> \<forall>tr \<in> set ys. tr \<in> set xs"
-  by (auto simp: equal_def)
+theorem same_traces_size_equal3: "size xs = size ys \<Longrightarrow> equal_cnf xs ys \<Longrightarrow> \<forall>tr \<in> set ys. tr \<in> set xs"
+  by (auto simp: equal_cnf_def)
 
 theorem comp_prop3: "\<exists>q w. q \<in> set a \<and> w \<in> set b \<and> tr = q @ w \<and> q \<noteq> [] \<and> w \<noteq> [] \<Longrightarrow> tr \<in> set (a ;\<^sub>c b)"
   using comp_prop2 by blast
@@ -2793,7 +2793,7 @@ next
   qed
 qed
 
-theorem comp_distrib_l: "equal (a ;\<^sub>c (b \<union>\<^sub>c c))  ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))"
+theorem comp_distrib_l: "equal_cnf (a ;\<^sub>c (b \<union>\<^sub>c c))  ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))"
 proof-
   have "set (a ;\<^sub>c (b \<union>\<^sub>c c)) \<subseteq> set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))"
     by (smt (verit) append_is_Nil_conv choice_prop choice_prop2 comp_prop comp_prop2 subsetI)
@@ -2802,7 +2802,7 @@ proof-
   have "size (a ;\<^sub>c (b \<union>\<^sub>c c)) = size ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))"
     by (metis (no_types, lifting) choice_cnf_def choice_prop comp_size3 distrib_right length_append mult.commute non_empty14 non_empty15)
   show ?thesis
-    by (simp add: Big_choice.equal_def \<open>length (a ;\<^sub>c (b \<union>\<^sub>c c)) = length ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> \<open>set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c)) \<subseteq> set (a ;\<^sub>c (b \<union>\<^sub>c c))\<close> \<open>set (a ;\<^sub>c (b \<union>\<^sub>c c)) \<subseteq> set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> subset_antisym)
+    by (simp add: equal_cnf_def \<open>length (a ;\<^sub>c (b \<union>\<^sub>c c)) = length ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> \<open>set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c)) \<subseteq> set (a ;\<^sub>c (b \<union>\<^sub>c c))\<close> \<open>set (a ;\<^sub>c (b \<union>\<^sub>c c)) \<subseteq> set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> subset_antisym)
 qed
 
 theorem compose_equiv: "evaluate [x] ; evaluate b \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b)"
@@ -2935,8 +2935,8 @@ next
     by (simp add: compose_equiv)
   have l2: "evaluate a' ; evaluate b \<equiv>\<^sub>p evaluate (a' ;\<^sub>c b)"
     using equiv_is_symetric less o1 by fastforce
-  have l3: "equal (([x] ;\<^sub>c b) \<union>\<^sub>c (a' ;\<^sub>c b)) ((x#a') ;\<^sub>c b)"
-    by (metis choic_cnf1 eq_reflexive)
+  have l3: "equal_cnf (([x] ;\<^sub>c b) \<union>\<^sub>c (a' ;\<^sub>c b)) ((x#a') ;\<^sub>c b)"
+    by (metis choic_cnf1 equal_cnf_def)
   have "evaluate (x # a') ; evaluate b \<equiv>\<^sub>p (evaluate [x] \<union>\<^sub>p evaluate a') ; evaluate b"
     using composition_equiv concat_prop4 equiv_is_reflexive by blast
   have "... \<equiv>\<^sub>p (evaluate [x] ; evaluate b \<union>\<^sub>p evaluate a' ; evaluate b)"
@@ -4300,6 +4300,5 @@ theorem "evaluate (xs \<parallel> ys) = evaluate (ys \<parallel> xs)"
   using is_permutation perm_is_equal
   by blast
 
-theorem "evaluate (p \<parallel> q) \<sslash>\<^sub>p C = evaluate (p \<sslash>\<^sub>p C \<parallel> q \<sslash>\<^sub>p C)"
 
 end

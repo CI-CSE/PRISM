@@ -223,7 +223,7 @@ definition restrict_p :: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Progr
 definition corestrict_p :: "'a Program \<Rightarrow> 'a set \<Rightarrow> 'a Program" (infix "\<setminus>\<^sub>p" 154) \<comment> \<open>Definition number missing\<close>
   where
     "corestrict_p p C = \<lparr>State= S p, 
-        Pre=Pre p \<inter> Domain (post p \<setminus>\<^sub>r C), \<comment> \<open>NEWLY EXPRESSED LIKE THIS\<close>
+        Pre=Pre p, \<comment> \<open>NEWLY EXPRESSED LIKE THIS\<close>
         post=post p \<setminus>\<^sub>r C\<rparr>"
 
 definition char_rel :: "'a Program \<Rightarrow> 'a rel" \<comment> \<open>NEW DEFINITION\<close>

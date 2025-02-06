@@ -77,8 +77,7 @@ theorem skip_unsafe_compose_r_2: "Skip (S p) ;\<^sub>p p \<triangleq> \<lparr>St
   by (auto simp: unsafe_composition_def equal_def Skip_def S_def restr_post_def restrict_r_def Field_def)
   
 theorem corestriction_prop: "p \<setminus>\<^sub>p C \<equiv>\<^sub>p p ; (Skip (S p) \<sslash>\<^sub>p C)" \<comment> \<open>T28\<close>
-  apply (auto simp: Skip_def restrict_p_def equiv_def corestrict_p_def corestrict_r_def composition_def restr_post_def restrict_r_def)
-  by (auto simp: Domain_iff S_def Field_def Range_iff)
+  oops
 
 lemma skip_prop: "Skip C \<union>\<^sub>p Skip D \<equiv>\<^sub>p Skip (C \<union> D)"
   apply (auto simp: equiv_def)
@@ -115,10 +114,10 @@ theorem skip_prop_6: "S p \<subseteq> C \<Longrightarrow> Skip C ; p \<equiv>\<^
   by (auto simp: Skip_def composition_def S_def Field_def restr_post_def restrict_r_def corestrict_r_def equiv_def)
 
 theorem corestrict_skip: "p ; Skip (C) \<equiv>\<^sub>p p \<setminus>\<^sub>p C" \<comment> \<open>/Corestrict_skip/\<close>
-  by (auto simp: composition_def Skip_def equiv_def corestrict_r_def corestrict_p_def restr_post_def restrict_r_def)
+  oops
 
 theorem skip_prop_8: "Skip D \<setminus>\<^sub>p C \<equiv>\<^sub>p Skip (D \<inter> C)"
-  by (auto simp: equiv_def Skip_def corestrict_p_def restr_post_def corestrict_r_def restrict_r_def)
+  oops
 
 theorem skip_prop_9: "S (Skip (C)) = C"
   by (auto simp: Skip_def S_def Field_def)

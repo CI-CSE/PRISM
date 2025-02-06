@@ -458,8 +458,8 @@ theorem assoc_11: "size ((xs \<parallel> ys) \<parallel> zs) = 1 \<Longrightarro
 theorem assoc_12: "size (xs \<parallel> (ys \<parallel> zs)) = 1 \<equiv> size ((xs \<parallel> ys) \<parallel> zs) = 1"
   by (smt (verit, ccfv_threshold) assoc_10 assoc_11)
 
-theorem assoc_cnf1: "equal ((xs \<parallel> ys) \<parallel> zs)  (xs \<parallel> (ys \<parallel> zs))"
-  using Big_choice.equal_def assoc_10 assoc_11 assoc_9 by blast
+theorem assoc_cnf1: "equal_cnf ((xs \<parallel> ys) \<parallel> zs)  (xs \<parallel> (ys \<parallel> zs))"
+  using equal_cnf_def assoc_10 assoc_11 assoc_9 by blast
 
 theorem assoc_cnf: "evaluate ((xs \<parallel> ys) \<parallel> zs) = evaluate (xs \<parallel> (ys \<parallel> zs))"
   by (simp add: assoc_cnf1 equal_eval)

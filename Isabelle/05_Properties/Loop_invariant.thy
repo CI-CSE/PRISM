@@ -34,7 +34,7 @@ lemma loop_correct_1: "is_loop_invariant I a C b \<Longrightarrow> Range_p (a ; 
 lemma loop_correct_2: "is_loop_invariant I a C b \<Longrightarrow> Range_p (until_support a C b n n) \<subseteq> I"
   proof (induction n)
     case 0
-    then show ?case by (auto simp: until_support_def composition_def Skip_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def Range_p_def)
+    then show ?case by (auto simp: until_support_def composition_def Skip_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def Range_p_def restr_post_def)
   next
     case (Suc n)
     assume IH: "is_loop_invariant I a C b \<Longrightarrow> Range_p (until_support a C b n n) \<subseteq> I"

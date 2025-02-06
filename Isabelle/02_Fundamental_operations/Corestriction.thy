@@ -69,10 +69,10 @@ theorem equality_is_maintained_by_corestriction: "f\<^sub>1 \<triangleq> p\<^sub
   by (auto simp: equal_def corestrict_p_def)
 
 theorem corestrict_feasible: "is_feasible p \<Longrightarrow> is_feasible (p \<setminus>\<^sub>p C)" \<comment> \<open>Corestrict_feasible\<close>
-  by (auto simp: is_feasible_def corestrict_p_def)
+  oops
+
 theorem corestriction_subsafety: "q \<preceq>\<^sub>p p \<Longrightarrow> q \<setminus>\<^sub>p C \<preceq>\<^sub>p p \<setminus>\<^sub>p C" \<comment> \<open>Corestriction_subsafety\<close>
-  apply (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def corestrict_p_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
-  by fastforce
+  by (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def corestrict_p_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
 
 theorem refinement_safety_corestriction: "q \<subseteq>\<^sub>p p \<Longrightarrow> q \<setminus>\<^sub>p C \<subseteq>\<^sub>p p \<setminus>\<^sub>p C" \<comment> \<open>Corestriction_refsafety\<close>
   oops
@@ -94,11 +94,11 @@ theorem corestrict_range_prop: "x \<in> C \<Longrightarrow> x \<notin> Range_p (
 
 theorem corestrict_range_prop_2: "is_feasible a \<Longrightarrow> Range_p a \<subseteq> C \<Longrightarrow> a \<setminus>\<^sub>p C \<equiv>\<^sub>p a"
   apply (auto simp: is_feasible_def Range_p_def corestrict_p_def equiv_def corestrict_r_def restrict_r_def Domain_iff Range_iff subset_iff restr_post_def)
-  apply fastforce
   by fastforce
 
 theorem corestrict_range_prop_3: "Range_p(a) \<inter> C = {} \<Longrightarrow> a\<setminus>\<^sub>pC \<equiv>\<^sub>p Fail {}"
-  by (auto simp: Range_p_def composition_def restrict_p_def equiv_def corestrict_r_def restrict_r_def Int_def Range_iff Domain_iff restr_post_def relcomp_unfold Fail_def corestrict_p_def)
+  oops
+  
 
 theorem corestrict_range_porp_4: "is_feasible p \<Longrightarrow> p \<setminus>\<^sub>p Range_p p \<equiv>\<^sub>p p"
   by (simp add: corestrict_range_prop_2)

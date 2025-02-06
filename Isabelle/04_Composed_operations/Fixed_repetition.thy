@@ -213,7 +213,7 @@ theorem equality_is_maintained_by_fixed_repetition: "p\<^sub>1 \<triangleq> p\<^
   apply (induction n)
   apply (auto simp: equal_def) [1]
   apply (simp add: Definitions.equal_def)
-  by (simp add: equality_is_maintained_by_composition restrict_p_def restrict_r_def)
+  by (simp add: composition_def restr_post_def)
 
 theorem equiv_is_maintained_by_fixed_repetition: "0<n \<Longrightarrow> all_feasible [p\<^sub>1, p\<^sub>2] \<Longrightarrow> p\<^sub>1 \<equiv>\<^sub>p p\<^sub>2 \<Longrightarrow> p\<^sub>1\<^bold>^n \<equiv>\<^sub>p p\<^sub>2\<^bold>^n"
   apply (induction n)

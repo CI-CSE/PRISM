@@ -81,7 +81,7 @@ next
 qed
 
 theorem until_loop_feasible: "all_feasible [a, b] \<Longrightarrow> is_feasible (until_loop a C b n)" \<comment> \<open>Disproves a statement below T77\<close>
-  by (simp add: until_conncetion until_support_feasible)
+  oops
 
 theorem equiv_is_maintained_by_until_loop_2: 
   assumes "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2"
@@ -259,20 +259,7 @@ theorem loop_prop5: "State (until_loop a C b n) = S a \<union> S b"
   by (simp add: composition_def loop_prop1 until_loop_def)
 
 theorem loop_prop6: "until_loop (Skip D) FALSE (Skip D) n = Fail D"
-proof (induction n)
-  case 0
-  then show ?case by (auto simp: Skip_def FALSE_def Fail_def until_loop_def restrict_p_def composition_def S_def Field_def corestrict_p_def corestrict_r_def restr_post_def restrict_r_def)
-next
-  case (Suc n)
-  have l1: "\<And>p. p \<setminus>\<^sub>p FALSE = Fail (S p)" by (auto simp: FALSE_def corestrict_p_def corestrict_r_def Fail_def)
-  obtain x where l2: "x = Skip D ; (loop (Skip D \<sslash>\<^sub>p (- FALSE)) 0 n \<union>\<^sub>p (Skip D \<sslash>\<^sub>p (- FALSE)) \<^bold>^ n ; Skip D \<sslash>\<^sub>p (- FALSE))" by simp
-  have "x \<setminus>\<^sub>p FALSE = until_loop (Skip D) FALSE (Skip D) (Suc n)" apply (auto simp: l2 until_loop_def)
-    by (metis Skip.skip_prop_9 compose_assoc compose_empty_1 local.l1)
-  have "State x = D"
-    by (metis (no_types, lifting) Program.ext_inject Program.surjective Skip.skip_prop_9 Un_absorb \<open>x \<setminus>\<^sub>p FALSE = until_loop (Skip D) FALSE (Skip D) (Suc n)\<close> composition_def composition_state corestriction_state local.l2 loop_prop3)
-  then show "until_loop (Skip D) FALSE (Skip D) (Suc n) = Fail D"
-    by (metis Skip.skip_prop_9 Un_absorb \<open>x \<setminus>\<^sub>p FALSE = until_loop (Skip D) FALSE (Skip D) (Suc n)\<close> corestriction_state local.l1 loop_prop4 loop_prop5) 
-qed
+  oops
 
 
 end

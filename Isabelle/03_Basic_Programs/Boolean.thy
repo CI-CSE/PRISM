@@ -12,11 +12,14 @@ theorem cond_false_1: "p \<sslash>\<^sub>p FALSE \<equiv>\<^sub>p Fail (S p)" \<
   by (auto simp: equal_def restr_post_def FALSE_def restrict_p_def restrict_r_def S_def Field_def Fail_def equiv_def)
 
 theorem corestrict_true: "is_feasible p \<Longrightarrow> p \<setminus>\<^sub>p (TRUE (S p)) \<equiv>\<^sub>p p" \<comment> \<open>/Corestrict_true/\<close>
-  apply (auto simp: equiv_def is_feasible_def TRUE_def corestrict_p_def corestrict_r_def S_def Field_def restr_post_def restrict_r_def subset_iff Domain_iff Range_iff) 
-  by blast
+  by (auto simp: equiv_def is_feasible_def TRUE_def corestrict_p_def corestrict_r_def S_def Field_def restr_post_def restrict_r_def subset_iff Domain_iff Range_iff) 
 
 theorem corestrict_false: "p \<setminus>\<^sub>p FALSE = Fail (S p)" \<comment> \<open>/Corestrict_false/\<close>
-  by (auto simp: FALSE_def equiv_def Fail_def S_def corestrict_p_def corestrict_r_def)
+  oops
+
+theorem corestrict_false: "p \<setminus>\<^sub>p FALSE \<equiv>\<^sub>p Infeas (Pre p)" \<comment> \<open>/Corestrict_false NEW/\<close>
+  by (auto simp: equiv_def Infeas_def corestrict_p_def FALSE_def restr_post_def restrict_r_def corestrict_r_def)
+
 
 theorem if_true: "ITE (TRUE (S p\<^sub>1 \<union> S p\<^sub>2)) p\<^sub>1 p\<^sub>2 \<equiv>\<^sub>p p\<^sub>1" \<comment> \<open>/If_true/\<close>
   by (auto simp: if_then_else_def TRUE_def restrict_p_def S_def restrict_r_def choice_def restr_post_def equiv_def)

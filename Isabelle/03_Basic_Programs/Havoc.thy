@@ -108,7 +108,7 @@ proof -
     using havoc_from_left_S by auto
 
   from a0 have lg: "Range_p p \<noteq> {} \<Longrightarrow> Pre ?right = C"
-    apply (auto simp: Range_p_def restrict_r_def Havoc_def corestrict_p_def corestrict_r_def S_def Field_def Range_iff Domain_iff subset_iff) by blast
+    apply (auto simp: Range_p_def restrict_r_def Havoc_def corestrict_p_def corestrict_r_def S_def Field_def Range_iff Domain_iff subset_iff) done
 
   have l2: "Pre ?left = Pre ?right"
   proof -

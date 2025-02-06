@@ -1236,5 +1236,5 @@ theorem "is_rounded q \<Longrightarrow> is_rounded p \<Longrightarrow> is_rounde
   by (auto simp: is_rounded_def composition_def corestrict_r_def restr_post_def restrict_r_def)
 
 theorem Corestrict_feasible: "is_feasible p \<Longrightarrow> is_feasible ((p \<sslash>\<^sub>p (Pre p \<inter> Domain (post p \<setminus>\<^sub>r C))) \<setminus>\<^sub>p C)" \<comment> \<open>/Corestrict_feasible/\<close>
-  by (auto simp: is_feasible_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def)
+  apply (auto simp: is_feasible_def restrict_p_def restrict_r_def corestrict_p_def corestrict_r_def) by fastforce
 end
