@@ -157,11 +157,11 @@ definition non_empty2 :: "'a CNF list \<Rightarrow> 'a CNF list"
 
 definition choice_cnf :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> 'a CNF" (infix "\<union>\<^sub>c" 150)
   where
-    "choice_cnf a b \<equiv> (non_empty a) @ (non_empty b)"
+    "choice_cnf a b \<equiv> a @ b"
 
 definition composition_cnf :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> 'a CNF" (infix ";\<^sub>c" 150)
   where
-    "composition_cnf a b \<equiv> [xs @ ys. xs \<leftarrow> non_empty a, ys \<leftarrow> non_empty b]"
+    "composition_cnf a b \<equiv> [xs @ ys. xs \<leftarrow> a, ys \<leftarrow> b]"
 
 
 definition is_prime :: "'a Program \<Rightarrow> bool" 

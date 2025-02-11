@@ -1823,6 +1823,8 @@ theorem non_empty1: "non_empty [] = []"
 theorem non_empty2: "non_empty [[]] = []"
   by (auto simp: non_empty_def)
 theorem cnf_choice1: "[] \<union>\<^sub>c p = non_empty p"
+  oops
+theorem cnf_choice1: "[] \<union>\<^sub>c p = p"
   by (auto simp: non_empty_def choice_cnf_def)
 theorem non_empty3: "non_empty ([]#xs) = non_empty xs"
   by (auto simp: non_empty_def)
@@ -1830,6 +1832,8 @@ theorem non_empty4: "non_empty (a@b) = non_empty a @ non_empty b"
   apply (induction a arbitrary: b)
   by (auto simp: non_empty_def)
 theorem cnf_choice2: "non_empty (x#xs) = [x] \<union>\<^sub>c xs"
+  oops
+theorem cnf_choice2: "(x#xs) = [x] \<union>\<^sub>c xs"
   apply (induction xs arbitrary: x)
   by (auto simp: non_empty_def choice_cnf_def)
 theorem cnf_choice3: "ys \<union>\<^sub>c (x#xs) = (ys@[x]) \<union>\<^sub>c xs"
@@ -1838,16 +1842,25 @@ theorem cnf_choice3: "ys \<union>\<^sub>c (x#xs) = (ys@[x]) \<union>\<^sub>c xs"
 theorem non_empty5: "non_empty ((xx # x) # b) = (xx#x) # (non_empty b)"
   by (auto simp: non_empty_def)
 theorem non_empty6: "non_empty ((xx # x) # b) = [xx#x] \<union>\<^sub>c (non_empty b)"
-  using non_empty5 apply (auto simp: choice_cnf_def)
-  by (smt (verit, del_insts) choice_cnf_def cnf_choice2 non_empty0)
-theorem non_empty7: "non_empty ((x#xs)@(y#ys)) = (x#xs) \<union>\<^sub>c (y#ys)"
+  oops
+theorem non_empty6: "((xx # x) # b) = [xx#x] \<union>\<^sub>c b"
+  using non_empty5 by (auto simp: choice_cnf_def)
+theorem non_empty7: "((x#xs)@(y#ys)) = (x#xs) \<union>\<^sub>c (y#ys)"
   by (metis choice_cnf_def non_empty4)
+theorem non_empty7: "non_empty ((x#xs)@(y#ys)) = (x#xs) \<union>\<^sub>c (y#ys)"
+  oops
 
 theorem non_empty8: "a \<union>\<^sub>c b \<noteq> [[]] \<Longrightarrow> a \<union>\<^sub>c b = (non_empty a) \<union>\<^sub>c (non_empty b)"
-  by (simp add: choice_cnf_def non_empty0)
+  oops
+
+theorem non_empty9: "evaluate (non_empty [x]) = evaluate [x]" 
+  by (auto simp: non_empty_def evaluate_def Fail_def Skip_def)
+theorem "evaluate (non_empty a) = evaluate a"
+  oops
 
 theorem cnf_choice_4: "evaluate (a \<union>\<^sub>c b) = evaluate (non_empty a \<union>\<^sub>c non_empty b)"
-  by (simp add: choice_cnf_def non_empty0)
+  apply (auto simp add: choice_cnf_def non_empty0 non_empty_def)
+  oops
 
 theorem concat_prop7: "evaluate xs \<equiv>\<^sub>p evaluate (non_empty xs)"
   apply (simp add: non_empty_def)
@@ -1940,9 +1953,11 @@ theorem comp_non_empty: "non_empty a ;\<^sub>c b = a ;\<^sub>c b"
   by (auto simp: composition_cnf_def non_empty_def)
 
 theorem choice_non_empty: "non_empty a \<union>\<^sub>c b = a \<union>\<^sub>c b"
+  oops
+(*
   apply (induction a arbitrary: b)
   by (auto simp: choice_cnf_def non_empty_def)
-
+*)
 theorem comp_non_empty2: "non_empty x ;\<^sub>c non_empty b = x ;\<^sub>c b"
 proof (induction x arbitrary: b)
   case Nil
@@ -1972,22 +1987,73 @@ next
 qed
 
 theorem choice_non_empty2: "non_empty a \<union>\<^sub>c non_empty b = a \<union>\<^sub>c b"
+  oops
+(*
   apply (auto simp: choice_cnf_def)
   by (simp add: non_empty0)
-
+*)
 theorem non_empty9: "x \<in> set (non_empty xs) \<Longrightarrow> x \<in> set xs"
+  oops
+(*
   apply (induction xs arbitrary: x)
   by (auto simp: non_empty_def)
-
+*)
 theorem non_empty10: "non_empty xs = [y] \<Longrightarrow> \<exists>a b. a@y#b = xs"
-  by (metis list.set_intros(1) non_empty9 split_list)
+proof (induction xs)
+  case Nil
+  then show ?case by (simp add: non_empty1)
+next
+  case (Cons x xs)
+  then show ?case
+  proof (cases x)
+    case Nil
+    then show ?thesis
+      by (metis Cons.IH Cons.prems Cons_eq_appendI non_empty3) 
+  next
+    case cons2: (Cons a list)
+    have "x = y"
+      by (metis Cons.prems cons2 list.sel(1) non_empty5)
+    have "non_empty xs = []"
+      by (metis Cons.prems cons2 list.sel(3) non_empty5)
+    then show ?thesis
+      using \<open>x = y\<close> by blast
+  qed
+qed 
 
 theorem non_empty11: "non_empty xs = [] \<Longrightarrow> evaluate xs = Skip {}"
-  apply (induction xs)
-  apply (simp add: concat_prop2 special_empty1)
-  apply (auto simp: evaluate_def)
-  by (smt (verit) Choice.simps(2) Choice_prop_1_2 Concat.elims Un_empty_right append_is_Nil_conv choice_cnf_def cnf_choice2 non_empty5 not_Cons_self2 skip_prop_10)
-
+proof (induction xs)
+  case Nil
+  then show ?case apply (auto simp: evaluate_def Fail_def Skip_def) done
+next
+  case (Cons x xs)
+  then show ?case
+  proof (cases "x=[]")
+    case True
+    then show ?thesis
+    proof (cases "xs=[]")
+      case t2: True
+      then show ?thesis using True by (auto simp: evaluate_def Skip_def)
+    next
+      case False
+      have "evaluate ([] # xs) = evaluate ([]) \<union>\<^sub>p evaluate (xs)" using False
+        by (metis concat_prop3 non_empty2 non_empty9)
+      then show ?thesis
+        by (metis Choice.simps(1) Cons.IH Cons.prems True Un_empty evaluate_def list.map_disc_iff non_empty3 skip_prop_10 special_empty1)
+    qed
+  next
+    case False
+    then show ?thesis
+    proof (cases "xs=[]")
+      case True
+      then show ?thesis apply auto
+        by (metis Cons.prems concat_prop2 non_empty9 special_empty1)
+    next
+      case f2: False
+      then show ?thesis
+        by (metis Cons.prems False neq_Nil_conv non_empty5)
+    qed
+  qed
+qed
 theorem non_empty12: "non_empty xs = [x] \<Longrightarrow> non_empty xs = xs \<Longrightarrow>  evaluate xs = evaluate [x]"
   by simp
 theorem non_empty13: "non_empty xs = [x] \<Longrightarrow> non_empty xs \<noteq> xs \<Longrightarrow>  evaluate xs = evaluate [x] \<union>\<^sub>p Skip {}"
@@ -2002,7 +2068,7 @@ next
   proof (cases "a = x")
     case True
     have "non_empty xs = []"
-      by (metis Cons.prems(1) True choice_cnf_def cnf_choice2 non_empty0 self_append_conv)
+      by (metis Cons.prems(1) True choice_cnf_def cnf_choice2 non_empty0 non_empty4 self_append_conv)
     then show "evaluate (a # xs) = evaluate [x] \<union>\<^sub>p Skip {}"
       using True \<open>evaluate (a # xs) = evaluate [a] \<union>\<^sub>p evaluate xs\<close> non_empty11 by fastforce
   next
@@ -2014,11 +2080,11 @@ next
     proof (cases "non_empty xs \<noteq> xs")
       case True
       then show ?thesis
-        by (metis Cons.IH Cons.prems(1) \<open>evaluate (a # xs) = evaluate [a] \<union>\<^sub>p evaluate xs\<close> \<open>non_empty xs = [x]\<close> append_self_conv2 choice_cnf_def cnf_choice2 non_empty11 skip_prop_12)
+        by (metis Cons.IH Cons.prems(1) \<open>evaluate (a # xs) = evaluate [a] \<union>\<^sub>p evaluate xs\<close> \<open>non_empty xs = [x]\<close> choice_commute choice_idem_2 list.inject neq_Nil_conv non_empty11 non_empty2 non_empty5)
     next
       case False
       then show ?thesis
-        by (metis Cons.prems(1) \<open>evaluate (a # xs) = evaluate [a] \<union>\<^sub>p evaluate xs\<close> \<open>non_empty xs = [x]\<close> append_self_conv2 choice_cnf_def choice_commute cnf_choice2 non_empty11)
+        by (metis Cons.prems(1) \<open>evaluate (a # xs) = evaluate [a] \<union>\<^sub>p evaluate xs\<close> \<open>non_empty xs = [x]\<close> choice_commute list.inject neq_Nil_conv non_empty11 non_empty2 non_empty5)
     qed
   qed
 qed
@@ -2127,7 +2193,7 @@ next
   proof (cases "a = []")
     case True
     then show ?thesis using Cons.IH Cons.prems concat_prop3 non_empty11 non_empty2 non_empty3 skip_prop_12 apply auto
-      by (smt (verit) Cons.prems(1) Cons.prems(2) append_eq_append_conv choice_commute choice_non_empty2 cnf_choice2 length_Suc_conv_rev list.size(3) non_empty13 non_empty2 non_empty3 non_empty4 non_empty7)
+      by (smt (verit) Cons.prems(1) Cons.prems(2) append_eq_append_conv choice_commute cnf_choice2 length_Suc_conv_rev list.size(3) non_empty13 non_empty2 non_empty3 non_empty4 non_empty7)
   next
     case False
     have "non_empty b = []" using Cons(3) False by (auto simp: non_empty_def)
@@ -2280,16 +2346,8 @@ next
 qed
 
 theorem choice_cnf_thm: "evaluate xs \<union>\<^sub>p evaluate ys \<equiv>\<^sub>p evaluate (xs \<union>\<^sub>c ys)"
-proof -
-  have "xs \<union>\<^sub>c ys = non_empty xs @ non_empty ys" by (auto simp: choice_cnf_def)
-  have "... = non_empty (xs@ys)" by (auto simp: non_empty_def)
-  have "evaluate (non_empty (xs@ys)) \<equiv>\<^sub>p evaluate (xs@ys)"
-    by (simp add: evaluate_equiv)
-  have "... \<equiv>\<^sub>p evaluate xs \<union>\<^sub>p evaluate ys"
-    by (simp add: concat_prop5)
-  show ?thesis
-    by (metis \<open>evaluate (non_empty (xs @ ys)) \<equiv>\<^sub>p evaluate (xs @ ys)\<close> \<open>evaluate (xs @ ys) \<equiv>\<^sub>p evaluate xs \<union>\<^sub>p evaluate ys\<close> \<open>non_empty xs @ non_empty ys = non_empty (xs @ ys)\<close> \<open>xs \<union>\<^sub>c ys = non_empty xs @ non_empty ys\<close> equiv_is_symetric equiv_is_transitive)
-qed
+  apply (auto simp: choice_cnf_def evaluate_def)
+  by (metis concat_prop5 equiv_is_symetric evaluate_def map_append)
 
 theorem non_empty14: "\<forall>t \<in> set xs. t \<noteq> [] \<Longrightarrow> non_empty xs = xs"
   apply (induction xs)
@@ -2308,36 +2366,34 @@ qed
 
 theorem choic_cnf1: "(x#xs) ;\<^sub>c ys = ([x] ;\<^sub>c ys) \<union>\<^sub>c (xs ;\<^sub>c ys)"
 proof -
-  have "([x] ;\<^sub>c ys) \<union>\<^sub>c (xs ;\<^sub>c ys) = non_empty (([x] ;\<^sub>c ys) @ (xs ;\<^sub>c ys))"
-    by (simp add: choice_cnf_def non_empty4)
   show ?thesis
   proof (cases "x = []")
     case True
     then show ?thesis
-      by (metis \<open>([x] ;\<^sub>c ys) \<union>\<^sub>c (xs ;\<^sub>c ys) = non_empty ([x] ;\<^sub>c ys @ xs ;\<^sub>c ys)\<close> comp_cnf2 comp_non_empty non_empty15 non_empty2 non_empty3 self_append_conv2)
+      by (metis cnf_choice1 comp_cnf2 comp_non_empty non_empty2 non_empty3)
   next
     case False
     have "non_empty [x] = [x]"
       by (metis False list.exhaust non_empty1 non_empty5)
-    have "[x @ y. y \<leftarrow> non_empty ys] = [x @ y. x \<leftarrow> non_empty [x], y \<leftarrow> non_empty ys]"
+    have "[x @ y. y \<leftarrow> ys] = [x @ y. x \<leftarrow> [x], y \<leftarrow> ys]"
       by (simp add: \<open>non_empty [x] = [x]\<close>)
     have "[x] ;\<^sub>c ys = [x @ y. y \<leftarrow> non_empty ys]" using False apply (auto simp: composition_cnf_def)
-      by (simp add: \<open>map ((@) x) (non_empty ys) = concat (map (\<lambda>x. map ((@) x) (non_empty ys)) (non_empty [x]))\<close>)
+      by (simp add: \<open>non_empty [x] = [x]\<close>)
     have "\<forall>t \<in> set [x @ y. y \<leftarrow> non_empty ys]. t \<noteq> []" by (auto simp: non_empty_def)
     then have "[x @ y. y \<leftarrow> non_empty ys] = non_empty [x @ y. y \<leftarrow> non_empty ys]" 
       apply (auto simp: non_empty_def)
       by (metis \<open>\<forall>t\<in>set (map ((@) x) (non_empty ys)). t \<noteq> []\<close> list.map_comp non_empty14 non_empty_def)
     have "([x @ y. y \<leftarrow> non_empty ys]) \<union>\<^sub>c (xs ;\<^sub>c ys) = ([x @ y. y \<leftarrow> non_empty ys]) @ non_empty (xs ;\<^sub>c ys)"
-      by (metis \<open>map ((@) x) (non_empty ys) = non_empty (map ((@) x) (non_empty ys))\<close> choice_cnf_def)
+      by (metis choice_cnf_def non_empty15)
     have "([x @ y. y \<leftarrow> non_empty ys]) @ non_empty (xs ;\<^sub>c ys) = ([x @ y. y \<leftarrow> non_empty ys]) @ (xs ;\<^sub>c ys)"
       by (metis non_empty15)
     have "([x @ y. y \<leftarrow> non_empty ys]) @ (xs ;\<^sub>c ys) = ([x @ y. y \<leftarrow> non_empty ys]) @ [a @ b. a \<leftarrow> non_empty xs, b \<leftarrow> non_empty ys]"
       by (auto simp: composition_cnf_def)
     have "([x @ y. y \<leftarrow> non_empty ys]) @ [a @ b. a \<leftarrow> non_empty xs, b \<leftarrow> non_empty ys] = [a @ b. a \<leftarrow> non_empty (x#xs), b \<leftarrow> non_empty ys]"
-      by (metis \<open>map ((@) x) (non_empty ys) = concat (map (\<lambda>x. map ((@) x) (non_empty ys)) (non_empty [x]))\<close> choice_cnf_def cnf_choice2 concat_append map_append)
+      by (metis (no_types, lifting) \<open>non_empty [x] = [x]\<close> choice_cnf_def cnf_choice2 concat.simps(2) map_eq_Cons_conv non_empty4)
     have "[a @ b. a \<leftarrow> non_empty (x#xs), b \<leftarrow> non_empty ys] = (x # xs) ;\<^sub>c ys"
       by (simp add: composition_cnf_def)
-    have "non_empty (x # xs) ;\<^sub>c ys = (x # xs) ;\<^sub>c ys"
+    have "(x # xs) ;\<^sub>c ys = (x # xs) ;\<^sub>c ys"
       by (simp add: comp_non_empty)
     then show "(x # xs) ;\<^sub>c ys = ([x] ;\<^sub>c ys) \<union>\<^sub>c (xs ;\<^sub>c ys)"
       by (simp add: \<open>[x] ;\<^sub>c ys = map ((@) x) (non_empty ys)\<close> \<open>concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty (x # xs))) = (x # xs) ;\<^sub>c ys\<close> \<open>map ((@) x) (non_empty ys) @ concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty xs)) = concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty (x # xs)))\<close> \<open>map ((@) x) (non_empty ys) @ non_empty (xs ;\<^sub>c ys) = map ((@) x) (non_empty ys) @ xs ;\<^sub>c ys\<close> \<open>map ((@) x) (non_empty ys) @ xs ;\<^sub>c ys = map ((@) x) (non_empty ys) @ concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty xs))\<close> \<open>map ((@) x) (non_empty ys) \<union>\<^sub>c (xs ;\<^sub>c ys) = map ((@) x) (non_empty ys) @ non_empty (xs ;\<^sub>c ys)\<close>)
@@ -2365,19 +2421,17 @@ next
   then show "((b # bs) \<union>\<^sub>c c) ;\<^sub>c a = ((b # bs) ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)"
   proof (cases "b=[]")
     case True
-    have "([] # bs) \<union>\<^sub>c c = bs \<union>\<^sub>c c"
-      by (metis choice_non_empty2 non_empty3)
     have "(([] # bs) ;\<^sub>c a) = bs ;\<^sub>c a"
       by (simp add: composition_cnf_def non_empty3)
 
     have "(bs \<union>\<^sub>c c) ;\<^sub>c a = (bs ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)"
       by (simp add: local.Cons)
     from True show ?thesis apply auto
-      by (simp add: \<open>([] # bs) ;\<^sub>c a = bs ;\<^sub>c a\<close> \<open>([] # bs) \<union>\<^sub>c c = bs \<union>\<^sub>c c\<close> local.Cons)
+      by (metis append_eq_Cons_conv choice_cnf_def comp_non_empty local.Cons non_empty3)
   next
     case False
-    then show "((b # bs) \<union>\<^sub>c c) ;\<^sub>c a = ((b # bs) ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)" 
-      by (metis choice_cnf_def composition_cnf_def concat_append map_append non_empty0 non_empty15 non_empty4)
+    then show "((b # bs) \<union>\<^sub>c c) ;\<^sub>c a = ((b # bs) ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)"  apply (auto simp: choice_cnf_def composition_cnf_def) using concat_append map_append non_empty0 non_empty15 non_empty4
+      by (metis Cons_eq_appendI)
   qed
 qed
 
@@ -2715,6 +2769,8 @@ theorem comp_prop2: "x \<noteq> [] \<Longrightarrow> y \<noteq> [] \<Longrightar
   by (auto simp: composition_cnf_def non_empty_def)
 
 theorem choice_prop: "tr \<in> set (xs \<union>\<^sub>c ys) \<Longrightarrow> (tr \<in> set xs \<or> tr \<in> set ys) \<and> tr \<noteq> []"
+  oops
+theorem choice_prop: "tr \<in> set (xs \<union>\<^sub>c ys) \<Longrightarrow> (tr \<in> set xs \<or> tr \<in> set ys)"
   by (auto simp: choice_cnf_def non_empty_def)
 
 theorem same_traces_size_equal: "\<forall>tr \<in> set xs. tr \<in> set ys \<Longrightarrow> \<forall>tr \<in> set ys. tr \<in> set xs \<Longrightarrow> size xs = size ys \<Longrightarrow> equal_cnf xs ys"
@@ -2732,7 +2788,7 @@ theorem comp_prop3: "\<exists>q w. q \<in> set a \<and> w \<in> set b \<and> tr 
 theorem choice_prop2: "\<exists>q. (q \<in> set a \<or> q \<in> set b) \<and> tr = q \<and> q \<noteq> [] \<Longrightarrow> tr \<in> set (a \<union>\<^sub>c b)"
   by (auto simp: choice_cnf_def non_empty_def)
 
-theorem "size (a \<union>\<^sub>c b) = size (non_empty a) + size (non_empty b)"
+theorem "size (a \<union>\<^sub>c b) = size (a) + size (b)"
   by (simp add: choice_cnf_def)
 
 theorem comp_size: "x \<noteq> [] \<Longrightarrow> length (((xx # x) # xs) ;\<^sub>c b) = length ((x # xs) ;\<^sub>c b)"
@@ -2746,7 +2802,7 @@ proof (induction a)
   case Nil
   then show ?case by (auto simp: composition_cnf_def non_empty_def)
 next
-  case (Cons x xs)
+  case cons1: (Cons x xs)
   then show "length ((x # xs) ;\<^sub>c b) = length (non_empty (x # xs)) * length (non_empty b)"
   proof (induction x)
     case Nil
@@ -2757,9 +2813,10 @@ next
     proof (cases "x=[]")
       case True
       have "length (non_empty ([xx] # xs)) = length (non_empty xs) + 1" by (auto simp: non_empty_def)
+      have "non_empty ([xx] # xs) = non_empty [[xx]] @ non_empty xs" by (auto simp: non_empty_def)
       have "([xx] # xs) ;\<^sub>c b = [xs @ ys. xs \<leftarrow> non_empty ([xx] # xs), ys \<leftarrow> non_empty b]" by (auto simp: composition_cnf_def)
       have "... = [xs @ ys. xs \<leftarrow> non_empty [[xx]], ys \<leftarrow> non_empty b] @ [xs @ ys. xs \<leftarrow> non_empty xs, ys \<leftarrow> non_empty b]"
-        by (metis choice_cnf_def cnf_choice2 concat_append map_append)
+        using \<open>non_empty ([xx] # xs) = non_empty [[xx]] @ non_empty xs\<close> by fastforce
       have "... = ([[xx]] ;\<^sub>c b) @ (xs ;\<^sub>c b)"
         by (simp add: composition_cnf_def)
       have "size ([[xx]] ;\<^sub>c b) = size (non_empty b)"
@@ -2799,8 +2856,8 @@ proof-
     by (smt (verit) append_is_Nil_conv choice_prop choice_prop2 comp_prop comp_prop2 subsetI)
   have "set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c)) \<subseteq> set (a ;\<^sub>c (b \<union>\<^sub>c c))" apply auto using choice_prop choice_prop2 comp_prop comp_prop2
     by (smt (verit, del_insts))
-  have "size (a ;\<^sub>c (b \<union>\<^sub>c c)) = size ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))"
-    by (metis (no_types, lifting) choice_cnf_def choice_prop comp_size3 distrib_right length_append mult.commute non_empty14 non_empty15)
+  have "size (a ;\<^sub>c (b \<union>\<^sub>c c)) = size ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))" apply (auto simp: choice_cnf_def) using choice_prop comp_size3 distrib_right length_append mult.commute non_empty14 non_empty15
+    by (smt (verit, best) non_empty4)
   show ?thesis
     by (simp add: equal_cnf_def \<open>length (a ;\<^sub>c (b \<union>\<^sub>c c)) = length ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> \<open>set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c)) \<subseteq> set (a ;\<^sub>c (b \<union>\<^sub>c c))\<close> \<open>set (a ;\<^sub>c (b \<union>\<^sub>c c)) \<subseteq> set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> subset_antisym)
 qed
@@ -3002,32 +3059,19 @@ theorem non_empty_is_smaller: "set (non_empty xs) \<subseteq> set xs"
 theorem normal_prop17: "normal_of a B \<Longrightarrow> normal_of (non_empty a) B"
   using non_empty_is_smaller normal_prop16 by blast
 
-theorem normal_prop18: "normal_of a B \<Longrightarrow> normal_of b B \<Longrightarrow> normal_of (a \<union>\<^sub>c b) B"
-proof (induction "size a" arbitrary: a rule: "less_induct")
-  case less
-  have "finite B" using less
-    using normal_prop4 by auto
-  then show ?case
-  proof (cases "a = []")
-    case True
-    have "a \<union>\<^sub>c b = non_empty b"
-      by (simp add: True cnf_choice1)
-    have "normal_of (non_empty b) B"
-      using less.prems(2) non_empty_is_smaller normal_prop16 by blast
-    then show "normal_of (a \<union>\<^sub>c b) B" apply (auto simp: normal_of_def non_empty_def basic_def choice_cnf_def)
-      using True by auto
-  next
-    case False
-    have "a \<union>\<^sub>c b = non_empty a @ non_empty b"
-      by (simp add: choice_cnf_def)
-    have "normal_of (non_empty b) B"
-      using less.prems(2) non_empty_is_smaller normal_prop16 by blast
-    have "normal_of (non_empty a) B"
-      using less.prems(1) non_empty_is_smaller normal_prop16 by blast
-    then show "normal_of (a \<union>\<^sub>c b) B" apply (auto simp: normal_of_def non_empty_def basic_def choice_cnf_def)
-      by (smt (verit) Un_commute Un_iff \<open>normal_of (non_empty b) B\<close> basic_def fold_prop3 insert_def insert_iff non_empty_def normal_of_def singleton_conv sup.absorb_iff2)
-  qed
+theorem normal_prop17_5: "normal_of xs B \<Longrightarrow> normal_of [x] B \<Longrightarrow> normal_of (x#xs) B"
+proof -
+  assume a1: "normal_of xs B"
+  assume a2: "normal_of [x] B"
+  then have "finite B" by (auto simp: normal_of_def)
+  show "normal_of (x#xs) B" using a1 a2 apply (auto simp: normal_of_def)
+    using basic_decomp1 by blast
 qed
+
+theorem normal_prop18: "normal_of a B \<Longrightarrow> normal_of b B \<Longrightarrow> normal_of (a \<union>\<^sub>c b) B"
+  apply (induction a)
+  apply (simp add: cnf_choice1)
+  by (metis choice_cnf_commute cnf_choice2 normal_prop12)
 
 theorem normal_prop19: "normal_of [x] B \<Longrightarrow> normal_of b B \<Longrightarrow> normal_of [x@ys. ys \<leftarrow> non_empty b] B"
 proof -
@@ -3264,7 +3308,7 @@ theorem composition_cnf_prop2: "[y#ys] ;\<^sub>c xs = [( y#ys)@t. t \<leftarrow>
   by (auto simp: composition_cnf_def non_empty_def)
 
 
-theorem Para_basic: "x \<parallel> [[]] = x" by (auto simp: cnf_concurrency_def)
+(*theorem Para_basic: "x \<parallel> [[]] = x" apply (induction x) by (auto simp:)*)
 
 theorem non2_prop1: "non_empty x = [] \<Longrightarrow> non_empty2 (x # xs) = non_empty2 xs"
   by (auto simp: non_empty2_def)
@@ -3297,13 +3341,36 @@ theorem non2_prop4: "size (non_empty2 xs) \<le> size xs"
 theorem non2_prop5: "non_empty2 (x#xs) = x#xs \<Longrightarrow> non_empty2 xs = xs"
   by (metis impossible_Cons list.inject non2_prop1 non2_prop2 non2_prop4)
 
+theorem non2_prop5_5: "non_empty2 [x] = [x] \<Longrightarrow> \<forall>path\<in>set x. path \<noteq> []"
+proof -
+  assume "non_empty2 [x] = [x]"
+  then have "non_empty x = x" apply (auto simp: non_empty2_def)
+    by (meson list.distinct(1) list.inject)
+  then show "\<forall>path\<in>set x. path \<noteq> []" apply (induction x) apply auto
+    apply (metis non_empty_13) using non_empty5 non_empty_13
+    by (metis (no_types, opaque_lifting) list.exhaust list.inject)
+qed
+
 theorem non2_prop6: "non_empty2 xs = xs \<Longrightarrow> \<forall>prog \<in> set xs. prog \<noteq> [] \<and> (\<forall>path \<in> set prog. path \<noteq> [])"
-  apply (induction xs)
-  apply simp
-  by (metis choice_prop cnf_choice2 list.set_cases non2_prop1 non2_prop2 non2_prop5 set_ConsD)
+proof (induction xs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons x xs)
+  have "\<forall>prog \<in> set xs. prog \<noteq> [] \<and> (\<forall>path \<in> set prog. path \<noteq> [])"
+    using Cons.IH Cons.prems non2_prop5 by blast
+  have "non_empty2 [x] = [x]"
+    by (metis Cons.prems append_self_conv2 list.sel(1) non2_prop1 non2_prop2 non2_prop3 non2_prop5 not_Cons_self2)
+  have "x \<noteq> []"
+    by (metis Cons.prems non2_prop1 non2_prop5 non_empty1 not_Cons_self2)
+  have "\<forall>path\<in>set x. path \<noteq> []" using non2_prop5_5[of x]
+    by (simp add: \<open>non_empty2 [x] = [x]\<close>)
+  then show "\<forall>prog\<in>set (x # xs). prog \<noteq> [] \<and> (\<forall>path\<in>set prog. path \<noteq> [])"
+    by (simp add: \<open>\<forall>prog\<in>set xs. prog \<noteq> [] \<and> (\<forall>path\<in>set prog. path \<noteq> [])\<close> \<open>x \<noteq> []\<close>)
+qed
 
 theorem non_prop1: "non_empty xs = xs \<Longrightarrow> \<forall>path \<in> set xs. path \<noteq> []"
-  by (metis choice_prop cnf_choice1)
+  by (smt (verit, del_insts) eq_Nil_null non_empty14 non_empty4 non_empty_13 same_append_eq split_list_first_prop)
 
 theorem non2_prop7: "non_empty2 xs = xs \<Longrightarrow> x \<in> set xs \<Longrightarrow> non_empty x = x"
   by (simp add: non2_prop6 non_empty14)
@@ -4268,7 +4335,23 @@ qed
 
 
 theorem is_permutation: "(xs \<parallel> ys) \<in> set (permutations (ys \<parallel> xs))"
-proof -
+proof (cases "xs = []")
+  case True
+  have "[] \<parallel> ys = []" by (auto simp: cnf_concurrency_def)
+  have "ys \<parallel> [] = []" by (auto simp: cnf_concurrency_def)
+  have "[] \<parallel> ys \<in> set (permutations (ys \<parallel> []))"
+    by (simp add: \<open>[] \<parallel> ys = []\<close> \<open>ys \<parallel> [] = []\<close>)
+  then show ?thesis
+    by (simp add: True)
+next
+  case f1: False
+  then show ?thesis 
+  proof (cases "ys = []")
+    case True
+    then show ?thesis apply auto
+      by (simp add: in_set_member permutation_reflexive cnf_concurrency_def)
+  next
+    case False
   obtain xy where o1: "xy = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]" by simp
   obtain yx where o2: "yx = [path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs]" by simp
   
@@ -4279,9 +4362,13 @@ proof -
   from perm_exists obtain xy' where 
     xy'_def: "xy' \<in> set (permutations yx) \<and> (\<forall>t\<in>set (zip xy' xy). fst t \<in> set (permutations (snd t)))"
     by auto
-  
-  thus ?thesis
-    by (smt (verit) cnf_concurrency_def map_eq_conv o1 o2 perm_inv_3 size_eq t15)
+
+  have "concat xy \<in> set (permutations (concat yx))" using size_eq perm_exists t15[of xy yx]
+    by (metis perm_inv_3 t15)
+  have "concat yx \<in> set (permutations (concat xy))" using size_eq perm_exists t15[of yx xy] by auto
+  show ?thesis
+    by (smt (verit) False \<open>concat xy \<in> set (permutations (concat yx))\<close> cnf_concurrency_def f1 in_set_member map_eq_conv o1 o2 orig_is_permutation_3) 
+qed
 qed
 
 theorem t4: "size (xs \<parallel> ys) = size (ys \<parallel> xs)"

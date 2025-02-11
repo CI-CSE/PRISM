@@ -418,6 +418,12 @@ theorem interleaving_lemma: "size ([x] \<parallel> [y]) =  nmb_interleavings_pre
   apply (auto simp: cnf_concurrency_def)
   by (simp add: nmb_interleavings_def number_interleav)
 
+theorem inter_size4: "size (xs \<parallel> ys) = 1 \<Longrightarrow> size xs = 1 \<or> size ys = 1" apply (auto simp: cnf_concurrency_def)
+  by (metis One_nat_def cnf_concurrency_def size_one1)
+
+theorem conc_prop: "xs \<parallel> [[]] = xs" apply (induction xs) by (auto simp: cnf_concurrency_def)
+theorem conc_prop2: "[[]] \<parallel> xs = xs" apply (induction xs) by (auto simp: cnf_concurrency_def)
+
 theorem assoc_10: "size (xs \<parallel> (ys \<parallel> zs)) = 1 \<Longrightarrow> size ((xs \<parallel> ys) \<parallel> zs) = 1"
 proof -
   assume a1: "size (xs \<parallel> (ys \<parallel> zs)) = 1"
@@ -437,18 +443,19 @@ proof -
   have "size (([x] \<parallel> [y]) \<parallel> [z]) = 1"
   proof (cases "y = []")
     case True
-    have "size (([x] \<parallel> [[]]) \<parallel> [z]) = 1"
-      by (metis (no_types, opaque_lifting) Para_basic True \<open>length ([x] \<parallel> ([y] \<parallel> [z])) = 1\<close> \<open>length (concat (map ((\<interleave>) x) (y \<interleave> z))) = 1\<close> concat.simps(1) concat.simps(2) inter_size2 interleave.simps(1) length_0_conv list.map_disc_iff list.simps(9) self_append_conv size_one2)
+    have "[x] \<parallel> [[]] = [x]"
+      by (simp add: conc_prop)
+    have "([x] \<parallel> [[]]) \<parallel> [z] = [x] \<parallel> [z]"
+      by (simp add: \<open>[x] \<parallel> [[]] = [x]\<close>)
     then show ?thesis
-      by (simp add: True)
+      by (metis True \<open>length ([x] \<parallel> ([y] \<parallel> [z])) = 1\<close> conc_prop2)
   next
     case False
-    have "size (([x] \<parallel> [y]) \<parallel> [[]]) = 1"
-      by (metis False Para_basic \<open>length ([x] \<parallel> ([y] \<parallel> [z])) = 1\<close> \<open>y = [] \<or> z = []\<close>)
-    then show ?thesis
+    have "z = []"
       using False \<open>y = [] \<or> z = []\<close> by auto
+    then show ?thesis apply auto
+      by (metis One_nat_def \<open>length ([x] \<parallel> ([y] \<parallel> [z])) = 1\<close> conc_prop)
   qed
-
   show "size ((xs \<parallel> ys) \<parallel> zs) = 1"
     by (simp add: \<open>length (([x] \<parallel> [y]) \<parallel> [z]) = 1\<close> \<open>xs = [x]\<close> \<open>ys = [y]\<close> \<open>zs = [z]\<close>)
 qed
@@ -575,5 +582,513 @@ next
       using \<open>evaluate ((x # xs) \<setminus>\<^sub>c C) = evaluate ([x] \<setminus>\<^sub>c C @ xs \<setminus>\<^sub>c C)\<close> \<open>evaluate ([x] \<setminus>\<^sub>c C @ xs \<setminus>\<^sub>c C) = evaluate ([x] \<setminus>\<^sub>c C) \<union>\<^sub>p evaluate (xs \<setminus>\<^sub>c C)\<close> \<open>evaluate ([x] \<setminus>\<^sub>c C) \<union>\<^sub>p evaluate (xs \<setminus>\<^sub>c C) = evaluate [x] \<setminus>\<^sub>p C \<union>\<^sub>p evaluate xs \<setminus>\<^sub>p C\<close> \<open>evaluate [x] \<setminus>\<^sub>p C \<union>\<^sub>p evaluate xs \<setminus>\<^sub>p C = (evaluate [x] \<union>\<^sub>p evaluate xs) \<setminus>\<^sub>p C\<close> by presburger
   qed
 qed
+value "[[]] \<union>\<^sub>c []::nat CNF"
+value "[[\<lparr>State = {}, Pre = {}, post = {}\<rparr>::nat Program]] \<parallel> ([[]] \<union>\<^sub>c [])"
+
+theorem conc_prop1: "set (xs \<parallel> ys) \<subseteq> set (xs \<parallel> (y#ys))"
+  apply auto
+  by (meson list.set_intros(2) path_decomp path_decomp2)
+
+theorem conc_prop3: "set (xs \<parallel> ys) \<subseteq> set (xs \<parallel> (ys \<union>\<^sub>c zs))"
+proof (induction zs)
+  case Nil
+  then show ?case by (auto simp: choice_cnf_def)
+next
+  case (Cons z zs)
+  have "set (xs \<parallel> ys) \<subseteq> set (xs \<parallel> (ys \<union>\<^sub>c (zs)))"
+    by (simp add: local.Cons)
+  have "set (ys \<union>\<^sub>c (z # zs)) = set ((z # zs) \<union>\<^sub>c ys)" by (auto simp: choice_cnf_def)
+  have "set (xs \<parallel> (ys \<union>\<^sub>c (z # zs))) = set (xs \<parallel> ((z # zs) \<union>\<^sub>c ys))" 
+    using assoc_5 [of xs xs "ys \<union>\<^sub>c (z # zs)" "(z # zs) \<union>\<^sub>c ys"] by (auto simp: choice_cnf_def)
+  have "set (xs \<parallel> (ys \<union>\<^sub>c (zs))) = set (xs \<parallel> (zs \<union>\<^sub>c ys))"
+    using assoc_5 [of xs xs "ys \<union>\<^sub>c zs" "zs \<union>\<^sub>c ys"] by (auto simp: choice_cnf_def)
+  have "set (xs \<parallel> (ys \<union>\<^sub>c (zs))) \<subseteq> set (xs \<parallel> ((z # zs) \<union>\<^sub>c ys))"
+    by (metis \<open>set (xs \<parallel> (ys \<union>\<^sub>c zs)) = set (xs \<parallel> (zs \<union>\<^sub>c ys))\<close> choice_cnf_commute cnf_choice2 conc_prop1)
+  then show "set (xs \<parallel> ys) \<subseteq> set (xs \<parallel> (ys \<union>\<^sub>c (z # zs)))"
+    using \<open>set (xs \<parallel> (ys \<union>\<^sub>c (z # zs))) = set (xs \<parallel> ((z # zs) \<union>\<^sub>c ys))\<close> local.Cons by auto 
+qed
+ 
+theorem conc_prop4: "set (xs \<parallel> (ys \<union>\<^sub>c zs)) = set (xs \<parallel> (zs \<union>\<^sub>c ys))"
+  using assoc_5[of xs xs "ys \<union>\<^sub>c zs" "zs \<union>\<^sub>c ys"] by (auto simp: choice_cnf_def)
+
+lemma conc_choice1_1: "set (xs \<parallel> (ys \<union>\<^sub>c zs)) = set ((xs \<parallel> ys) \<union>\<^sub>c (xs \<parallel> zs))" \<comment> \<open>/Conc_choice1/\<close>
+  apply auto
+   apply (smt (verit, del_insts) Un_iff choice_cnf_def path_decomp path_decomp2 set_append)
+proof -
+  fix x
+  assume "x \<in> set (xs \<parallel> ys \<union>\<^sub>c xs \<parallel> zs)"
+  then have "x \<in> set (xs \<parallel> ys) \<or> x \<in> set (xs \<parallel> zs)" by (auto simp: choice_cnf_def)
+  show "x \<in> set (xs \<parallel> (ys \<union>\<^sub>c zs))"
+  proof (cases "x \<in> set (xs \<parallel> ys)")
+    case True
+    then show ?thesis
+      using conc_prop3 by auto 
+  next
+    case False
+    then have "x \<in> set (xs \<parallel> zs)"
+      using \<open>x \<in> set (xs \<parallel> ys) \<or> x \<in> set (xs \<parallel> zs)\<close> by auto
+    have "set (xs \<parallel> (ys \<union>\<^sub>c zs)) = set (xs \<parallel> (zs \<union>\<^sub>c ys))"
+      by (simp add: conc_prop4)
+    then show ?thesis
+      using \<open>x \<in> set (xs \<parallel> zs)\<close> conc_prop3 by blast 
+  qed
+qed
+
+lemma choice_size1: "size (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1 \<Longrightarrow> size ((xs \<parallel> ys) \<union>\<^sub>c (xs \<parallel> zs)) = 1"
+proof -
+  assume "size (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1"
+  have "size xs = 1"
+    using \<open>length (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1\<close> size_one1 size_one2 by auto
+  have "size (ys \<union>\<^sub>c zs) = 1"
+    using \<open>length (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1\<close> size_one1 size_one2 by auto
+  then have "size ys = 0 \<or> size zs = 0" apply (auto simp: choice_cnf_def)
+    by (simp add: add_is_1)
+  show "size ((xs \<parallel> ys) \<union>\<^sub>c (xs \<parallel> zs)) = 1"
+  proof (cases "size xs = 0")
+    case True
+    have "length ([] \<parallel> ys \<union>\<^sub>c [] \<parallel> zs) = 1" apply auto
+      using True \<open>length xs = 1\<close> by auto
+    then show ?thesis
+      using True by blast
+  next
+    case f1: False
+    then show ?thesis
+    proof (cases "size ys = 0")
+      case True
+      then show ?thesis
+        by (metis \<open>length (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1\<close> cnf_choice1 in_set_conv_nth less_nat_zero_code list.exhaust list.set_intros(1) path_decomp)
+    next
+      case False
+      have "size zs = 0"
+        using False \<open>length ys = 0 \<or> length zs = 0\<close> by auto
+      then show ?thesis using \<open>length (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1\<close> cnf_choice1 in_set_conv_nth less_nat_zero_code list.exhaust list.set_intros(1) path_decomp
+        by (metis choice_cnf_def self_append_conv)
+    qed
+  qed
+qed
+
+lemma choice_size2: "size ((xs \<parallel> ys) \<union>\<^sub>c (xs \<parallel> zs)) = 1 \<Longrightarrow> size (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1"
+proof -
+  assume "size ((xs \<parallel> ys) \<union>\<^sub>c (xs \<parallel> zs)) = 1"
+  then have "size (xs \<parallel> zs) = 0 \<or> size (xs \<parallel> ys) = 0" apply (auto simp: choice_cnf_def)
+    by (simp add: add_is_1)
+  show "size (xs \<parallel> (ys \<union>\<^sub>c zs)) = 1"
+  proof (cases "xs = []")
+    case True
+    then show ?thesis
+      by (metis \<open>length (xs \<parallel> ys \<union>\<^sub>c xs \<parallel> zs) = 1\<close> \<open>length (xs \<parallel> zs) = 0 \<or> length (xs \<parallel> ys) = 0\<close> choice_cnf_def cnf_choice1 length_0_conv self_append_conv size_one1 zero_neq_one)
+  next
+    case f1: False
+    then show ?thesis
+    proof (cases "size (xs \<parallel> zs) = 0")
+      case True
+      then have "size zs = 0" using f1 apply (auto simp: cnf_concurrency_def)
+        by (metis inter_prop1 interleave.simps(1) list.set_intros(1) neq_Nil_conv)
+      then show ?thesis
+        by (metis True \<open>length (xs \<parallel> ys \<union>\<^sub>c xs \<parallel> zs) = 1\<close> append.right_neutral choice_cnf_def length_0_conv)
+    next
+      case False
+      then have "size (xs \<parallel> ys) = 0"
+        using \<open>length (xs \<parallel> zs) = 0 \<or> length (xs \<parallel> ys) = 0\<close> by auto
+      then have "size ys = 0" using f1 apply (auto simp: cnf_concurrency_def)
+        by (metis inter_prop1 interleave.simps(1) list.set_intros(1) neq_Nil_conv)
+      then show ?thesis
+        by (metis \<open>length (xs \<parallel> ys \<union>\<^sub>c xs \<parallel> zs) = 1\<close> \<open>length (xs \<parallel> ys) = 0\<close> cnf_choice1 length_0_conv)
+    qed
+  qed
+qed
+
+lemma Conc_choice1_1: "equal_cnf ((xs \<parallel> ys) \<union>\<^sub>c (xs \<parallel> zs)) (xs \<parallel> (ys \<union>\<^sub>c zs))"
+  using choice_size1 choice_size2 conc_choice1_1 equal_cnf_def by fastforce
+
+theorem Conc_choice1_: "evaluate ((xs \<parallel> ys) \<union>\<^sub>c (xs \<parallel> zs)) = evaluate (xs \<parallel> (ys \<union>\<^sub>c zs))"
+  using Conc_choice1_1 equal_eval by blast
+
+
+
+
+
+
+
+
+
+theorem conc_prop5: "set (xs \<parallel> ys) \<subseteq> set ((x#xs) \<parallel> ys)"
+  apply auto
+  by (meson list.set_intros(2) path_decomp path_decomp2)
+
+theorem conc_prop6: "set (xs \<parallel> ys) \<subseteq> set ((xs \<union>\<^sub>c zs) \<parallel> ys)"
+proof (induction zs)
+  case Nil
+  then show ?case by (auto simp: choice_cnf_def)
+next
+  case (Cons z zs)
+  have "set (xs \<parallel> ys) \<subseteq> set ((xs \<union>\<^sub>c zs) \<parallel> ys)"
+    by (simp add: local.Cons)
+  have "set (ys \<union>\<^sub>c (z # zs)) = set ((z # zs) \<union>\<^sub>c ys)" by (auto simp: choice_cnf_def)
+  have "set ((xs \<union>\<^sub>c (z # zs)) \<parallel> ys) = set (((z # zs) \<union>\<^sub>c xs) \<parallel> ys)"
+    using conc_prop4 is_permutation permutation_set_equality by blast 
+  have "set ((xs \<union>\<^sub>c zs) \<parallel> ys) = set ((zs \<union>\<^sub>c xs) \<parallel> ys)"
+    using conc_prop4 is_permutation permutation_set_equality by blast
+  have "set ((zs \<union>\<^sub>c xs) \<parallel> ys) \<subseteq> set (((z # zs) \<union>\<^sub>c xs) \<parallel> ys)" using \<open>set ((xs \<union>\<^sub>c zs) \<parallel> ys) = set ((zs \<union>\<^sub>c xs) \<parallel> ys)\<close> choice_cnf_commute cnf_choice2
+    by (metis conc_prop5)
+  then show ?case
+    using \<open>set ((xs \<union>\<^sub>c (z # zs)) \<parallel> ys) = set (((z # zs) \<union>\<^sub>c xs) \<parallel> ys)\<close> \<open>set ((xs \<union>\<^sub>c zs) \<parallel> ys) = set ((zs \<union>\<^sub>c xs) \<parallel> ys)\<close> local.Cons by auto
+qed
+ 
+theorem conc_prop7: "set ((zs \<union>\<^sub>c xs) \<parallel> ys) = set ((xs \<union>\<^sub>c zs) \<parallel> ys)"
+  using conc_prop4 is_permutation permutation_set_equality by blast
+
+lemma conc_choice2_1: "set ((xs \<union>\<^sub>c ys) \<parallel> zs) = set ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs))"
+  apply auto
+   apply (smt (verit, del_insts) Un_iff choice_cnf_def path_decomp path_decomp2 set_append)
+  using choice_prop conc_prop6 conc_prop7 by blast
+
+lemma choice_size3: "size ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1 \<Longrightarrow> size ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs)) = 1"
+proof -
+  assume "size ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1"
+  have "size zs = 1"
+    by (metis \<open>length ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1\<close> size_one1 t4)
+  have "size (xs \<union>\<^sub>c ys) = 1"
+    by (metis \<open>length ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1\<close> size_one2 t4)
+  then have "size xs = 0 \<or> size ys = 0" apply (auto simp: choice_cnf_def)
+    by (simp add: add_is_1)
+  show "size ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs)) = 1"
+  proof (cases "size zs = 0")
+    case True
+    have "length (xs \<parallel> [] \<union>\<^sub>c ys \<parallel> []) = 1" apply auto
+      using True \<open>length zs = 1\<close> by auto
+    then show ?thesis
+      using True by blast
+  next
+    case f1: False
+    then show ?thesis
+    proof (cases "size ys = 0")
+      case True
+      then show ?thesis using \<open>length ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1\<close> cnf_choice1 in_set_conv_nth less_nat_zero_code list.exhaust list.set_intros(1) path_decomp
+      proof -
+        have "\<forall>ps pss pssa. (\<exists>psa psb. (ps::'a Program list) \<in> set (psa \<interleave> psb) \<and> psb \<in> set pssa \<and> psa \<in> set pss) \<or> ps \<notin> set (pss \<parallel> pssa)"
+          using path_decomp by blast
+        then obtain pps :: "'a Program list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list" and ppsa :: "'a Program list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list" and ppsb :: "'a Program list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list" and ppsc :: "'a Program list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list list \<Rightarrow> 'a Program list" where
+          f1: "\<forall>ps pss pssa. ps \<in> set (pps ps pss pssa \<interleave> ppsa ps pss pssa) \<and> ppsa ps pss pssa \<in> set pssa \<and> pps ps pss pssa \<in> set pss \<or> ps \<notin> set (pss \<parallel> pssa)"
+          by metis
+        obtain ppsd :: "'a Program list list \<Rightarrow> 'a Program list" and ppss :: "'a Program list list \<Rightarrow> 'a Program list list" and ppse :: "'a Program list list \<Rightarrow> 'a Program list" and ppssa :: "'a Program list list \<Rightarrow> 'a Program list list" where
+          f2: "\<forall>pss. ppsd pss # ppss pss = pss \<or> [] = pss"
+          by (metis (no_types) list.exhaust)
+        have f3: "\<forall>ps pss. 0 < length ((ps::'a Program list) # pss)"
+          by (metis length_pos_if_in_set list.set_intros(1))
+        have f4: "\<forall>pss. ppsd pss \<in> set pss \<or> [] = pss"
+          using f2 by (metis (no_types) list.set_intros(1))
+        have f5: "[] = ys"
+          using True by blast
+        have f6: "\<forall>ps. (ps::'a Program list) \<notin> set []"
+          by fastforce
+        then have f7: "\<forall>pss. equal_cnf ((pss::'a Program list list) \<union>\<^sub>c []) pss"
+          using f4 f1 by (metis (no_types) Conc_choice1_1 cnf_choice2 conc_prop)
+        then have "1 = length xs"
+          using f5 by (metis (no_types) \<open>length (xs \<union>\<^sub>c ys) = 1\<close> equal_cnf_def)
+        then show ?thesis
+          using f7 f6 f4 f3 f2 f1 by (metis (no_types) True \<open>length ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1\<close> cnf_choice2 diff_is_0_eq diff_less impossible_Cons less_nat_zero_code less_one)
+      qed
+    next
+      case False
+      have "size xs = 0"
+        using False \<open>length xs = 0 \<or> length ys = 0\<close> by auto
+      then show ?thesis using cnf_choice1 in_set_conv_nth less_nat_zero_code list.exhaust list.set_intros(1) path_decomp
+        by (metis \<open>length ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1\<close>)
+    qed
+  qed
+qed
+
+lemma choice_size4: "size ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs)) = 1 \<Longrightarrow> size ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1"
+proof -
+  assume "size ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs)) = 1"
+  then have "size (xs \<parallel> zs) = 0 \<or> size (ys \<parallel> zs) = 0" apply (auto simp: choice_cnf_def)
+    by (simp add: add_is_1)
+  show "size ((xs \<union>\<^sub>c ys) \<parallel> zs) = 1"
+  proof (cases "zs = []")
+    case True
+    then show ?thesis
+      by (metis \<open>length (xs \<parallel> zs \<union>\<^sub>c ys \<parallel> zs) = 1\<close> \<open>length (xs \<parallel> zs) = 0 \<or> length (ys \<parallel> zs) = 0\<close> choice_cnf_def cnf_choice1 length_0_conv self_append_conv size_one2 zero_neq_one)
+  next
+    case f1: False
+    then show ?thesis
+    proof (cases "size (xs \<parallel> zs) = 0")
+      case True
+      then have "size xs = 0" using f1 apply (auto simp: cnf_concurrency_def)
+        by (metis inter_prop1 interleave.simps(1) list.set_intros(1) neq_Nil_conv)
+      then show ?thesis
+        by (metis True \<open>length (xs \<parallel> zs \<union>\<^sub>c ys \<parallel> zs) = 1\<close> cnf_choice1 length_0_conv)
+    next
+      case False
+      then have "size (ys \<parallel> zs) = 0"
+        using \<open>length (xs \<parallel> zs) = 0 \<or> length (ys \<parallel> zs) = 0\<close> by blast
+      then have "size ys = 0" using f1 apply (auto simp: cnf_concurrency_def)
+        by (metis inter_prop1 interleave.simps(1) list.set_intros(1) neq_Nil_conv)
+      then show ?thesis
+        by (metis \<open>length (xs \<parallel> zs \<union>\<^sub>c ys \<parallel> zs) = 1\<close> \<open>length (ys \<parallel> zs) = 0\<close> choice_cnf_def length_0_conv self_append_conv)
+    qed
+  qed
+qed
+
+lemma Conc_choice2_1: "equal_cnf ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs)) ((xs \<union>\<^sub>c ys) \<parallel> zs)"
+  using choice_size3 choice_size4 conc_choice2_1 equal_cnf_def by fastforce
+
+theorem Conc_choice2_: "evaluate ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs)) = evaluate ((xs \<union>\<^sub>c ys) \<parallel> zs)"
+  using Conc_choice2_1 equal_eval by blast
+
+theorem eval_subprogram: "evaluate ys \<preceq>\<^sub>p evaluate (y # ys)"
+  apply (auto simp: evaluate_def)
+  by (metis Choice.simps(1) Choice_prop_1 Choice_prop_1_2 Choice_prop_3 fail_subprogram3 program_is_subprogram_of_choice)
+
+theorem eval_subprogram2: "evaluate [y] \<preceq>\<^sub>p evaluate (y # ys)"
+  apply (auto simp: evaluate_def)
+  by (metis Choice.simps(2) Choice_prop_1_2 program_is_subprogram_of_choice subprogram_is_preorder)
+
+lemma eval_subprogram3:"set xs \<subseteq> set [y] \<Longrightarrow> evaluate xs \<preceq>\<^sub>p evaluate [y]"
+  apply (induction xs) apply (auto simp:)
+  apply (simp add: eval_subprogram)
+  by (metis choice_suprogram_prop concat_prop3 eval_subprogram2)
+
+lemma eval_subprogram4:"set [x] \<subseteq> set ys \<Longrightarrow> evaluate [x] \<preceq>\<^sub>p evaluate ys"
+  apply (induction ys) apply (auto simp:)
+  apply (simp add: eval_subprogram2)
+  by (meson eval_subprogram subprogram_is_transitive)
+
+lemma eval_subprogram5: "size xs > 1 \<Longrightarrow> equal_cnf xs zs \<Longrightarrow> evaluate xs = evaluate [] \<union>\<^sub>p evaluate zs"
+proof -
+  assume a1: "size xs > 1" and a2: "equal_cnf xs zs"
+  have "evaluate xs = evaluate zs"
+    by (simp add: a2 equal_eval)
+  have "zs \<noteq> []"
+    using a1 a2 equal_empty by force
+  have "size zs > 1" using a1 a2 apply (auto simp: equal_cnf_def)
+    by (simp add: Suc_lessI \<open>zs \<noteq> []\<close>)
+  have "evaluate [] \<union>\<^sub>p evaluate zs = evaluate zs" apply (auto simp: evaluate_def Fail_def)
+    by (metis Choice_prop_18 Fail_def \<open>1 < length zs\<close> length_map)
+  show "evaluate xs = evaluate [] \<union>\<^sub>p evaluate zs"
+    by (simp add: \<open>evaluate [] \<union>\<^sub>p evaluate zs = evaluate zs\<close> \<open>evaluate xs = evaluate zs\<close>)
+qed
+
+theorem eval_subprogram6: "size (ys @ zs) > 1 \<Longrightarrow> evaluate ys \<union>\<^sub>p evaluate zs = evaluate (ys \<union>\<^sub>c zs)"
+  apply (induction ys) apply (auto simp: choice_cnf_def evaluate_def)
+  apply (metis Choice_prop_18 One_nat_def choice_commute length_map)
+  apply (smt (verit, ccfv_threshold) Choice_prop_19 Cons_eq_appendI add_gr_0 choice_commute length_Cons length_append length_greater_0_conv length_map less_add_same_cancel1 plus_1_eq_Suc)
+  by (smt (verit) Choice.simps(2) Choice_prop_1_2 Choice_prop_22 Choice_prop_7 Cons_eq_appendI choice_commute list.discI map_is_Nil_conv self_append_conv)
+
+theorem eval_subprogram7: "size xs \<noteq> 1 \<Longrightarrow> equal_cnf xs (ys \<union>\<^sub>c zs) \<Longrightarrow> evaluate xs = evaluate ys \<union>\<^sub>p evaluate zs"
+  apply (cases "xs = []") apply (auto simp: choice_cnf_def)
+  apply (smt (verit) Choice_prop_19 Nil_is_append_conv choice_cnf_def cnf_choice2 equal_empty equal_sym eval_prop eval_prop1 evaluate_def length_greater_0_conv list.size(3) map_append non_empty2 non_empty4 non_empty9 not_Cons_self2)
+  apply (cases "ys = []") apply auto 
+   apply (cases "zs = []")
+  apply (simp add: equal_empty)
+   apply (simp add: Suc_lessI eval_subprogram5)
+  apply (cases "size ys = 1") using concat_prop3 equal_eval 
+  apply (metis (no_types, lifting) Cons_eq_appendI One_nat_def append.right_neutral append_eq_append_conv append_eq_append_conv2 equal_cnf_def length_0_conv length_Suc_conv)
+  apply (cases "size zs = 1") using equal_eval
+  apply (metis (no_types, lifting) One_nat_def eval_prop1 length_0_conv length_Suc_conv)
+proof -
+  assume "length xs \<noteq> Suc 0" and "equal_cnf xs (ys @ zs)" and "xs \<noteq> []" and  "ys \<noteq> []" and "length ys \<noteq> 1" and "length zs \<noteq> 1"
+  have "set xs = set ys \<union> set zs"
+    by (metis \<open>equal_cnf xs (ys @ zs)\<close> equal_cnf_def set_append)
+  have "evaluate ys \<union>\<^sub>p evaluate zs = evaluate (ys \<union>\<^sub>c zs)"
+    by (metis One_nat_def Suc_lessI \<open>equal_cnf xs (ys @ zs)\<close> \<open>length xs \<noteq> Suc 0\<close> \<open>length zs \<noteq> 1\<close> \<open>xs \<noteq> []\<close> append.right_neutral choice_cnf_def equal_eval eval_subprogram6 length_append length_greater_0_conv trans_less_add2)
+  show "evaluate xs = evaluate ys \<union>\<^sub>p evaluate zs"
+    by (simp add: \<open>equal_cnf xs (ys @ zs)\<close> \<open>evaluate ys \<union>\<^sub>p evaluate zs = evaluate (ys \<union>\<^sub>c zs)\<close> choice_cnf_def equal_eval)
+qed
+
+lemma eval_subprogram8: "evaluate [x. x \<leftarrow> xs, f x] \<preceq>\<^sub>p evaluate xs"
+proof (induction xs)
+  case Nil
+  then show ?case apply (simp add: subprogram_is_preorder) done
+next
+  case (Cons x xs)
+  then show "evaluate [x. x \<leftarrow> (x#xs), f x] \<preceq>\<^sub>p evaluate (x#xs)"
+  proof (cases "xs=[]")
+    case True
+    then show ?thesis apply auto
+      apply (simp add: eval_subprogram2)
+      by (simp add: eval_subprogram)
+  next
+    case f1: False
+    then show ?thesis
+  proof (cases "f x")
+    case t1: True
+    have "[x. x \<leftarrow> (x#xs), f x] = x#[x. x \<leftarrow> xs, f x]"
+      by (simp add: t1)
+    have "equal_cnf [x. x \<leftarrow> (x#xs), f x] ([x. x \<leftarrow> [x], f x] \<union>\<^sub>c [x. x \<leftarrow> xs, f x])" by (auto simp: equal_cnf_def choice_cnf_def)
+    then show ?thesis
+    proof (cases "[x. x \<leftarrow> xs, f x] = []")
+      case True
+      then show ?thesis apply auto
+        apply (simp add: True eval_subprogram2)
+        using local.t1 by blast
+    next
+      case False
+    then have "evaluate [x. x \<leftarrow> (x#xs), f x] = evaluate [x. x \<leftarrow> [x], f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, f x]" 
+      using eval_subprogram7[of "[x. x \<leftarrow> (x#xs), f x]" "[x. x \<leftarrow> [x], f x]" "[x. x \<leftarrow> xs, f x]"]
+      using \<open>concat (map (\<lambda>x. if f x then [x] else []) (x # xs)) = x # concat (map (\<lambda>x. if f x then [x] else []) xs)\<close> \<open>equal_cnf (concat (map (\<lambda>x. if f x then [x] else []) (x # xs))) (concat (map (\<lambda>x. if f x then [x] else []) [x]) \<union>\<^sub>c concat (map (\<lambda>x. if f x then [x] else []) xs))\<close> by fastforce
+    have "evaluate [x. x \<leftarrow> xs, f x] \<preceq>\<^sub>p evaluate xs"
+      by (simp add: local.Cons)
+    then show ?thesis
+      by (metis (no_types, lifting) False \<open>concat (map (\<lambda>x. if f x then [x] else []) (x # xs)) = x # concat (map (\<lambda>x. if f x then [x] else []) xs)\<close> choice_commute choice_safety1 concat_prop3 f1)
+  qed
+next
+  case False
+  show ?thesis
+    using False eval_subprogram local.Cons subprogram_is_order by fastforce
+qed
+qed
+qed
+
+lemma eval_subprogram9: "evaluate [x. x \<leftarrow> (x#xx#xs), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs, \<not>f x] = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x])"
+proof (induction xs)
+  case Nil
+  have "(evaluate [x. x \<leftarrow> [], f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> [], \<not>f x]) = Fail {}" by(auto simp: evaluate_def Fail_def choice_def restr_post_def S_def restrict_r_def)
+  have "evaluate [x. x \<leftarrow> [x,xx], f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> [x,xx], \<not>f x] = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (Fail {})"
+    by (smt (z3) append.right_neutral choice_commute cnf_choice2 concat.simps(1) concat.simps(2) concat_prop2 concat_prop3 list.map_disc_iff list.simps(9) non_empty7 self_append_conv2 skip_prop_12 special_empty1)
+  then show "evaluate [x. x \<leftarrow> [x,xx], f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> [x,xx], \<not>f x] = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [x. x \<leftarrow> [], f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> [], \<not>f x])"
+    using \<open>evaluate (concat (map (\<lambda>x. if f x then [x] else []) [])) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) [])) = Fail {}\<close> by presburger
+next
+  case (Cons a xs)
+  then show ?case
+  proof (cases "f a")
+    case True
+    then have "evaluate [x. x \<leftarrow> (x#xx#a#xs), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#a#xs, \<not>f x] = (evaluate [a] \<union>\<^sub>p evaluate [x. x \<leftarrow> (x#xx#xs), f x]) \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs, \<not>f x]"
+      apply (auto simp add: evaluate_def)
+      apply (smt (verit) Choice_prop_22 choice_assoc_1 choice_commute)
+      apply (metis (no_types, lifting) Choice_prop_1_4 foldl_Cons list.distinct(1))
+      apply (smt (z3) Choice.simps(2) Choice_prop_1_2 Choice_prop_1_4 choice_assoc_1 choice_commute foldl_Nil)
+      by (simp add: fold_choice)
+    have "... = evaluate [a] \<union>\<^sub>p ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p ((evaluate [x. x \<leftarrow> xs, f x]) \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x]))"
+      by (metis (no_types, lifting) choice_assoc_1 local.Cons)
+    have "... = ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [a] \<union>\<^sub>p ((evaluate [x. x \<leftarrow> xs, f x]) \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x])))"
+      by (smt (verit, del_insts) choice_assoc_1 choice_commute)
+    have "... = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (a#xs), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> (a#xs), \<not>f x])"
+      apply (auto simp: evaluate_def)
+      apply (simp add: True)
+      by (smt (z3) Choice_prop_22 choice_assoc_1 choice_commute)
+    then show ?thesis
+      using \<open>(evaluate [a] \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # xs)))) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # xs))) = evaluate [a] \<union>\<^sub>p ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs)) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs))))\<close> \<open>evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # a # xs))) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # a # xs))) = (evaluate [a] \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # xs)))) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # xs)))\<close> \<open>evaluate [a] \<union>\<^sub>p ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs)) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs)))) = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [a] \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs)) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs))))\<close> by argo
+  next
+    case False
+    then have "evaluate [x. x \<leftarrow> (x#xx#a#xs), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#a#xs, \<not>f x] = evaluate [x. x \<leftarrow> (x#xx#xs), f x] \<union>\<^sub>p (evaluate [a] \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs, \<not>f x])"
+      apply (auto simp add: evaluate_def)
+      apply (smt (verit) Choice_prop_22 choice_assoc_1 choice_commute)
+      apply (metis (no_types, lifting) Choice_prop_1_4 foldl_Cons list.distinct(1))
+      apply (smt (z3) Choice.simps(2) Choice_prop_1_2 Choice_prop_1_4 choice_assoc_1 choice_commute foldl_Nil)
+      by (simp add: fold_choice)
+    have "... = evaluate [a] \<union>\<^sub>p ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p ((evaluate [x. x \<leftarrow> xs, f x]) \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x]))"
+      by (smt (verit, best) choice_assoc_1 choice_commute local.Cons)
+    have "... = ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [a] \<union>\<^sub>p ((evaluate [x. x \<leftarrow> xs, f x]) \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x])))"
+      by (smt (verit, del_insts) choice_assoc_1 choice_commute)
+    have "... = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (a#xs), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> (a#xs), \<not>f x])"
+      apply (auto simp: evaluate_def)
+      apply (smt (verit, ccfv_threshold) Choice_prop_22 choice_assoc_1 choice_commute)
+      by (smt (z3) Choice_prop_22 choice_assoc_1 choice_commute)
+    then show ?thesis
+      using \<open>evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # a # xs))) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # a # xs))) = evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # xs))) \<union>\<^sub>p (evaluate [a] \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # xs))))\<close> \<open>evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # xs))) \<union>\<^sub>p (evaluate [a] \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # xs)))) = evaluate [a] \<union>\<^sub>p ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs)) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs))))\<close> \<open>evaluate [a] \<union>\<^sub>p ((evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs)) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs)))) = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [a] \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs)) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs))))\<close> by argo
+  qed
+qed
+
+lemma eval_subprogram10: "(evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x]) = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate xs)"
+proof (induction xs)
+  case Nil
+  then show ?case apply (auto simp: evaluate_def)
+    by (metis choice_assoc_1 choice_commute choice_idem_5)
+next
+  case (Cons a xs)
+  then show ?case apply (auto simp: evaluate_def)
+    apply (smt (z3) Choice_prop_22 choice_assoc_1 choice_commute)
+    by (smt (z3) Choice_prop_22 choice_assoc_1 choice_commute)
+qed
+
+lemma eval_subprogram11: "size xs > 1 \<Longrightarrow> evaluate [x. x \<leftarrow> xs, f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] = evaluate xs"
+proof -
+  assume "size xs > 1"
+  then obtain x xx xs' where "xs=x#xx#xs'" apply auto
+    by (metis length_0_conv length_Cons less_irrefl_nat less_nat_zero_code remdups_adj.cases)
+  have "evaluate (x#xx#xs') = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p evaluate xs'"
+    by (metis \<open>1 < length xs\<close> \<open>xs = x # xx # xs'\<close> choice_cnf_def cnf_choice2 cnf_choice3 concat_prop3 eval_subprogram6 list.distinct(1))
+  have "evaluate [x. x \<leftarrow> (x#xx#xs'), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs', \<not>f x] = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs'), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> xs', \<not>f x])"
+    using eval_subprogram9 by blast
+  have "... = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate xs')"
+    using eval_subprogram10 by blast
+  have "evaluate [x. x \<leftarrow> (x#xx#xs'), f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs', \<not>f x] = evaluate (x#xx#xs')"
+    using \<open>(evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs')) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs'))) = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p evaluate xs'\<close> \<open>evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # xs'))) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # xs'))) = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs')) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs')))\<close> \<open>evaluate (x # xx # xs') = (evaluate [x] \<union>\<^sub>p evaluate [xx]) \<union>\<^sub>p evaluate xs'\<close> by presburger
+  show "evaluate [x. x \<leftarrow> xs, f x] \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] = evaluate xs"
+    using \<open>evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # xs'))) \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # xs'))) = evaluate (x # xx # xs')\<close> \<open>xs = x # xx # xs'\<close> by blast
+qed
+
+
+theorem eval_subprogram12: "set xs \<subseteq> set ys \<Longrightarrow> evaluate xs \<preceq>\<^sub>p evaluate ys"
+  apply (cases "xs = []") apply auto
+   apply (simp add: concat_prop2 fail_subprogram3)
+  apply (cases "ys = []")
+   apply simp
+  apply (cases "size ys = 1")
+   apply (metis One_nat_def eval_subprogram3 length_0_conv length_Suc_conv)
+  apply (cases "size xs = 1")
+   apply (metis One_nat_def Suc_length_conv eval_subprogram4 length_0_conv)
+proof -
+  assume a1: "set xs \<subseteq> set ys" and a2: "xs \<noteq> []" and a3: "ys \<noteq> []" and a4: "length ys \<noteq> 1" and a5: "length xs \<noteq> 1"
+  have "size xs > 1"
+    using \<open>length xs \<noteq> 1\<close> \<open>xs \<noteq> []\<close> nat_neq_iff by auto
+  have "size ys > 1"
+    using \<open>length ys \<noteq> 1\<close> \<open>ys \<noteq> []\<close> nat_neq_iff by auto
+  obtain ys' where o1: "ys' = [y. y \<leftarrow> ys, y \<in> set xs]" by simp
+  obtain ys'' where o2: "ys'' = [y. y \<leftarrow> ys, y \<notin> set xs]" by simp
+  have "evaluate ys' \<preceq>\<^sub>p evaluate ys" apply (simp add: o1) using eval_subprogram8[of "\<lambda>y. y \<in> set xs" ys] by auto
+  have "set ys' \<union> set ys'' = set ys" using o1 o2 by auto
+  have "set ys' = set xs" using o1 a1 by auto
+  have "size ys' > 0" apply auto
+    using \<open>set ys' = set xs\<close> a2 by auto
+  have "evaluate ys' \<union>\<^sub>p evaluate ys'' = evaluate ys" apply (simp add: o1 o2) using eval_subprogram11[of ys "\<lambda>y. y \<in> set xs"] apply auto
+    using \<open>1 < length ys\<close> by linarith
+  show "evaluate xs \<preceq>\<^sub>p evaluate ys"
+  proof (cases "size ys' = 1")
+    case True
+    have "card (set xs) = 1"
+      by (metis True \<open>0 < length ys'\<close> \<open>set ys' = set xs\<close> le_numeral_extra(4) length_greater_0_conv rotate1_fixpoint_card rotate1_length01)
+    then obtain x where "set xs = {x}" apply auto
+      using \<open>card (set xs) = 1\<close> card_1_singletonE by blast
+    have "evaluate xs = evaluate [x] \<union>\<^sub>p evaluate [x]"
+      using \<open>1 < length xs\<close> \<open>set xs = {x}\<close> evaluate_prop2 by auto
+    then show ?thesis
+    proof (cases "set xs = set ys")
+      case True
+      then show ?thesis
+        by (simp add: \<open>evaluate xs = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> \<open>set xs = {x}\<close> choice_decomp_1 eval_subprogram4)
+    next
+      case False
+      have "ys'' \<noteq> []"
+        using False \<open>set ys' = set xs\<close> \<open>set ys' \<union> set ys'' = set ys\<close> by fastforce
+      then show ?thesis
+        by (metis \<open>evaluate xs = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> \<open>set xs = {x}\<close> a1 choice_decomp_1 empty_set eval_subprogram4 list.simps(15))
+    qed
+  next
+    case False
+    have "size ys' > 1"
+      using False \<open>0 < length ys'\<close> nat_neq_iff by auto
+    have "equal_cnf xs ys'" apply (auto simp: equal_cnf_def)
+      apply (auto simp add: \<open>set ys' = set xs\<close>)
+      using \<open>1 < length xs\<close> apply auto
+      using False by linarith
+    have "evaluate xs = evaluate ys'"
+      by (simp add: \<open>equal_cnf xs ys'\<close> equal_eval)
+
+    then show ?thesis
+      by (simp add: \<open>evaluate ys' \<preceq>\<^sub>p evaluate ys\<close>)
+  qed
+qed
+
+definition p :: "nat CNF"
+  where "p = [[\<lparr>State = {}, Pre = {}, post = {}\<rparr>]]"
+definition q :: "nat CNF"
+  where "q = [[]]"
+definition r :: "nat CNF"
+  where "r = [[\<lparr>State = {}, Pre = {}, post = {}\<rparr>]]"
+value "(p \<parallel> q) ;\<^sub>c r"
+value "p \<parallel> (q ;\<^sub>c r)"
+theorem "set ((p \<parallel> q) ;\<^sub>c r) \<subseteq> set (p \<parallel> (q ;\<^sub>c r))"
 
 end
