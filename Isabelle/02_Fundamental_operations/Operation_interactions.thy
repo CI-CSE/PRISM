@@ -76,13 +76,14 @@ lemma compose_distrib1_1: "q;(p\<^sub>1\<union>\<^sub>pp\<^sub>2) = (q;p\<^sub>1
   \<comment> \<open>nitpick\<close>
   oops
 
-\<comment> \<open>
+(*
 definition p1 :: "nat Program" where "p1 = \<lparr>State = {1}, Pre = {1}, post = {(1, 1)}\<rparr>"
 definition p2 :: "nat Program" where "p2= \<lparr>State = {1}, Pre = {}, post = {}\<rparr>"
 definition q :: "nat Program" where "q = \<lparr>State = {}, Pre = {}, post = {(1, 1)}\<rparr>"
-value "(q;p1) \<union>p (q;p2)"
-value "q;(p1\<union>pp2)"
-value "(p1\<union>pp2)"\<close>
+value "(q;p1) \<union>\<^sub>p (q;p2)"
+value "q;(p1\<union>\<^sub>pp2)"
+value "(p1\<union>\<^sub>pp2)"
+*)
 
 theorem compose_distrib1_2 : "q;(p\<^sub>1\<union>\<^sub>pp\<^sub>2) \<triangleq> (q;p\<^sub>1) \<union>\<^sub>p (q;p\<^sub>2)" \<comment> \<open>/Compose_distrib1/\<close>
   \<comment> \<open>nitpick\<close>

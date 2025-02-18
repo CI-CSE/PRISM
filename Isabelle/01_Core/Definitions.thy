@@ -319,11 +319,11 @@ fun Choice:: "('a Program) list \<Rightarrow> 'a Program"
 notation
   Choice ("\<Union>\<^sub>p")
 
-fun Concat:: "('a Program) list \<Rightarrow> 'a Program"
+fun Concat:: "('a Program) list \<Rightarrow> 'a set \<Rightarrow> 'a Program"
   where
-    "Concat [] = (Skip {})" |
-    "Concat [x] = x" |
-    "Concat (x#xs) = foldl (;) x xs"
+    "Concat [] s = (Skip s)" |
+    "Concat [x] s = x" |
+    "Concat (x#xs) s = foldl (;) x xs"
 
 definition Choice_set:: "('a Program) set \<Rightarrow> 'a Program"
   where
@@ -378,6 +378,7 @@ definition complete_state :: "'a Program list \<Rightarrow> 'a set"
   where
     "complete_state xs \<equiv> fold (\<lambda> p s. S p \<union> s) xs {}"
 
+
 primrec n_comp :: "'a Program list \<Rightarrow> 'a Program"
   where
     "n_comp [] = Fail {}" |
@@ -385,7 +386,7 @@ primrec n_comp :: "'a Program list \<Rightarrow> 'a Program"
 
 definition conc_elems :: "'a Program list \<Rightarrow> 'a Program list"
   where
-    "conc_elems xs \<equiv> [Concat t. t <- permutations xs]"
+    "conc_elems xs \<equiv> [Concat t (complete_state t). t <- permutations xs]"
 
 definition atomic_conc :: "'a Program list \<Rightarrow> 'a Program"
   where
@@ -399,7 +400,7 @@ definition non_atomic_conc:: "('a Program \<times> 'a Program) \<Rightarrow> 'a 
 
 definition non_atomic_conc:: "'a Program list \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix "\<parallel>\<^sub>n" 50)
   where
-    "xs \<parallel>\<^sub>n x \<equiv> \<Union>\<^sub>p [Concat t. t \<leftarrow> insert_all x xs]"
+    "xs \<parallel>\<^sub>n x \<equiv> \<Union>\<^sub>p [Concat t (complete_state t). t \<leftarrow> insert_all x xs]"
 
 definition arbitrary_repetition_set :: "'a Program \<Rightarrow> 'a Program set"
   where
@@ -500,16 +501,14 @@ definition get_atomic :: "'a Program \<Rightarrow> ('a Program) set"
   where
     "get_atomic p = {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<in> Pre p}"
 
-definition evaluate :: "'a CNF \<Rightarrow> 'a Program"
+definition evaluate :: "'a CNF \<Rightarrow> 'a set \<Rightarrow> 'a Program"
   where
-    "evaluate p \<equiv> \<Union>\<^sub>p (map (Concat) p)"
+    "evaluate p s \<equiv> \<Union>\<^sub>p (map (\<lambda>xs. Concat xs s) p)"
 
 function interleave :: "'a list \<Rightarrow> 'a list \<Rightarrow> 'a list list" (infix "\<interleave>" 150) where
   "[] \<interleave> ys = [ys]"
 | "(xs) \<interleave> [] = [xs]"
-| "(x#xs) \<interleave> (y#ys) = 
-     map ((#) x) (xs \<interleave> (y#ys)) @
-     map ((#) y) ((x#xs) \<interleave> ys)"
+| "(x#xs) \<interleave> (y#ys) = map ((#) x) (xs \<interleave> (y#ys)) @  map ((#) y) ((x#xs) \<interleave> ys)"
 by pat_completeness auto
 termination
   by (relation "measure (\<lambda>(xs, ys). length xs + length ys)") auto
@@ -523,7 +522,6 @@ value "cnf_concurrency ([a,b]#[[c,d]]) [[e,f],[g,h]]"
 value "cnf_concurrency [[e,f],[g,h]] [[a,b],[c,d]]"
 value "cnf_concurrency [[a,b],[]] [[d],[e,f], []]"
 value "cnf_concurrency [[a,b],[]] [[]]"
-
 
 (*
 definition cnf_concurrency :: "'a CNF list \<Rightarrow> 'a CNF" where
@@ -553,7 +551,7 @@ definition exact_version :: "'a Program \<Rightarrow> 'a Program"
 
 function civilized_n :: "'a Program \<Rightarrow> 'a Program set \<Rightarrow> nat \<Rightarrow> bool"
   where
-    "civilized_n x B 0 = (((x \<in> B) \<or> x = Fail {}) \<and> finite B)" |
+    "civilized_n x B 0 = (((x \<in> B) \<or> x = Fail {} \<or> x = Skip (complete_state (set_to_list B))) \<and> finite B)" |
     "civilized_n x B (Suc n) = (((\<exists>a b. civilized_n a B n \<and> civilized_n b B n \<and> (a ; b = x \<or> a \<union>\<^sub>p b = x)) \<and> finite B) \<or> civilized_n x B n)"
     \<comment> \<open>"civilized_n x B (Suc n) = ((\<exists>a b m m'. m<(Suc n) \<and> m'<(Suc n) \<and> civilized_n a B m \<and> civilized_n b B m' \<and> (a ; b = x \<or> a \<union>p b = x)) \<and> finite B)"\<close>
   by pat_completeness auto
@@ -561,9 +559,12 @@ termination civilized_n
   apply (relation "measure (\<lambda>(_, _, n). n)")
   by auto
 
+theorem civ_n_finite: "civilized_n p B n \<Longrightarrow> finite B"
+  by (metis civilized_n.simps(1) civilized_n.simps(2) zero_induct)
+
 definition civilized :: "'a Program \<Rightarrow> 'a Program set \<Rightarrow> bool"
   where
-    "civilized x B \<equiv> (\<exists>n. civilized_n x B n) \<and> finite B"
+    "civilized x B \<equiv> (\<exists>n. civilized_n x B n)"
 
 definition equal_cnf :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> bool"
   where
@@ -591,5 +592,21 @@ termination corestrict_path
 definition corestriction_cnf :: "'a CNF \<Rightarrow> 'a set \<Rightarrow> 'a CNF" (infix "\<setminus>\<^sub>c" 150)
   where
     "corestriction_cnf p C \<equiv> [corestrict_path path_p C. path_p \<leftarrow> p]"
+
+definition complete_cnf_state :: "'a CNF \<Rightarrow> 'a set"
+  where
+    "complete_cnf_state p \<equiv> \<Union> {complete_state tr| tr. tr \<in> set p }"
+
+definition normal_of :: "'a CNF \<Rightarrow> 'a Program set \<Rightarrow> bool"
+  where
+    "normal_of p xs \<equiv> (basic p \<subseteq> (xs \<union> {Fail {}, Skip (complete_state (set_to_list xs))})) \<and> finite xs"
+(*
+    C = {}
+    D = {a\<^sub>1, a\<^sub>2}
+    p = [[]]
+lemma "(evaluate [[]] {1, 2}) \<sslash>\<^sub>p {} = g" apply (auto simp: evaluate_def restrict_p_def restrict_r_def) oops
+lemma "evaluate ([[]] \<sslash>\<^sub>c {}) {1, 2} = g" apply (auto simp: evaluate_def restrict_p_def restrict_r_def restriction_cnf_def) oops
+theorem "C \<subseteq> D \<Longrightarrow> (evaluate p D) \<sslash>\<^sub>p C \<equiv>\<^sub>p evaluate (p \<sslash>\<^sub>c C) D" nitpick
+*)
 
 end

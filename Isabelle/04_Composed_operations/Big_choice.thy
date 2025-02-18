@@ -486,77 +486,63 @@ qed
 
 
 
-theorem Concat_prop_1: "xs \<noteq> [] \<Longrightarrow> foldl (;) x xs = x ; Concat xs"
+theorem Concat_prop_1: "xs \<noteq> [] \<Longrightarrow> foldl (;) x xs = x ; Concat xs s"
 proof -
   assume a1: "xs \<noteq> []"
   obtain x' xs' where o1: "xs=x'#xs'" using a1
     using list.exhaust by auto
-  have "Concat xs = foldl (;) x' xs'"
+  have "Concat xs s = foldl (;) x' xs'"
     by (metis Concat.simps(2) Concat.simps(3) foldl_Nil hd_Cons_tl o1)
-  have "x ; Concat xs = x ; foldl (;) x' xs'"
-    by (simp add: \<open>Concat xs = foldl (;) x' xs'\<close>)
+  have "x ; Concat xs s = x ; foldl (;) x' xs'"
+    by (simp add: \<open>Concat xs s = foldl (;) x' xs'\<close>)
   have "... =  foldl (;) x xs"
     by (simp add: o1 simp_2)
   show ?thesis
-    by (simp add: \<open>x ; Concat xs = x ; foldl (;) x' xs'\<close> \<open>x ; foldl (;) x' xs' = foldl (;) x xs\<close>)
+    by (simp add: \<open>x ; Concat xs s = x ; foldl (;) x' xs'\<close> \<open>x ; foldl (;) x' xs' = foldl (;) x xs\<close>)
 qed
 
-theorem Concat_state: "complete_state xs = S (Concat xs)"
+theorem Concat_state: "xs \<noteq> [] \<Longrightarrow> complete_state xs = S (Concat xs s)"
 proof (induction "size xs" arbitrary: xs)
   case 0
   then show ?case by (auto simp: complete_state_def Skip_def S_def)
 next
   case (Suc n)
-  assume IH: "\<And>xs. n = length xs \<Longrightarrow> complete_state xs = S (Concat xs)"
-  assume a1: "Suc n = length xs"
-  obtain x' xs' where "xs=x'#xs'" using a1
-    by (metis Nitpick.size_list_simp(2) nat.distinct(1) neq_Nil_conv)
-  have "S (Concat xs) = S (foldl (;) x' xs')"
+  obtain x' xs' where "xs=x'#xs'" using Suc
+    by (metis neq_Nil_conv)
+  have "S (Concat xs s) = S (foldl (;) x' xs')"
     by (metis (no_types) Concat.simps(2) Concat.simps(3) \<open>xs = x' # xs'\<close> foldl_Nil permutations.cases)
-  then show "complete_state xs = S (Concat xs)"
-  proof (cases "xs' = []")
-    case True
-    then show ?thesis
-      by (metis Concat.simps(1) Suc.hyps(1) Suc_length_conv \<open>S (Concat xs) = S (foldl (;) x' xs')\<close> \<open>xs = x' # xs'\<close> a1 complete_state_prop special_empty1 foldl_Nil old.nat.inject skip_prop_9 sup_bot_left)
-  next
-    case False
-    have "Concat xs = foldl (;) x' xs'"
-      by (metis Concat.simps(2) Concat.simps(3) \<open>xs = x' # xs'\<close> foldl_Nil permutations.elims)
-    have "... = x' ; Concat xs'" using False Concat_prop_1
-      by blast
-    then show "complete_state xs = S (Concat xs)"
-      by (metis \<open>S (Concat xs) = S (foldl (;) x' xs')\<close> \<open>xs = x' # xs'\<close> fold_comp_prop3)
-  qed
+  then show "complete_state xs = S (Concat xs s)"
+    by (simp add: \<open>xs = x' # xs'\<close> fold_comp_prop3)
 qed
 
-theorem Choice_prop_13: "size xs > 0 \<Longrightarrow> \<Union>\<^sub>p [a;(Concat t). t \<leftarrow> xs] \<equiv>\<^sub>p a;\<Union>\<^sub>p [(Concat t). t \<leftarrow> xs]"
+theorem Choice_prop_13: "size xs > 0 \<Longrightarrow> \<Union>\<^sub>p [a;(Concat t s). t \<leftarrow> xs] \<equiv>\<^sub>p a;\<Union>\<^sub>p [(Concat t s). t \<leftarrow> xs]"
 proof (induction xs arbitrary: a)
   case Nil
   then show ?case by (simp add: equiv_is_reflexive)
 next
   case (Cons x xs)
-  then show "\<Union>\<^sub>p [a;(Concat t). t \<leftarrow> x#xs] \<equiv>\<^sub>p a;\<Union>\<^sub>p [(Concat t). t \<leftarrow> x#xs]"
+  then show "\<Union>\<^sub>p [a;(Concat t s). t \<leftarrow> x#xs] \<equiv>\<^sub>p a;\<Union>\<^sub>p [(Concat t s). t \<leftarrow> x#xs]"
   proof (cases "xs = []")
     case True
     then show ?thesis
       by (metis Choice.simps(2) Choice_prop_4 list.simps(9) map_is_Nil_conv)
   next
     case False
-    have l1: "\<Union>\<^sub>p [a;(Concat t). t \<leftarrow> x#xs] = a;Concat x \<union>\<^sub>p \<Union>\<^sub>p [a;(Concat t). t \<leftarrow> xs]" apply auto
+    have l1: "\<Union>\<^sub>p [a;(Concat t s). t \<leftarrow> x#xs] = a;Concat x s \<union>\<^sub>p \<Union>\<^sub>p [a;(Concat t s). t \<leftarrow> xs]" apply auto
       by (simp add: Choice_prop_1_2 False)
-    moreover have l2: "\<Union>\<^sub>p [a;(Concat t). t \<leftarrow> xs] \<equiv>\<^sub>p a;\<Union>\<^sub>p [(Concat t). t \<leftarrow> xs]" using Cons False by auto
-    ultimately have l3: "a;Concat x \<union>\<^sub>p \<Union>\<^sub>p [a;(Concat t). t \<leftarrow> xs] \<equiv>\<^sub>p (a;Concat x) \<union>\<^sub>p (a;\<Union>\<^sub>p [(Concat t). t \<leftarrow> xs])"
+    moreover have l2: "\<Union>\<^sub>p [a;(Concat t s). t \<leftarrow> xs] \<equiv>\<^sub>p a;\<Union>\<^sub>p [(Concat t s). t \<leftarrow> xs]" using Cons False by auto
+    ultimately have l3: "a;Concat x s \<union>\<^sub>p \<Union>\<^sub>p [a;(Concat t s). t \<leftarrow> xs] \<equiv>\<^sub>p (a;Concat x s) \<union>\<^sub>p (a;\<Union>\<^sub>p [(Concat t s). t \<leftarrow> xs])"
       by (smt (verit) choice_idem_6 compose_distrib2_1 compose_distrib2_3 choice_equiv)
-    have l4: "... \<equiv>\<^sub>p a;(Concat x \<union>\<^sub>p \<Union>\<^sub>p [(Concat t). t \<leftarrow> xs])"
+    have l4: "... \<equiv>\<^sub>p a;(Concat x s \<union>\<^sub>p \<Union>\<^sub>p [(Concat t s). t \<leftarrow> xs])"
     proof -
-      obtain x1 where "x1=Concat x" by simp
-      obtain x2 where "x2=\<Union>\<^sub>p [(Concat t). t \<leftarrow> xs]" by simp
+      obtain x1 where "x1=Concat x s" by simp
+      obtain x2 where "x2=\<Union>\<^sub>p [(Concat t s). t \<leftarrow> xs]" by simp
       have "a ; x1 \<union>\<^sub>p a ; x2 \<equiv>\<^sub>p a ; (x1 \<union>\<^sub>p x2)"
         by (simp add: compose_distrib1_3 equiv_is_symetric)
-      show "a ; Concat x \<union>\<^sub>p a ; \<Union>\<^sub>p (map Concat xs) \<equiv>\<^sub>p a ; (Concat x \<union>\<^sub>p \<Union>\<^sub>p (map Concat xs))"
-        using \<open>a ; x1 \<union>\<^sub>p a ; x2 \<equiv>\<^sub>p a ; (x1 \<union>\<^sub>p x2)\<close> \<open>x1 = Concat x\<close> \<open>x2 = \<Union>\<^sub>p (map Concat xs)\<close> by auto
+      show "a ; Concat x s \<union>\<^sub>p a ; \<Union>\<^sub>p (map (\<lambda>t. Concat t s) xs) \<equiv>\<^sub>p a ; (Concat x s \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>t. Concat t s) xs))"
+        using \<open>a ; x1 \<union>\<^sub>p a ; x2 \<equiv>\<^sub>p a ; (x1 \<union>\<^sub>p x2)\<close> \<open>x1 = Concat x s\<close> \<open>x2 = \<Union>\<^sub>p (map (\<lambda>t. Concat t s) xs)\<close> by auto
     qed
-    have l5: "... = a;(\<Union>\<^sub>p [(Concat t). t \<leftarrow> x#xs])"
+    have l5: "... = a;(\<Union>\<^sub>p [(Concat t s). t \<leftarrow> x#xs])"
       by (simp add: Choice_prop_1_2 False)
     then show ?thesis using l1 l2 l3 l4 l5 equiv_is_reflexive equiv_is_transitive by auto
   qed
@@ -617,25 +603,25 @@ next
 qed
 
 
-theorem Concat_prop_2: "xs \<noteq> [] \<Longrightarrow> Concat (xs@[x]) = Concat xs ; x"
+theorem Concat_prop_2: "xs \<noteq> [] \<Longrightarrow> Concat (xs@[x]) s = Concat xs s ; x"
 proof (induction xs arbitrary: x)
   case Nil
   then show ?case by auto
 next
   case (Cons a xs)
   obtain xs' where o1: "xs' = xs @ [x]" by simp
-  have l1: "Concat (a # xs') = a ; Concat (xs')"
+  have l1: "Concat (a # xs') s = a ; Concat (xs') s"
     by (metis Concat.simps(3) Concat_prop_1 list.exhaust_sel o1 snoc_eq_iff_butlast)
-  then show "Concat ((a # xs) @ [x]) = Concat (a # xs) ; x"
+  then show "Concat ((a # xs) @ [x]) s = Concat (a # xs) s ; x"
   proof (cases "xs = []")
     case True
     then show ?thesis by auto
   next
     case False
-    have l2: "Concat (xs @ [x]) = Concat (xs) ; x" using Cons False by auto
-    have l3: "a;Concat (xs @ [x]) = Concat (a#xs @ [x])"
+    have l2: "Concat (xs @ [x]) s = Concat (xs) s ; x" using Cons False by auto
+    have l3: "a;Concat (xs @ [x]) s = Concat (a#xs @ [x]) s"
       using local.l1 o1 by force
-    have l4: "Concat (a # xs) ; x = (a; Concat (xs)) ; x"
+    have l4: "Concat (a # xs) s ; x = (a; Concat (xs) s) ; x"
       by (smt (verit) Concat.elims Concat_prop_1 Cons.prems False list.inject)
     then show ?thesis
       using local.l2 local.l3 by auto
@@ -643,54 +629,52 @@ next
 qed
 
 
-theorem Concat_prop_3: "xs \<noteq> [] \<Longrightarrow> Concat xs \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (hd xs \<sslash>\<^sub>p C # tl xs)"
+theorem Concat_prop_3: "xs \<noteq> [] \<Longrightarrow> Concat xs s \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (hd xs \<sslash>\<^sub>p C # tl xs) s"
 proof (induction xs arbitrary: C)
   case Nil
   then show ?case by auto
 next
   case (Cons x xs)
-  assume IH: "\<And>C. xs \<noteq> [] \<Longrightarrow> Concat xs \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (hd xs \<sslash>\<^sub>p C # tl xs)"
+  assume IH: "\<And>C. xs \<noteq> [] \<Longrightarrow> Concat xs s \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (hd xs \<sslash>\<^sub>p C # tl xs) s"
   have "hd (x # xs) = x" by auto
   have "tl (x # xs) = xs" by auto
-  have "Concat (x # xs) \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (x \<sslash>\<^sub>p C # xs)"
+  have "Concat (x # xs) s \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (x \<sslash>\<^sub>p C # xs) s"
   proof (induction xs arbitrary: x C rule: rev_induct)
     case Nil
     then show ?case by (auto simp: equiv_def)
   next
     case (snoc y xs)
-    assume IH: "\<And>x C. Concat (x # xs) \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (x \<sslash>\<^sub>p C # xs)"
-    have "Concat (x # xs @ [y]) = Concat (x # xs) ; y"
+    have "Concat (x # xs @ [y]) s = Concat (x # xs) s ; y"
       using Concat_prop_2 by fastforce
-    then show "Concat (x # xs @ [y]) \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (x \<sslash>\<^sub>p C # xs @ [y])"
+    then show "Concat (x # xs @ [y]) s \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (x \<sslash>\<^sub>p C # xs @ [y]) s"
       by (smt (verit) Concat.elims Concat_prop_1 compose_absorb_3 list.discI list.sel(1) list.sel(3) snoc_eq_iff_butlast)
   qed
-  then show "Concat (x # xs) \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (hd (x # xs) \<sslash>\<^sub>p C # tl (x # xs))"
+  then show "Concat (x # xs) s \<sslash>\<^sub>p C \<equiv>\<^sub>p Concat (hd (x # xs) \<sslash>\<^sub>p C # tl (x # xs)) s"
     by simp
 qed
 
-theorem Concat_prop_4: "xs \<noteq> [] \<Longrightarrow> Concat xs \<setminus>\<^sub>p C \<equiv>\<^sub>p Concat (butlast xs @ [(last xs)\<setminus>\<^sub>p C])"
+theorem Concat_prop_4: "xs \<noteq> [] \<Longrightarrow> Concat xs s \<setminus>\<^sub>p C \<equiv>\<^sub>p Concat (butlast xs @ [(last xs)\<setminus>\<^sub>p C]) s"
 proof (induction xs arbitrary: C rule: rev_induct)
   case Nil
   then show ?case by auto
 next
   case (snoc x xs)
-  assume IH: "\<And>C. xs \<noteq> [] \<Longrightarrow> Concat xs \<setminus>\<^sub>p C \<equiv>\<^sub>p Concat (butlast xs @ [last xs \<setminus>\<^sub>p C])"
-  show "Concat (xs @ [x]) \<setminus>\<^sub>p C \<equiv>\<^sub>p Concat (butlast (xs @ [x]) @ [last (xs @ [x]) \<setminus>\<^sub>p C])"
+  show "Concat (xs @ [x]) s \<setminus>\<^sub>p C \<equiv>\<^sub>p Concat (butlast (xs @ [x]) @ [last (xs @ [x]) \<setminus>\<^sub>p C]) s"
   proof (cases "xs = []")
     case True
     then show ?thesis by (auto simp: equiv_def)
   next
     case False
-    have "Concat (xs @ [x]) \<setminus>\<^sub>p C = (Concat (xs) ; x) \<setminus>\<^sub>p C"
+    have "Concat (xs @ [x]) s \<setminus>\<^sub>p C = (Concat (xs) s ; x) \<setminus>\<^sub>p C"
       by (simp add: Concat_prop_2 False)
-    have "... \<equiv>\<^sub>p Concat (xs) ; (x \<setminus>\<^sub>p C)"
+    have "... \<equiv>\<^sub>p Concat (xs) s ; (x \<setminus>\<^sub>p C)"
       by (simp add: corestrict_compose equiv_is_reflexive)
-    have "... = Concat (xs@[(x \<setminus>\<^sub>p C)])"
+    have "... = Concat (xs@[(x \<setminus>\<^sub>p C)]) s"
       by (simp add: Concat_prop_2 False)
-    have "... =  Concat (butlast (xs @ [x]) @ [last (xs @ [x]) \<setminus>\<^sub>p C])"
+    have "... =  Concat (butlast (xs @ [x]) @ [last (xs @ [x]) \<setminus>\<^sub>p C]) s"
       by simp
     then show ?thesis
-      using \<open>(Concat xs ; x) \<setminus>\<^sub>p C \<equiv>\<^sub>p Concat xs ; x \<setminus>\<^sub>p C\<close> \<open>Concat (xs @ [x]) \<setminus>\<^sub>p C = (Concat xs ; x) \<setminus>\<^sub>p C\<close> \<open>Concat xs ; x \<setminus>\<^sub>p C = Concat (xs @ [x \<setminus>\<^sub>p C])\<close> by auto
+      using \<open>(Concat xs s ; x) \<setminus>\<^sub>p C \<equiv>\<^sub>p Concat xs s ; x \<setminus>\<^sub>p C\<close> \<open>Concat (xs @ [x]) s \<setminus>\<^sub>p C = (Concat xs s ; x) \<setminus>\<^sub>p C\<close> \<open>Concat xs s ; x \<setminus>\<^sub>p C = Concat (xs @ [x \<setminus>\<^sub>p C]) s\<close> by argo
   qed
 qed
 
@@ -707,18 +691,18 @@ theorem Choice_prop_17: "size xs > 1 \<Longrightarrow> x \<in> set xs \<Longrigh
   apply (simp add: Choice_prop_1_2 choice_idem_2)
   by (smt (verit) Choice.simps(2) Choice_prop_1_2 Suc_lessI choice_assoc_1 choice_commute choice_idem_2 length_Suc_conv length_pos_if_in_set less_numeral_extra(3) list.inject list.set_cases)
 
-theorem Concat_prop_5: "xs \<noteq> [] \<Longrightarrow> ys \<noteq> [] \<Longrightarrow> Concat (xs@ys) = Concat xs ; Concat ys"
+theorem Concat_prop_5: "xs \<noteq> [] \<Longrightarrow> ys \<noteq> [] \<Longrightarrow> Concat (xs@ys) s = Concat xs s ; Concat ys s"
   apply (induction xs arbitrary: ys)
   apply (auto)
   by (smt (verit) Concat.elims Concat_prop_1 foldl_Nil foldl_append list.discI list.inject)
 
-theorem Concat_prop_6: "Concat (a \<union>\<^sub>p b # xs) = Concat (a # xs) \<union>\<^sub>p Concat (b # xs)"
+theorem Concat_prop_6: "Concat (a \<union>\<^sub>p b # xs) s = Concat (a # xs) s \<union>\<^sub>p Concat (b # xs) s"
   by (metis Concat.simps(2) Concat_prop_5 Cons_eq_appendI append_self_conv2 compose_distrib2_1 not_Cons_self2)
 
-theorem Concat_prop_7: "Concat (xs@[a \<union>\<^sub>p b]) \<equiv>\<^sub>p Concat (xs@[a]) \<union>\<^sub>p Concat (xs@[b])"
+theorem Concat_prop_7: "Concat (xs@[a \<union>\<^sub>p b]) s \<equiv>\<^sub>p Concat (xs@[a]) s \<union>\<^sub>p Concat (xs@[b]) s"
   by (metis Concat.simps(2) Concat_prop_2 append_self_conv2 compose_distrib1_3 equiv_is_reflexive)
 
-theorem Concat_prop_8: "e \<noteq> [] \<Longrightarrow> Concat (s@(a \<union>\<^sub>p b)#e) \<equiv>\<^sub>p Concat (s@a#e) \<union>\<^sub>p Concat (s@b#e)"
+theorem Concat_prop_8: "e \<noteq> [] \<Longrightarrow> Concat (s@(a \<union>\<^sub>p b)#e) s' \<equiv>\<^sub>p Concat (s@a#e) s' \<union>\<^sub>p Concat (s@b#e) s'"
   apply (cases "s=[]") apply auto
   using Concat_prop_6 equals_equiv_relation_3 apply blast
   by (simp add: Concat_prop_5 Concat_prop_6 compose_distrib1_3)
@@ -805,7 +789,7 @@ proof -
 qed
 
 
-theorem Concat_prop_9: "0<n \<Longrightarrow> Concat [p . t \<leftarrow> [1 .. int n]] ; p = Concat [p . t \<leftarrow> [1 .. int (Suc n)]]"
+theorem Concat_prop_9: "0<n \<Longrightarrow> Concat [p . t \<leftarrow> [1 .. int n]] s ; p = Concat [p . t \<leftarrow> [1 .. int (Suc n)]] s"
 proof -
   assume a1: "0<n"
   have l5: "[p . t \<leftarrow> [1 .. int (Suc n)]] = [p . t \<leftarrow> [1 .. int n]]@[p]"
@@ -814,10 +798,10 @@ proof -
     by (smt (verit, best) Concat_prop_2 a1 local.l5 map_is_Nil_conv of_nat_0_less_iff upto_Nil2)
 qed
 
-theorem Concat_prop_10: "xs \<noteq> [] \<Longrightarrow> Concat (x#xs) = x ; Concat xs"
+theorem Concat_prop_10: "xs \<noteq> [] \<Longrightarrow> Concat (x#xs) s = x ; Concat xs s"
   by (metis Concat.simps(3) Concat_prop_1 permutations.elims)
 
-theorem Concat_prop_11: "0<n \<Longrightarrow> p ; Concat [p . t \<leftarrow> [1 .. int n]] = Concat [p . t \<leftarrow> [1 .. int (Suc n)]]"
+theorem Concat_prop_11: "0<n \<Longrightarrow> p ; Concat [p . t \<leftarrow> [1 .. int n]] s = Concat [p . t \<leftarrow> [1 .. int (Suc n)]] s"
 proof -
   assume a1: "0<n"
   have l5: "[p . t \<leftarrow> [1 .. int (Suc n)]] = p#[p . t \<leftarrow> [1 .. int n]]"
@@ -1113,6 +1097,7 @@ theorem civilized_ind2: "\<And>m. n\<le>m \<Longrightarrow> civilized_n x B n \<
   apply (induction n) apply auto [1]
   apply (simp add: nat_induct)
   apply (simp add: nat_induct)
+  apply (simp add: nat_induct)
   by (metis civilized_ind nat_induct_at_least)
 
 theorem civilized_generic: "civilized_n x B n = ((\<exists>a b m m'. m<n \<and> m'<n \<and> civilized_n a B m \<and> civilized_n b B m' \<and> (a ; b = x \<or> a \<union>\<^sub>p b = x)) \<and> finite B) \<or> civilized_n x B 0"
@@ -1223,18 +1208,18 @@ qed
 
 
 theorem civ_prop_1: "civilized_n p B n \<Longrightarrow> civilized p B"
-  apply (auto simp: civilized_def)
-  by (simp add: civilized_finite)
+  by (auto simp: civilized_def)
 
 theorem civ_prop_2: "civilized p B \<Longrightarrow> civilized q B \<Longrightarrow> civilized (p;q) B" apply (auto simp: civilized_def)
-  by (metis civilized_ind2 civilized_n.simps(2) nat_le_linear)
+  by (metis civilized_finite civilized_ind2 civilized_n.simps(2) linorder_le_cases)
 
 theorem civ_prop_3: "civilized p B \<Longrightarrow> civilized q B \<Longrightarrow> civilized (p \<union>\<^sub>p q) B" 
   apply (auto simp: civilized_def)
 proof -
   fix x n
   assume a1: "civilized_n q B x"
-  assume a2: "finite B"
+  have a2: "finite B"
+    using a1 civilized_finite by auto
   assume a3: "civilized_n p B n"
   have "civilized_n q B (x+n)"
     using a1 civilized_ind2 le_add1 by blast
@@ -1242,7 +1227,7 @@ proof -
     using a3 civilized_ind2 le_add2 by blast
   have "civilized_n (p \<union>\<^sub>p q) B (Suc (x+n))"
     using \<open>civilized_n p B (x + n)\<close> \<open>civilized_n q B (x + n)\<close> a2 civilized_n.simps(2) by blast
-  show "Ex (civilized_n (p \<union>\<^sub>p q) B)"
+  show "\<exists>n. civilized_n (p \<union>\<^sub>p q) B n"
     using \<open>civilized_n (p \<union>\<^sub>p q) B (Suc (x + n))\<close> by blast
 qed
 
@@ -1288,6 +1273,7 @@ lemma normal_prop1: "set x \<subseteq> {p} \<Longrightarrow> \<exists>n. x = rep
   apply (induction x) apply auto
   by (metis replicate_Suc)
 
+(*
 theorem normal_prop: "normal_of p B \<Longrightarrow> B = {} \<Longrightarrow> set p \<subseteq> {replicate n \<lparr>State={},Pre={},post={}\<rparr> | n. n \<ge> 0}"
 proof
   fix x
@@ -1300,7 +1286,7 @@ proof
     using \<open>x \<in> set p\<close> by blast
   then show "x \<in> {replicate n \<lparr>State={},Pre={},post={}\<rparr> | n. n \<ge> 0}"
     by (simp add: normal_prop1)
-qed
+qed*)
 
 theorem basic_normal: "basic a = basic b \<Longrightarrow> normal_of a B = normal_of b B"
 proof-
@@ -1351,7 +1337,7 @@ theorem normal_prop2: "finite B \<Longrightarrow> normal_of [[]] B"
   by (auto simp: normal_of_def basic_def)
 
 theorem normal_prop3: "finite B \<Longrightarrow> normal_of [[\<lparr>State = {}, Pre = {}, post = {}\<rparr>]] B"
-  by (auto simp: normal_of_def basic_def)
+  by (auto simp: normal_of_def basic_def Fail_def)
 
 theorem normal_prop4: "infinite B \<Longrightarrow> \<not>normal_of xs B"
   by (auto simp: normal_of_def)
@@ -1391,15 +1377,16 @@ theorem normal_prop8: "trace \<in> set xs \<Longrightarrow> normal_of xs B \<Lon
 proof -
   assume a1: "trace \<in> set xs"
   assume a2: "normal_of xs B"
-  obtain B' where o2: "B' = insert \<lparr>State = {}, Pre = {}, post = {}\<rparr> B" by simp
+  obtain Skip2 where "Skip2 = Skip (complete_state (set_to_list B))" by simp
+  obtain B' where o2: "B' = {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip2} \<union> B" by simp
   obtain a b where o1: "xs=a@trace#b"
     by (meson \<open>trace \<in> set xs\<close> split_list)
-  have "basic (a@trace#b) \<subseteq> B'" using a2 o2 apply (auto simp: normal_of_def)
-    using o1 by auto
+  have "basic (a@trace#b) \<subseteq> B'" using a2 o1 o2 apply (auto simp: normal_of_def Fail_def)
+    using \<open>Skip2 = Skip (complete_state (set_to_list B))\<close> by blast
   have "basic (a@trace#b) = basic a \<union> basic [trace] \<union> basic b"
     by (simp add: basic_prop2)
   show "normal_of [trace] B" apply (simp add: normal_of_def)
-    using \<open>basic (a @ trace # b) = basic a \<union> basic [trace] \<union> basic b\<close> \<open>basic (a @ trace # b) \<subseteq> B'\<close> a2 normal_prop4 o2 by auto
+    by (metis Fail_def Un_insert_left \<open>Skip2 = Skip (complete_state (set_to_list B))\<close> \<open>basic (a @ trace # b) = basic a \<union> basic [trace] \<union> basic b\<close> \<open>basic (a @ trace # b) \<subseteq> B'\<close> a2 insert_is_Un normal_prop4 o2 sup.boundedE)
 qed
 
 theorem normal_prop9: "normal_of ((a # x) # xs) B \<Longrightarrow> normal_of [[a]] B"
@@ -1414,7 +1401,7 @@ proof -
       apply (auto simp: normal_of_def) 
       apply (induction xs) 
        apply (auto simp: basic_def) [1]
-      by (smt (z3) Un_empty basic_prop1 singleton_Un_iff sup.absorb_iff2)
+      by (metis (no_types, lifting) basic_prop0 basic_prop1 in_mono insertE singletonD sup.cobounded1)
   next
     case (insert x F)
     then show ?case
@@ -1438,15 +1425,16 @@ proof -
   assume "trace \<in> set xs"
   assume "normal_of xs B"
   then have "finite B" apply (auto simp: normal_of_def) done
-  obtain B' where o1: "B' = insert \<lparr>State = {}, Pre = {}, post = {}\<rparr> B" by simp
+  obtain Skip2 where "Skip2 = Skip (complete_state (set_to_list B))" by simp
+  obtain B' where o2: "B' = {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip2} \<union> B" by simp
   have "basic xs \<subseteq> B'"
-    using \<open>normal_of xs B\<close> normal_of_def o1 by auto
+    using Fail_def \<open>Skip2 = Skip (complete_state (set_to_list B))\<close> \<open>normal_of xs B\<close> normal_of_def o2 by blast
   have "basic [trace] \<subseteq> basic xs"
     by (simp add: \<open>trace \<in> set xs\<close> basic_prop3)
   have "basic [[x]] \<subseteq> basic [trace]"
     by (simp add: \<open>x \<in> set trace\<close> basic_prop4)
   show "normal_of [[x]] B" apply (auto simp: normal_of_def)
-    using \<open>basic [[x]] \<subseteq> basic [trace]\<close> \<open>basic [trace] \<subseteq> basic xs\<close> \<open>basic xs \<subseteq> B'\<close> o1 apply blast
+    apply (metis (no_types, lifting) Fail_def UnE \<open>Skip2 = Skip (complete_state (set_to_list B))\<close> \<open>basic [[x]] \<subseteq> basic [trace]\<close> \<open>basic [trace] \<subseteq> basic xs\<close> \<open>basic xs \<subseteq> B'\<close> insertE o2 singleton_iff subsetD)
     by (simp add: \<open>finite B\<close>)
 qed
 
@@ -1489,16 +1477,17 @@ next
   qed
 qed
 
-theorem normal_prop13: "normal_of (a#p) B = normal_of ((\<lparr>State = {}, Pre = {}, post = {}\<rparr>#a)#p) B"
+theorem normal_prop13: "normal_of (a#p) B = normal_of ((\<lparr>State = {}, Pre = {}, post = {}\<rparr>#Skip (complete_state (set_to_list B))#a)#p) B"
 proof -
-  show "normal_of (a#p) B = normal_of ((\<lparr>State = {}, Pre = {}, post = {}\<rparr>#a)#p) B"
+  show "normal_of (a#p) B = normal_of ((\<lparr>State = {}, Pre = {}, post = {}\<rparr>#Skip (complete_state (set_to_list B))#a)#p) B"
   proof (cases "finite B")
     case finite_B: True
     then show ?thesis
     proof (induction a arbitrary: p B)
       case Nil
       then show ?case apply (induction p) apply (auto simp: basic_def normal_of_def) [1]
-        using normal_prop11 normal_prop3 by blast
+        apply (simp add: Fail_def)
+        by (meson normal_prop12)
     next
       case (Cons a as)
       then show ?case
@@ -1517,16 +1506,16 @@ theorem fold_prop1: "trace \<in> set p \<Longrightarrow> x \<in> set trace \<Lon
   apply simp
   by (smt (z3) UnCI foldl_Cons list.simps(9) set_ConsD simp_2 sup_assoc sup_commute)
 
-theorem normal_prop14: "normal_of p B \<Longrightarrow> trace \<in> set p \<Longrightarrow> x \<in> set trace \<Longrightarrow> x \<in> insert (Fail {}) B"
+theorem normal_prop14: "normal_of p B \<Longrightarrow> trace \<in> set p \<Longrightarrow> x \<in> set trace \<Longrightarrow> x \<in> {Fail {}, Skip (complete_state (set_to_list B))} \<union> B"
 proof -
   assume a1: "normal_of p B" assume a2: "trace \<in> set p" assume a3: "x \<in> set trace"
   have "finite B"
     using \<open>normal_of p B\<close> normal_prop4 by auto
-  obtain B' where o1: "B' = insert \<lparr>State = {}, Pre = {}, post = {}\<rparr> B" by simp
+  obtain B' where o1: "B' = {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip (complete_state (set_to_list B))} \<union> B" by simp
   have "x \<in> basic p" using a2 a3 apply (auto simp: basic_def)
     by (simp add: fold_prop1)
   show ?thesis apply (simp add: Fail_def)
-    by (metis (no_types, opaque_lifting) Un_empty_right Un_insert_right \<open>x \<in> basic p\<close> a1 in_mono insert_iff normal_of_def)
+    by (metis (no_types, lifting) Fail_def UnE \<open>x \<in> basic p\<close> a1 insertE insert_Diff insert_subset normal_of_def singletonD)
 qed
 
 lemma basic_monotone1: "basic a \<subseteq> basic (x#a)"
@@ -1612,47 +1601,46 @@ theorem basic_monotone4: "basic [b] \<subseteq> basic [a@b]"
 theorem basic_monotone5: "basic [b] \<union> basic [a] = basic [a@b]"
   apply (induction b) by (auto simp: basic_def)
 
-theorem civilized_empty1: "finite B \<Longrightarrow> civilized_n (Concat []) B 0" by (auto simp: Skip_def Fail_def)
+(*theorem civilized_empty1: "finite B \<Longrightarrow> civilized_n (Concat []) B 0" by (auto simp: Skip_def Fail_def)*)
 theorem civilized_empty2: "finite B \<Longrightarrow> civilized_n (\<Union>\<^sub>p []) B 0" by (auto simp: Skip_def Fail_def)
 theorem civilized_empty3: "finite B \<Longrightarrow> civilized_n (Fail {}) B 0" by (auto simp: Skip_def Fail_def)
 theorem civilized_empty4: "finite B \<Longrightarrow> civilized_n (Skip {}) B 0" by (auto simp: Skip_def Fail_def)
 
-theorem normal_civilized: "normal_of p B \<Longrightarrow> civilized (evaluate p) B"
+theorem normal_civilized: "normal_of p B \<Longrightarrow> civilized (evaluate p (complete_state (set_to_list B))) B"
 proof -
+  obtain cs where "cs = complete_state (set_to_list B)" by simp
   assume a0: "normal_of p B"
-  show "normal_of p B \<Longrightarrow> civilized (evaluate p) B"
+  then show ?thesis
   apply (auto simp: civilized_def evaluate_def)
   proof -
-    obtain B' where o0: "B' = insert (Fail{}) B" by simp
+    obtain B' where o0: "B' = {Fail{}, Skip (complete_state (set_to_list B))} \<union> B" by simp
     assume a0: "normal_of p B"
     have a1: "basic p \<subseteq> B'" using a0 apply auto
       using normal_of_def o0 apply (auto simp: Fail_def) done
     have a2: "finite B" using a0
       by (simp add: normal_of_def)
-    from a1 have "\<forall>x \<in> set p. civilized (Concat x) B" 
+    from a1 have "\<forall>x \<in> set p. civilized (Concat x cs) B" 
       apply auto
     proof -
       fix trace 
       assume "trace \<in> set p"
-      show "civilized (Concat trace) B"
+      show "civilized (Concat trace cs) B"
     proof (cases "p = []")
       case True
-      then show "civilized (Concat trace) B"
+      then show "civilized (Concat trace cs) B"
         using \<open>trace \<in> set p\<close> by auto
     next
       case False
       then have l0: "set trace \<subseteq> B'" using a1 apply (auto simp: basic_def)
         using a0 a1 a2
         by (metis \<open>trace \<in> set p\<close> normal_prop14 o0)
-      \<comment> \<open>have l1: "trace \<noteq> []" using \<open>trace \<in> set p\<close> a0 normal_of_def by auto\<close>
-      from l0 show "civilized (Concat trace) B" apply (auto simp: civilized_def basic_def)
+      have "civilized_n (Skip cs) B 0"
+        by (simp add: \<open>cs = complete_state (set_to_list B)\<close> a2)
+      from l0 show "civilized (Concat trace cs) B" apply (auto simp: civilized_def basic_def)
       proof (induction trace)
         case Nil
-        have "civilized_n (Skip {}) B 0" apply (auto simp: Skip_def Fail_def)
-          by (simp add: a2)
         then show ?case apply auto
-          using \<open>civilized_n (Skip {}) B 0\<close> apply blast
-          by (metis \<open>civilized_n (Skip {}) B 0\<close>)
+          using \<open>civilized_n (Skip cs) B 0\<close> by blast
       next
         case (Cons a trace)
         then show ?case
@@ -1664,34 +1652,61 @@ proof -
             by (simp add: a2)
           then show ?thesis apply auto
             apply (metis Concat.simps(2) True \<open>civilized_n a B 0\<close>)
+            apply (metis Concat.simps(2) True \<open>civilized_n a B 0\<close>)
             by (metis Concat.simps(2) True \<open>civilized_n a B 0\<close>)
         next
           case False
-          have "Concat (a # trace) = a ; Concat (trace)"
+          have "Concat (a # trace) cs = a ; Concat (trace) cs"
             by (simp add: Concat_prop_10 False)
           have "civilized_n a B 0"
             using Cons.prems(1) a2 o0 by auto
-          obtain n where "civilized_n (Concat trace) B n"
+          obtain n where "civilized_n (Concat trace cs) B n"
             using Cons.IH Cons.prems(1) False by auto
           then show ?thesis
-            by (metis \<open>Concat (a # trace) = a ; Concat trace\<close> \<open>civilized_n a B 0\<close> civ_prop_1 civ_prop_2 civilized_def)
+            by (metis \<open>Concat (a # trace) cs = a ; Concat trace cs\<close> \<open>civilized_n a B 0\<close> civ_prop_2 civilized_def)
         qed
-      next
-        show "finite B"
-          by (simp add: a2)
-      qed
     qed
   qed
-  show lem_p: "normal_of p B \<Longrightarrow> Ex (civilized_n (\<Union>\<^sub>p (map Concat p)) B)"
+qed
+  show "normal_of p B \<Longrightarrow> \<exists>n. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)) B n"
   proof (induction p)
     case Nil
     then show ?case apply auto
       by (meson a2 civilized_n.simps(1))
   next
     case (Cons a p)
+    have "normal_of p B"
+      using Cons.prems normal_prop12 by auto
+    then have "\<exists>a. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)) B a"
+      by (simp add: Cons.IH)
+    show ?case
+    proof (cases "a = []")
+      case t1: True
+      then show ?thesis apply auto
+      proof (cases "p = []")
+        case True
+        have "civilized_n (Concat a (complete_state (set_to_list B))) B 0" apply auto
+          apply (simp add: t1)
+          by (simp add: a2)
+        then show "\<exists>a. civilized_n (\<Union>\<^sub>p (Skip (complete_state (set_to_list B)) # map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)) B a"
+          by (metis Choice.simps(2) Concat.simps(1) True map_is_Nil_conv t1)
+      next
+        case False
+        have "\<Union>\<^sub>p (Skip (complete_state (set_to_list B)) # map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p) =
+              Skip (complete_state (set_to_list B)) \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)"
+          by (simp add: Choice_prop_1_2 False)
+        have "\<exists>a. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)) B a"
+          by (simp add: \<open>\<exists>a. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)) B a\<close>)
+        have "civilized_n (Skip (complete_state (set_to_list B))) B 0"
+          by (simp add: a2)
+        then show "\<exists>a. civilized_n (\<Union>\<^sub>p (Skip (complete_state (set_to_list B)) # map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)) B a"
+          by (metis \<open>\<Union>\<^sub>p (Skip (complete_state (set_to_list B)) # map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p) = Skip (complete_state (set_to_list B)) \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)\<close> \<open>\<exists>a. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs (complete_state (set_to_list B))) p)) B a\<close> civ_prop_3 civilized_def)
+      qed
+    next
+      case False
     have "basic (a # p) \<subseteq> B'"
       using Cons.prems normal_of_def o0
-      by (metis Fail_def Un_absorb2 Un_insert_right empty_subsetI)
+      by auto
     have "basic p \<subseteq> basic (a # p)"
       by (simp add: basic_monotone1)
     have l1: "basic [a] \<subseteq> B'"
@@ -1699,26 +1714,26 @@ proof -
     have "basic p \<subseteq> B'" using Cons(2) apply (simp add: basic_def) apply auto
       using Cons.prems \<open>basic p \<subseteq> basic (a # p)\<close> basic_def
       using \<open>basic (a # p) \<subseteq> B'\<close> by auto
-    obtain n where "civilized_n (\<Union>\<^sub>p (map Concat p)) B n"
-      using Cons.IH Cons.prems normal_prop12 by auto
+    obtain n where "civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) p)) B n"
+      using Cons.IH Cons.prems \<open>cs = complete_state (set_to_list B)\<close> normal_prop12 by blast
     have "map Concat [a] = [Concat a]" by auto
-    have "\<Union>\<^sub>p (map Concat [a]) = \<Union>\<^sub>p [Concat a]" by simp
-    have "... = Concat a" by simp
-    then have lem_a: "\<exists>m. civilized_n (Concat a) B m"
+    have "\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) [a]) = \<Union>\<^sub>p [Concat a cs]" by simp
+    have "... = Concat a cs" by simp
+    then have lem_a: "a \<noteq> [] \<Longrightarrow> \<exists>m. civilized_n (Concat a cs) B m"
     using l1 proof (induction a)
       case Nil
       then show ?case
-        using a2 civilized_empty1 by blast
+        by simp
     next
       case (Cons a' as)
       then have "civilized_n a' B 0" using Cons(3) apply (auto simp: basic_def) using a2 o0 by auto
       from Cons(3) have "basic [as] \<subseteq> B'"
       proof -
-        assume "basic [a' # as] \<subseteq> B'"
+        assume "\<Union>\<^sub>p [Concat (a' # as) cs] = Concat (a' # as) cs"
         have "basic [as] \<subseteq> basic [a' # as]" using basic_monotone3 apply auto
           by (smt (verit, del_insts) Cons_eq_appendI append_self_conv2 basic_decomp2 basic_monotone5 basic_prop dual_order.refl in_mono)
         show "basic [as] \<subseteq> B'"
-          using Cons.prems(2) \<open>basic [as] \<subseteq> basic [a' # as]\<close> by auto
+          using Cons.prems(3) \<open>basic [as] \<subseteq> basic [a' # as]\<close> by auto
       qed
       then show ?case
       proof (cases "as = []")
@@ -1727,64 +1742,79 @@ proof -
           by (metis \<open>civilized_n a' B 0\<close>)
       next
         case False
-        from Cons obtain n where "civilized_n (Concat as) B n" using False apply auto
+        from Cons obtain n where "civilized_n (Concat as cs) B n" using False apply auto
           using \<open>basic [as] \<subseteq> B'\<close> by auto
-        have "Concat (a' # as) = a' ; Concat as"
+        have "Concat (a' # as) cs = a' ; Concat as cs"
           by (simp add: Concat_prop_10 False)
         then show ?thesis
-          by (metis \<open>civilized_n (Concat as) B n\<close> \<open>civilized_n a' B 0\<close> civ_prop_1 civ_prop_2 civilized_def)
+          by (metis \<open>civilized_n (Concat as cs) B n\<close> \<open>civilized_n a' B 0\<close> civ_prop_2 civilized_def)
       qed
     qed
-    have lem_p: "\<exists>b. civilized_n (\<Union>\<^sub>p (map Concat p)) B b"
-      using \<open>\<And>thesis. (\<And>n. civilized_n (\<Union>\<^sub>p (map Concat p)) B n \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> by blast
-    obtain m where o1: "civilized_n (Concat a) B m"
-      using lem_a by auto
-    obtain n where o2: "civilized_n (\<Union>\<^sub>p (map Concat p)) B n"
-      using \<open>\<And>thesis. (\<And>n. civilized_n (\<Union>\<^sub>p (map Concat p)) B n \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> by auto
-    show ?case
+    have lem_p: "\<exists>b. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) p)) B b"
+      by (metis \<open>\<And>thesis. (\<And>n. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) p)) B n \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close>)
+    obtain m where o1: "civilized_n (Concat a cs) B m"
+      using lem_a
+      using False by blast
+    obtain n where o2: "civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) p)) B n"
+      using \<open>\<And>thesis. (\<And>n. civilized_n (\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) p)) B n \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> by auto
+    show ?thesis
     proof (cases "p = []")
       case True
       then show ?thesis apply auto
-        by (meson \<open>\<And>thesis. (\<And>m. civilized_n (Concat a) B m \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close>)
+        using \<open>cs = complete_state (set_to_list B)\<close> o1 by auto
     next
       case False
-      have "\<Union>\<^sub>p (map Concat (a # p)) = Concat a \<union>\<^sub>p \<Union>\<^sub>p (map Concat (p))"
+      have "\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) (a # p)) = Concat a cs \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) (p))"
         by (simp add: Choice_prop_1_2 False)
-      have "civilized (Concat a \<union>\<^sub>p \<Union>\<^sub>p (map Concat (p))) B" using o1 o2 civ_prop_1 civ_prop_3
+      have "civilized (Concat a cs \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) (p))) B" using o1 o2 civ_prop_1 civ_prop_3
         by blast
       then show ?thesis
-        using \<open>\<Union>\<^sub>p (map Concat (a # p)) = Concat a \<union>\<^sub>p \<Union>\<^sub>p (map Concat p)\<close> civilized_def by auto
+        using \<open>\<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) (a # p)) = Concat a cs \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>xs. Concat xs cs) p)\<close> \<open>cs = complete_state (set_to_list B)\<close> civilized_def by auto
     qed
   qed
 next
-  show "finite B"
-    using a0 normal_of_def by auto
+qed
 qed
 qed
 
-theorem concat_prop1: "evaluate ([] ;\<^sub>c b) = Fail {}"
+theorem concat_prop1: "evaluate ([] ;\<^sub>c b) c = Fail {}"
   by (auto simp: evaluate_def composition_cnf_def non_empty_def)
   
-  
-theorem concat_prop2: "evaluate [] = Fail {}"
+theorem concat_prop2: "evaluate [] c = Fail {}"
   by (auto simp: Fail_def evaluate_def)
 
-theorem concat_prop3: "xs \<noteq> [] \<Longrightarrow> evaluate (x#xs) = evaluate [x] \<union>\<^sub>p evaluate xs"
+theorem concat_prop3: "xs \<noteq> [] \<Longrightarrow> evaluate (x#xs) c = evaluate [x] c \<union>\<^sub>p evaluate xs c"
 proof (auto simp: evaluate_def)
+  obtain Concat2 where "Concat2 = (\<lambda>xs. Concat xs c)" by simp
   assume False: "xs \<noteq> []"
-    have "\<Union>\<^sub>p (Concat x # map Concat xs) = \<Union>\<^sub>p (map Concat (x#xs))"
+    have "\<Union>\<^sub>p (Concat2 x # map Concat2 xs) = \<Union>\<^sub>p (map Concat2 (x#xs))"
       by simp
-    have "... = Concat x \<union>\<^sub>p \<Union>\<^sub>p (map Concat xs)"
+    have "... = Concat2 x \<union>\<^sub>p \<Union>\<^sub>p (map Concat2 xs)"
       using Choice_prop_1_2 False by auto
-    show "\<Union>\<^sub>p (Concat x # map Concat xs) = Concat x \<union>\<^sub>p \<Union>\<^sub>p (map Concat xs)"
-      using \<open>\<Union>\<^sub>p (map Concat (x # xs)) = Concat x \<union>\<^sub>p \<Union>\<^sub>p (map Concat xs)\<close> equiv_is_reflexive by auto
+    have "\<Union>\<^sub>p (Concat2 x # map Concat2 xs) = Concat2 x \<union>\<^sub>p \<Union>\<^sub>p (map Concat2 xs)"
+      using \<open>\<Union>\<^sub>p (map Concat2 (x # xs)) = Concat2 x \<union>\<^sub>p \<Union>\<^sub>p (map Concat2 xs)\<close> by auto
+    show "\<Union>\<^sub>p (Concat x c # map (\<lambda>xs. Concat xs c) xs) = Concat x c \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>xs. Concat xs c) xs)"
+      by (simp add: Choice_prop_1_2 False)
   qed
 
-theorem concat_prop4: "evaluate (x#xs) \<equiv>\<^sub>p evaluate [x] \<union>\<^sub>p evaluate xs"
+theorem concat_prop4: "complete_cnf_state (x#xs) \<subseteq> c \<Longrightarrow> xs \<noteq> [] \<Longrightarrow> evaluate (x#xs) c \<triangleq> evaluate [x] c \<union>\<^sub>p evaluate xs c"
+proof (cases "size xs = 1")
+  case True
+  assume "complete_cnf_state (x#xs) \<subseteq> c" and "xs \<noteq> []"
+  then show ?thesis
+    by (simp add: concat_prop3 equal_is_reflexive)
+next
+  case False
+  assume "complete_cnf_state (x#xs) \<subseteq> c" and "xs \<noteq> []"
+  then show ?thesis
+    by (simp add: concat_prop3 equal_is_reflexive)
+qed
+
+theorem concat_prop4_1: "evaluate (x#xs) c \<equiv>\<^sub>p evaluate [x] c \<union>\<^sub>p evaluate xs c"
 proof (cases "xs=[]")
   case True
   then show ?thesis apply (auto simp: evaluate_def)
-    by (simp add: equiv_is_symetric fail_choice_r)
+    by (simp add: equiv_is_symetric fail_choice_l)
 next
   case False
   then show ?thesis
@@ -1793,27 +1823,115 @@ qed
 
 theorem fail_compose: "Fail {} ; p \<equiv>\<^sub>p Fail {}" by (auto simp: equiv_def composition_def restr_post_def Fail_def)
 
-theorem concat_prop5: "evaluate (a@b) \<equiv>\<^sub>p evaluate a \<union>\<^sub>p evaluate b"
+theorem concat_prop5: "evaluate (a@b) c \<equiv>\<^sub>p evaluate a c \<union>\<^sub>p evaluate b c"
   apply (induction a arbitrary: b)
   apply auto
   apply (simp add: concat_prop2 equiv_is_symetric fail_choice_l)
   by (smt (verit) Nil_is_append_conv append_self_conv2 choice_assoc_1 choice_commute choice_equiv concat_prop3 equals_equiv_relation_3)
 
-theorem concat_prop6: "evaluate ([]#xs) \<equiv>\<^sub>p evaluate xs"
+theorem Skip_concat: "Skip (complete_state a) ; Concat a (complete_state a) \<equiv>\<^sub>p Concat a (complete_state a)" 
+  apply (auto simp: equiv_def complete_state_def)
+     apply (metis Concat_state complete_state_def composition_pre empty_iff fold_simps(1) in_mono is_total_def skip_compose_l_Pre skip_is_total skip_prop_9)
+  apply (metis Concat.elims Concat_state complete_state_def list.distinct(1) skip_compose_l_Pre skip_prop_9)
+  apply (auto simp: restr_post_def)
+  apply (metis Concat.simps(1) Concat_state Un_iff complete_state_def restrict_prop_4 skip_compose_l_post skip_is_idempondent_composition)
+  by (metis Concat.simps(1) Concat_prop_1 Concat_state complete_state_def compose_assoc simp_5 skip_compose_l_post skip_is_idempondent_composition)
+
+theorem concat_prop: "a \<noteq> [] \<Longrightarrow> Concat a (insert x (complete_state a)) \<equiv>\<^sub>p Concat a (complete_state a)"
+proof (induction a)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons a1 a)
+  then show ?case
+  proof (cases "a=[]")
+    case True
+    then show ?thesis apply auto
+      by (simp add: equiv_is_reflexive)
+  next
+    case False
+    then show ?thesis
+      by (metis Concat_prop_1 Concat_prop_10 equiv_is_reflexive) 
+  qed
+qed
+
+theorem state_prop1: "S (evaluate xs C) \<union> S (evaluate [x] C) = S (evaluate (x#xs) C)"
+  apply (induction xs) apply auto
+  apply (metis concat_prop2 empty_iff skip_prop_9 special_empty1)
+  apply (simp add: concat_prop3)
+  apply (simp add: concat_prop3)
+  by (simp add: concat_prop3)
+
+theorem state_prop2: "S (evaluate xs C) \<union> S (evaluate ys C) = S (evaluate (ys@xs) C)"
+  apply (induction ys) apply auto [1]
+  apply (metis Un_iff list.exhaust state_prop1)
+  by (metis Cons_eq_appendI state_prop1 sup_assoc)
+
+theorem eval_prop: "[] \<notin> set xs \<Longrightarrow> evaluate xs C = evaluate xs D"
+  apply (induction xs) apply (auto simp: evaluate_def)
+  by (smt (verit) Choice.simps(2) Choice_prop_1_2 Concat.elims Concat.simps(3) list.map_disc_iff)
+
+theorem state_prop3: "[] \<in> set xs \<Longrightarrow> complete_cnf_state (xs) \<subseteq> S (evaluate (xs) (complete_cnf_state (xx#xs)))"
+proof (cases "size xs = 1")
+  case True
+  assume "[] \<in> set xs"
+  then have "xs = [[]]" using True apply auto
+    by (metis (no_types, lifting) Suc_length_conv length_0_conv list.inject list.set_cases)
+  then show ?thesis by (auto simp: evaluate_def complete_cnf_state_def complete_state_def)
+next
+  case False
+  assume "[] \<in> set xs"
+  then have "size xs > 1" using False apply auto
+    by (metis Suc_lessI length_pos_if_in_set)
+  then obtain x x' xs' where "xs=x#x'#xs'" apply auto
+    by (metis False Suc_length_conv add_cancel_right_right length_0_conv less_nat_zero_code plus_1_eq_Suc remdups_adj.cases)
+  have "evaluate (x#x'#xs') (complete_cnf_state (xx # x#x'#xs')) = evaluate (x#x'#xs') (complete_cnf_state (xx # x#x'#xs')) \<union>\<^sub>p Skip (complete_cnf_state (xx # x#x'#xs'))"
+    sorry
+  have "S (evaluate (x#x'#xs') (complete_cnf_state (xx # x#x'#xs'))) \<subseteq> complete_cnf_state (xx # x#x'#xs')"
+    sorry
+  have "complete_cnf_state (x#x'#xs') \<subseteq> S (evaluate (x#x'#xs') (complete_cnf_state (xx # x#x'#xs')))"
+    sorry
+  then show ?thesis
+    using \<open>xs = x # x' # xs'\<close> by auto
+qed
+
+theorem state_prop4: "[] \<notin> set xs \<Longrightarrow> complete_cnf_state (xs) \<subseteq> S (evaluate (xs) (complete_cnf_state (xx#xs)))"
+  sorry
+
+theorem state_prop5: "complete_cnf_state (xs) \<subseteq> S (evaluate (xs) (complete_cnf_state (xx#xs)))"
+  by (meson state_prop3 state_prop4)
+
+theorem state_prop6: "S (evaluate xs (complete_cnf_state xs)) = complete_cnf_state xs"
+  sorry
+
+theorem skip_prop2: "Skip (complete_cnf_state xs) ; evaluate (xs) (complete_cnf_state xs) \<equiv>\<^sub>p evaluate (xs) (complete_cnf_state xs)"
 proof (induction xs)
   case Nil
-  then show ?case apply (auto simp: evaluate_def Fail_def Skip_def equiv_def) done
+  then show ?case apply (auto simp: complete_cnf_state_def)
+    by (simp add: concat_prop2 fail_compose_r)
 next
-  case (Cons a xs)
-  have "evaluate (a # xs) \<equiv>\<^sub>p evaluate (xs) \<union>\<^sub>p evaluate [a]"
-    using concat_prop4 by auto
-  moreover have "... \<equiv>\<^sub>p evaluate ([]#xs) \<union>\<^sub>p evaluate [a]"
-    by (simp add: choice_equiv equiv_is_reflexive equiv_is_symetric local.Cons)
-  moreover have "... \<equiv>\<^sub>p (evaluate [[]] \<union>\<^sub>p evaluate (xs)) \<union>\<^sub>p evaluate [a]"
-    using choice_equiv concat_prop4 equiv_is_reflexive by blast
-  ultimately show ?case using equiv_is_transitive
-    by (smt (verit, del_insts) choice_assoc_1 choice_commute concat_prop3 equiv_is_symetric local.Cons tl_base tl_step)
+  case (Cons x xs)
+  have "S (evaluate [x] (complete_cnf_state (x # xs))) \<subseteq> complete_cnf_state (x # xs)"
+    using state_prop1 state_prop6 by fastforce
+  have "evaluate (x#xs) (complete_cnf_state (x#xs)) \<equiv>\<^sub>p evaluate [x] (complete_cnf_state (x#xs)) \<union>\<^sub>p evaluate xs (complete_cnf_state (x#xs))"
+    using concat_prop4_1 by auto
+  have "Skip (complete_cnf_state (x#xs)) ; evaluate (x#xs) (complete_cnf_state (x#xs)) \<equiv>\<^sub>p 
+        Skip (complete_cnf_state (x#xs)) ; (evaluate [x] (complete_cnf_state (x#xs)) \<union>\<^sub>p evaluate xs (complete_cnf_state (x#xs)))"
+    using \<open>evaluate (x # xs) (complete_cnf_state (x # xs)) \<equiv>\<^sub>p evaluate [x] (complete_cnf_state (x # xs)) \<union>\<^sub>p evaluate xs (complete_cnf_state (x # xs))\<close> composition_equiv equiv_is_reflexive by blast
+  have "... \<equiv>\<^sub>p Skip (complete_cnf_state (x # xs)) ; evaluate [x] (complete_cnf_state (x # xs)) \<union>\<^sub>p Skip (complete_cnf_state (x # xs)) ; evaluate xs (complete_cnf_state (x # xs))"
+    by (simp add: compose_distrib1_3)
+  have "... \<equiv>\<^sub>p evaluate [x] (complete_cnf_state (x # xs)) \<union>\<^sub>p Skip (complete_cnf_state (x # xs)) ; evaluate xs (complete_cnf_state (x # xs))"
+    by (metis \<open>S (evaluate [x] (complete_cnf_state (x # xs))) \<subseteq> complete_cnf_state (x # xs)\<close> choice_equiv compose_assoc compose_assoc_3 skip_is_idempondent_composition skip_prop_6)
+  have "Skip (complete_cnf_state (x#xs)) ; evaluate (x#xs) (complete_cnf_state (x#xs)) \<equiv>\<^sub>p evaluate (x#xs) (complete_cnf_state (x#xs))"
+    by (metis skip_compose3 state_prop6)
+  then show ?case
+    by simp
 qed
+
+
+theorem concat_prop6: "evaluate ([]#xs) (complete_cnf_state xs) \<equiv>\<^sub>p Skip (complete_cnf_state xs) \<union>\<^sub>p evaluate xs (complete_cnf_state xs)"
+  apply (auto simp: evaluate_def)
+  by (metis Choice_prop_16 Choice_prop_22 choice_commute choice_idem_2 list.set_intros(1))
 
 theorem non_empty0: "non_empty (non_empty xs) = non_empty xs"
   apply (induction xs)
@@ -1846,22 +1964,23 @@ theorem non_empty6: "non_empty ((xx # x) # b) = [xx#x] \<union>\<^sub>c (non_emp
 theorem non_empty6: "((xx # x) # b) = [xx#x] \<union>\<^sub>c b"
   using non_empty5 by (auto simp: choice_cnf_def)
 theorem non_empty7: "((x#xs)@(y#ys)) = (x#xs) \<union>\<^sub>c (y#ys)"
-  by (metis choice_cnf_def non_empty4)
+  by (metis choice_cnf_def)
 theorem non_empty7: "non_empty ((x#xs)@(y#ys)) = (x#xs) \<union>\<^sub>c (y#ys)"
   oops
 
 theorem non_empty8: "a \<union>\<^sub>c b \<noteq> [[]] \<Longrightarrow> a \<union>\<^sub>c b = (non_empty a) \<union>\<^sub>c (non_empty b)"
   oops
-
+(*
 theorem non_empty9: "evaluate (non_empty [x]) = evaluate [x]" 
   by (auto simp: non_empty_def evaluate_def Fail_def Skip_def)
+*)
 theorem "evaluate (non_empty a) = evaluate a"
   oops
 
 theorem cnf_choice_4: "evaluate (a \<union>\<^sub>c b) = evaluate (non_empty a \<union>\<^sub>c non_empty b)"
   apply (auto simp add: choice_cnf_def non_empty0 non_empty_def)
   oops
-
+(*
 theorem concat_prop7: "evaluate xs \<equiv>\<^sub>p evaluate (non_empty xs)"
   apply (simp add: non_empty_def)
 proof (induction xs)
@@ -1896,68 +2015,88 @@ next
       by blast
   qed
 qed
+*)
+theorem state_prop7: "S (evaluate [y] (complete_state y)) = complete_state y"
+  using state_prop6[of "[y]"] by (auto simp: complete_cnf_state_def)
 
-theorem concat_prop8: "evaluate [[]] ; evaluate [y] \<equiv>\<^sub>p evaluate ([[]] ;\<^sub>c [y])"
+theorem skip_prop: "S x \<subseteq> C \<Longrightarrow> is_feasible x \<Longrightarrow>x ; Skip C \<equiv>\<^sub>p x"
+  apply (auto simp: equiv_def composition_def is_feasible_def corestrict_r_def Skip_def S_def Field_def Domain_iff Range_iff subset_iff Un_def restr_post_def restrict_r_def relcomp_unfold)
+  apply blast by blast 
+
+
+theorem concat_prop8: "complete_state y \<subseteq> C \<Longrightarrow> evaluate [[]] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([[]] ;\<^sub>c [y]) C"
 proof -
-  have "evaluate [[]] = Fail {}" apply (auto simp: evaluate_def Fail_def Skip_def) done
-  have "[[]] ;\<^sub>c [y] = []" by (auto simp: composition_cnf_def non_empty_def)
-  have "evaluate [] = Fail {}" apply (auto simp: evaluate_def Fail_def Skip_def) done
+  assume "complete_state y \<subseteq> C"
+  have "[[]] ;\<^sub>c [y] = [y] " apply (auto simp: composition_cnf_def) done
+  have "evaluate [[]] C = Skip C" apply (auto simp: evaluate_def Fail_def Skip_def) done
+  have "evaluate [] C = Fail {}" apply (auto simp: evaluate_def Fail_def Skip_def) done
+  have "Skip C ; evaluate [y] C \<equiv>\<^sub>p evaluate [y] C"
+    using skip_compose3 skip_prop_6 apply (auto simp: evaluate_def)
+    by (smt (verit) Concat.elims Concat_state \<open>complete_state y \<subseteq> C\<close> composition_removes_dead_code_2 composition_simplification_2 list.distinct(1) skip_is_idempondent_composition skip_prop_6)
   show ?thesis
-    by (simp add: Big_choice.fail_compose \<open>[[]] ;\<^sub>c [y] = []\<close> \<open>evaluate [[]] = Fail {}\<close> \<open>evaluate [] = Fail {}\<close>)
+    by (simp add: \<open>Skip C ; evaluate [y] C \<equiv>\<^sub>p evaluate [y] C\<close> \<open>[[]] ;\<^sub>c [y] = [y]\<close> \<open>evaluate [[]] C = Skip C\<close>)
 qed
 
 theorem concat_prop9: "x \<noteq> [] \<Longrightarrow> y \<noteq> [] \<Longrightarrow> [x] ;\<^sub>c [y] = [x@y]" by (auto simp: composition_cnf_def non_empty_def)
 
-theorem concat_prop10: "evaluate [a # x] ; evaluate [y] \<equiv>\<^sub>p evaluate ([a # x] ;\<^sub>c [y])"
-proof (cases "x=[]")
-  case t1: True
-  then show ?thesis
-  proof (cases "y=[]")
-    case t2: True
-    then show ?thesis using t1 t2 apply (auto simp: evaluate_def equiv_def composition_cnf_def Fail_def Skip_def composition_def corestrict_r_def restr_post_def restrict_r_def non_empty_def) done
-  next
-    case f2: False
-    then show ?thesis using t1 apply (auto simp: evaluate_def composition_cnf_def Fail_def Skip_def)
-      by (simp add: Concat_prop_10 equals_equiv_relation_3  non_empty_def)
-  qed
+
+theorem concat_prop10: "complete_state (x#xs) \<subseteq> C \<Longrightarrow> all_feasible (x#xs) \<Longrightarrow> evaluate [[x]] C ; evaluate [xs] C \<equiv>\<^sub>p evaluate ([[x]] ;\<^sub>c [xs]) C" 
+  apply (cases "xs=[]") apply auto
+  apply (auto simp: composition_cnf_def evaluate_def)
+  apply (simp add: Choice_state_1 Skip_compleft equals_equiv_relation_2)
+  apply (simp add: Big_choice.skip_prop)
+  by (simp add: Concat_prop_10 equals_equiv_relation_3)
+
+theorem feas_prop1: "all_feasible (x @ y) \<Longrightarrow> all_feasible x" apply (induction x) by auto
+theorem feas_prop2: "all_feasible (x @ y) \<Longrightarrow> all_feasible y" apply (induction x) by auto
+
+theorem concat_prop11: "all_feasible (x@y) \<Longrightarrow> complete_state (x@y) \<subseteq> C \<Longrightarrow> evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y]) C"
+proof (induction x)
+  case Nil
+  then show ?case by (simp add: concat_prop8)
 next
-  case f1: False
-  then show ?thesis
-  proof (cases "y=[]")
-    case t2: True
-    have "[a # x] ;\<^sub>c [[]] = []" by (auto simp: evaluate_def composition_cnf_def Fail_def Skip_def  non_empty_def)
-    moreover have "evaluate [[]] = Fail{}"  by (auto simp: evaluate_def composition_cnf_def Fail_def Skip_def)
-    moreover have "evaluate [] = Fail{}"  by (auto simp: evaluate_def composition_cnf_def Fail_def Skip_def)
-    ultimately show ?thesis using f1 t2 apply (auto simp: )
-      by (simp add: \<open>evaluate [[]] = Fail {}\<close> concat_prop2 fail_compose_r)
-  next
-    case f2: False
-    have "[a # x] ;\<^sub>c [y] = [a # x @ y]" using f1 f2 concat_prop9
-      by (metis Cons_eq_appendI list.discI)
-    have "evaluate [a # x] ; evaluate [y] = Concat (a # x) ; Concat y" by (auto simp: evaluate_def)
-    have "... = Concat (a#x@y)"
-      by (simp add: Concat_prop_10 Concat_prop_5 f1 f2)
-    have "... = evaluate [a#x@y]" by (auto simp: evaluate_def)
-    then show ?thesis
-      by (simp add: \<open>Concat (a # x) ; Concat y = Concat (a # x @ y)\<close> \<open>[a # x] ;\<^sub>c [y] = [a # x @ y]\<close> \<open>evaluate [a # x] ; evaluate [y] = Concat (a # x) ; Concat y\<close> equals_equiv_relation_3)
-  qed
+  case (Cons a x)
+  have IH: "evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y]) C"
+    using Cons.IH Cons.prems(1) Cons.prems(2) complete_state_prop by fastforce
+  from Cons have "all_feasible (a # x @ y)"
+    by simp
+  then have "all_feasible (a # x)"
+    using Cons.prems feas_prop1 by blast
+  have "complete_state (a # x) \<subseteq> complete_state ((a # x) @ y)" apply (auto simp: complete_state_def)
+    using complete_state_prop_3 complete_state_prop_5 by fastforce
+  have "evaluate [[a]] C ; evaluate [x @ y] C \<equiv>\<^sub>p evaluate ([[a]] ;\<^sub>c [x @ y]) C"
+    using \<open>all_feasible (a # x @ y)\<close> concat_prop10
+    using Cons.prems(2) by auto
+  then have "evaluate [a # x] C \<equiv>\<^sub>p evaluate [[a]] C ; evaluate [x] C"
+    using concat_prop10[of a x C] apply (auto simp: composition_cnf_def)
+    using Cons.prems(2) \<open>all_feasible (a # x)\<close> \<open>complete_state (a # x) \<subseteq> complete_state ((a # x) @ y)\<close> all_feasible.simps(2) equiv_is_symetric by blast
+  have "evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate [x@y] C" using IH by (auto simp: composition_cnf_def)
+  have "evaluate [[a]] C ; (evaluate [x@y] C) \<equiv>\<^sub>p evaluate ([a # x @ y]) C"
+    by (metis \<open>evaluate [[a]] C ; evaluate [x @ y] C \<equiv>\<^sub>p evaluate ([[a]] ;\<^sub>c [x @ y]) C\<close> \<open>evaluate [a # x] C \<equiv>\<^sub>p evaluate [[a]] C ; evaluate [x] C\<close> concat.simps(1) concat_eq_append_conv concat_prop9 equiv_is_symetric hd_step l8 not_Cons_self2 tl_step)
+  have "(evaluate [[a]] C ; evaluate [x] C) ; evaluate [y] C \<equiv>\<^sub>p evaluate ([a # x @ y]) C"
+    by (smt (verit, ccfv_SIG) \<open>evaluate [[a]] C ; evaluate [x @ y] C \<equiv>\<^sub>p evaluate [a # x @ y] C\<close> \<open>evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate [x @ y] C\<close> compose_assoc composition_equiv equiv_is_reflexive equiv_is_transitive)
+  then show ?case apply (auto simp: composition_cnf_def)
+    by (meson \<open>(evaluate [[a]] C ; evaluate [x] C) ; evaluate [y] C \<equiv>\<^sub>p evaluate [a # x @ y] C\<close> \<open>evaluate [a # x] C \<equiv>\<^sub>p evaluate [[a]] C ; evaluate [x] C\<close> composition_equiv equiv_is_reflexive equiv_is_transitive)
 qed
 
-theorem concat_prop11: "evaluate [x] ; evaluate [y] \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y])"
-  apply (induction x arbitrary: y)
-  apply (simp add: concat_prop8)
-  by (simp add: concat_prop10)
+theorem concat_prop11_1: "all_feasible (x@y) \<Longrightarrow> evaluate [x] (complete_state (x@y)) ; evaluate [y] (complete_state (x@y)) \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y]) (complete_state (x@y))"
+  by (simp add: concat_prop11)
+   
+theorem concat_prop12: "all_feasible (a#x@y) \<Longrightarrow> (complete_state (a#x@y)) \<subseteq> C \<Longrightarrow> evaluate [a # x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([a # x] ;\<^sub>c [y]) C"
+  by (metis Cons_eq_appendI concat_prop11)
+theorem concat_prop12_1: "all_feasible (a#x@y) \<Longrightarrow> evaluate [a # x] (complete_state (a#x@y)) ; evaluate [y] (complete_state (a#x@y)) \<equiv>\<^sub>p evaluate ([a # x] ;\<^sub>c [y]) (complete_state (a#x@y))"
+  by (simp add: concat_prop12)
 
+(*
 theorem comp_non_empty: "non_empty a ;\<^sub>c b = a ;\<^sub>c b" 
   apply (induction a arbitrary: b)
   by (auto simp: composition_cnf_def non_empty_def)
-
+*)
 theorem choice_non_empty: "non_empty a \<union>\<^sub>c b = a \<union>\<^sub>c b"
   oops
 (*
   apply (induction a arbitrary: b)
   by (auto simp: choice_cnf_def non_empty_def)
-*)
 theorem comp_non_empty2: "non_empty x ;\<^sub>c non_empty b = x ;\<^sub>c b"
 proof (induction x arbitrary: b)
   case Nil
@@ -1985,6 +2124,7 @@ next
     qed
   qed
 qed
+*)
 
 theorem choice_non_empty2: "non_empty a \<union>\<^sub>c non_empty b = a \<union>\<^sub>c b"
   oops
@@ -2020,42 +2160,12 @@ next
   qed
 qed 
 
-theorem non_empty11: "non_empty xs = [] \<Longrightarrow> evaluate xs = Skip {}"
-proof (induction xs)
-  case Nil
-  then show ?case apply (auto simp: evaluate_def Fail_def Skip_def) done
-next
-  case (Cons x xs)
-  then show ?case
-  proof (cases "x=[]")
-    case True
-    then show ?thesis
-    proof (cases "xs=[]")
-      case t2: True
-      then show ?thesis using True by (auto simp: evaluate_def Skip_def)
-    next
-      case False
-      have "evaluate ([] # xs) = evaluate ([]) \<union>\<^sub>p evaluate (xs)" using False
-        by (metis concat_prop3 non_empty2 non_empty9)
-      then show ?thesis
-        by (metis Choice.simps(1) Cons.IH Cons.prems True Un_empty evaluate_def list.map_disc_iff non_empty3 skip_prop_10 special_empty1)
-    qed
-  next
-    case False
-    then show ?thesis
-    proof (cases "xs=[]")
-      case True
-      then show ?thesis apply auto
-        by (metis Cons.prems concat_prop2 non_empty9 special_empty1)
-    next
-      case f2: False
-      then show ?thesis
-        by (metis Cons.prems False neq_Nil_conv non_empty5)
-    qed
-  qed
-qed
+theorem non_empty11: "xs = [] \<Longrightarrow> evaluate xs C = Fail {}"
+  by (auto simp: evaluate_def)
+
 theorem non_empty12: "non_empty xs = [x] \<Longrightarrow> non_empty xs = xs \<Longrightarrow>  evaluate xs = evaluate [x]"
   by simp
+(*
 theorem non_empty13: "non_empty xs = [x] \<Longrightarrow> non_empty xs \<noteq> xs \<Longrightarrow>  evaluate xs = evaluate [x] \<union>\<^sub>p Skip {}"
 proof (induction xs arbitrary: x)
   case Nil
@@ -2088,10 +2198,11 @@ next
     qed
   qed
 qed
-
+*)
 theorem nonempty_monotonic: "size (non_empty (x#xs)) \<ge> size (non_empty xs)"
   by (auto simp: non_empty_def)
 
+(*
 theorem eval_prop: "size (non_empty b) \<noteq> 1 \<Longrightarrow> evaluate b = evaluate (non_empty b)"
 proof (induction b)
   case Nil
@@ -2182,7 +2293,8 @@ next
     qed
   qed
 qed
-  
+*)
+(*
 theorem eval_prop2: "size b \<noteq> 1 \<Longrightarrow> size (non_empty b) = 1 \<Longrightarrow> evaluate b = evaluate (non_empty b) \<union>\<^sub>p Skip {}"
 proof (induction b)
   case Nil
@@ -2205,7 +2317,7 @@ next
       by (simp add: \<open>non_empty (a # b) = [a]\<close>)
   qed
 qed
-
+*)
 theorem non_empty_reduces_size: "size (non_empty xs) \<le> size xs"
 proof (induction xs)
   case Nil
@@ -2263,6 +2375,7 @@ qed
 theorem eval_prop3: "size b = 1 \<Longrightarrow> size (non_empty b) = 1 \<Longrightarrow> evaluate b = evaluate (non_empty b)"
   by (metis non_empty_14)
 
+(*
 theorem comp_cnf1: "non_empty xs = [] \<Longrightarrow> ys ;\<^sub>c xs = []"
   apply (induction xs arbitrary: ys)
   by (auto simp: non_empty_def composition_cnf_def)
@@ -2271,11 +2384,12 @@ theorem comp_cnf2: "non_empty ys = [] \<Longrightarrow> ys ;\<^sub>c xs = []"
   apply (induction ys arbitrary: xs)
   apply (simp add: non_empty_def composition_cnf_def)
   by (metis comp_non_empty list.distinct(1) list.exhaust non_empty3 non_empty5)
-
-theorem comp_cnf3: "x \<noteq> [] \<Longrightarrow> y \<noteq> [] \<Longrightarrow> Concat x ; Concat y = Concat (x @ y)"
+*)
+theorem comp_cnf3: "x \<noteq> [] \<Longrightarrow> y \<noteq> [] \<Longrightarrow> Concat x (complete_state (x@y)) ; Concat y (complete_state (x@y)) = Concat (x @ y) (complete_state (x@y))"
   apply (induction x) apply auto
-  by (metis (full_types) Concat.simps(2) Concat_prop_10 Nil_is_append_conv append_self_conv2 compose_assoc)
+  by (metis Concat_prop_5 Cons_eq_appendI list.discI)
 
+(*
 theorem comp_cnf4: "a ;\<^sub>c b = a ;\<^sub>c non_empty b"
 proof (induction a arbitrary: b)
   case Nil
@@ -2292,7 +2406,9 @@ next
       by (metis comp_non_empty2 non_empty0)
   qed
 qed
+*)
 
+(*
 theorem comp_cnf5: "a ;\<^sub>c b = non_empty a ;\<^sub>c b"
 proof (induction a arbitrary: b)
   case Nil
@@ -2309,10 +2425,12 @@ next
       by (metis comp_non_empty2 non_empty0)
   qed
 qed
+*)
 
 theorem comp_prop1: "x ; (y \<union>\<^sub>p Skip {}) \<equiv>\<^sub>p x ; y" 
   by (auto simp: equiv_def composition_def corestrict_r_def Skip_def restr_post_def restrict_r_def)
 
+(*
 theorem evaluate_equiv: "evaluate (non_empty xs) \<equiv>\<^sub>p evaluate xs"
 proof (induction xs)
   case Nil
@@ -2344,8 +2462,9 @@ next
       using concat_prop7 equiv_is_symetric by auto
   qed
 qed
+*)
 
-theorem choice_cnf_thm: "evaluate xs \<union>\<^sub>p evaluate ys \<equiv>\<^sub>p evaluate (xs \<union>\<^sub>c ys)"
+theorem choice_cnf_thm: "evaluate xs (complete_cnf_state (xs@ys)) \<union>\<^sub>p evaluate ys (complete_cnf_state (xs@ys)) \<equiv>\<^sub>p evaluate (xs \<union>\<^sub>c ys) (complete_cnf_state (xs@ys))"
   apply (auto simp: choice_cnf_def evaluate_def)
   by (metis concat_prop5 equiv_is_symetric evaluate_def map_append)
 
@@ -2354,6 +2473,7 @@ theorem non_empty14: "\<forall>t \<in> set xs. t \<noteq> [] \<Longrightarrow> n
   apply (auto simp: non_empty_def) [1]
   by (metis list.exhaust list.set_intros(1) list.set_intros(2) non_empty5)
 
+(*
 theorem non_empty15: "xs ;\<^sub>c ys = non_empty (xs ;\<^sub>c ys)"
 proof -
   have "xs ;\<^sub>c ys = non_empty xs ;\<^sub>c non_empty ys"
@@ -2363,162 +2483,241 @@ proof -
   show ?thesis
     using \<open>\<forall>t\<in>set (non_empty xs ;\<^sub>c non_empty ys). t \<noteq> []\<close> \<open>xs ;\<^sub>c ys = non_empty xs ;\<^sub>c non_empty ys\<close> non_empty14 by fastforce  
 qed
+*)
 
 theorem choic_cnf1: "(x#xs) ;\<^sub>c ys = ([x] ;\<^sub>c ys) \<union>\<^sub>c (xs ;\<^sub>c ys)"
-proof -
-  show ?thesis
-  proof (cases "x = []")
-    case True
-    then show ?thesis
-      by (metis cnf_choice1 comp_cnf2 comp_non_empty non_empty2 non_empty3)
-  next
-    case False
-    have "non_empty [x] = [x]"
-      by (metis False list.exhaust non_empty1 non_empty5)
-    have "[x @ y. y \<leftarrow> ys] = [x @ y. x \<leftarrow> [x], y \<leftarrow> ys]"
-      by (simp add: \<open>non_empty [x] = [x]\<close>)
-    have "[x] ;\<^sub>c ys = [x @ y. y \<leftarrow> non_empty ys]" using False apply (auto simp: composition_cnf_def)
-      by (simp add: \<open>non_empty [x] = [x]\<close>)
-    have "\<forall>t \<in> set [x @ y. y \<leftarrow> non_empty ys]. t \<noteq> []" by (auto simp: non_empty_def)
-    then have "[x @ y. y \<leftarrow> non_empty ys] = non_empty [x @ y. y \<leftarrow> non_empty ys]" 
-      apply (auto simp: non_empty_def)
-      by (metis \<open>\<forall>t\<in>set (map ((@) x) (non_empty ys)). t \<noteq> []\<close> list.map_comp non_empty14 non_empty_def)
-    have "([x @ y. y \<leftarrow> non_empty ys]) \<union>\<^sub>c (xs ;\<^sub>c ys) = ([x @ y. y \<leftarrow> non_empty ys]) @ non_empty (xs ;\<^sub>c ys)"
-      by (metis choice_cnf_def non_empty15)
-    have "([x @ y. y \<leftarrow> non_empty ys]) @ non_empty (xs ;\<^sub>c ys) = ([x @ y. y \<leftarrow> non_empty ys]) @ (xs ;\<^sub>c ys)"
-      by (metis non_empty15)
-    have "([x @ y. y \<leftarrow> non_empty ys]) @ (xs ;\<^sub>c ys) = ([x @ y. y \<leftarrow> non_empty ys]) @ [a @ b. a \<leftarrow> non_empty xs, b \<leftarrow> non_empty ys]"
-      by (auto simp: composition_cnf_def)
-    have "([x @ y. y \<leftarrow> non_empty ys]) @ [a @ b. a \<leftarrow> non_empty xs, b \<leftarrow> non_empty ys] = [a @ b. a \<leftarrow> non_empty (x#xs), b \<leftarrow> non_empty ys]"
-      by (metis (no_types, lifting) \<open>non_empty [x] = [x]\<close> choice_cnf_def cnf_choice2 concat.simps(2) map_eq_Cons_conv non_empty4)
-    have "[a @ b. a \<leftarrow> non_empty (x#xs), b \<leftarrow> non_empty ys] = (x # xs) ;\<^sub>c ys"
-      by (simp add: composition_cnf_def)
-    have "(x # xs) ;\<^sub>c ys = (x # xs) ;\<^sub>c ys"
-      by (simp add: comp_non_empty)
-    then show "(x # xs) ;\<^sub>c ys = ([x] ;\<^sub>c ys) \<union>\<^sub>c (xs ;\<^sub>c ys)"
-      by (simp add: \<open>[x] ;\<^sub>c ys = map ((@) x) (non_empty ys)\<close> \<open>concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty (x # xs))) = (x # xs) ;\<^sub>c ys\<close> \<open>map ((@) x) (non_empty ys) @ concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty xs)) = concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty (x # xs)))\<close> \<open>map ((@) x) (non_empty ys) @ non_empty (xs ;\<^sub>c ys) = map ((@) x) (non_empty ys) @ xs ;\<^sub>c ys\<close> \<open>map ((@) x) (non_empty ys) @ xs ;\<^sub>c ys = map ((@) x) (non_empty ys) @ concat (map (\<lambda>a. map ((@) a) (non_empty ys)) (non_empty xs))\<close> \<open>map ((@) x) (non_empty ys) \<union>\<^sub>c (xs ;\<^sub>c ys) = map ((@) x) (non_empty ys) @ non_empty (xs ;\<^sub>c ys)\<close>)
-  qed
-qed
+  by (auto simp: composition_cnf_def choice_cnf_def)
 
 theorem comp_distrib_r: "(b \<union>\<^sub>c c) ;\<^sub>c a = (b ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)"
-proof (induction b)
-  case Nil
-  have "non_empty [] @ non_empty c = non_empty c"
-    by (simp add: non_empty1)
-  have "non_empty c ;\<^sub>c a = c ;\<^sub>c a"
-    by (simp add: comp_non_empty)
-  have "[] ;\<^sub>c a = []" 
-    by (auto simp: composition_cnf_def non_empty_def)
-  have "non_empty ([]) = []"
-    by (simp add: non_empty1)
-  have "c ;\<^sub>c a = non_empty (c ;\<^sub>c a)"
-    using non_empty15 by auto
-  then show ?case
-    apply (auto simp: choice_cnf_def)
-    by (metis \<open>[] ;\<^sub>c a = []\<close> \<open>non_empty c ;\<^sub>c a = c ;\<^sub>c a\<close> choice_cnf_def cnf_choice1)
-next
-  case (Cons b bs)
-  then show "((b # bs) \<union>\<^sub>c c) ;\<^sub>c a = ((b # bs) ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)"
-  proof (cases "b=[]")
-    case True
-    have "(([] # bs) ;\<^sub>c a) = bs ;\<^sub>c a"
-      by (simp add: composition_cnf_def non_empty3)
-
-    have "(bs \<union>\<^sub>c c) ;\<^sub>c a = (bs ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)"
-      by (simp add: local.Cons)
-    from True show ?thesis apply auto
-      by (metis append_eq_Cons_conv choice_cnf_def comp_non_empty local.Cons non_empty3)
-  next
-    case False
-    then show "((b # bs) \<union>\<^sub>c c) ;\<^sub>c a = ((b # bs) ;\<^sub>c a) \<union>\<^sub>c (c ;\<^sub>c a)"  apply (auto simp: choice_cnf_def composition_cnf_def) using concat_append map_append non_empty0 non_empty15 non_empty4
-      by (metis Cons_eq_appendI)
-  qed
-qed
+  by (auto simp: composition_cnf_def choice_cnf_def)
 
 theorem choice_cnf_commute: "a \<union>\<^sub>c (b \<union>\<^sub>c c) = (a \<union>\<^sub>c b) \<union>\<^sub>c c"
   by (simp add: choice_cnf_def non_empty0 non_empty4)
-
 
 theorem equal_sym: "equal_cnf a b = equal_cnf b a"
   by (auto simp: equal_cnf_def)
 
 theorem equal_empty: "equal_cnf a [] \<Longrightarrow> a = []"
   by (auto simp: equal_cnf_def)
-
-theorem eval_prop1: "e \<noteq>[] \<Longrightarrow> evaluate (e @ [x]) = evaluate e \<union>\<^sub>p evaluate [x]"
-  apply (auto simp: evaluate_def choice_def)
+(*
+theorem eval_prop1: "evaluate (e @ [x]) (complete_cnf_state (e@[x])) = evaluate e (complete_cnf_state (e@[x])) \<union>\<^sub>p evaluate [x] (complete_cnf_state (e@[x]))"
+  apply (auto simp: evaluate_def)
   by (simp add: Choice_prop_3 choice_def)
+*)
 
-theorem evaluate_split: "size xs \<noteq>1 \<Longrightarrow> evaluate xs = evaluate [t. t \<leftarrow> xs, t =x] \<union>\<^sub>p evaluate [t. t \<leftarrow> xs, t\<noteq>x]"
+theorem eval_prop1: "ys\<noteq>[] \<Longrightarrow> evaluate ys C \<union>\<^sub>p evaluate [y] C = evaluate (ys @ [y]) C"
+proof (auto simp: evaluate_def)
+  assume False: "ys \<noteq> []"
+  show "Concat y C \<union>\<^sub>p \<Union>\<^sub>p (map (\<lambda>xs. Concat xs C) ys) = \<Union>\<^sub>p (map (\<lambda>xs. Concat xs C) ys @ [Concat y C])"
+    by (simp add: Choice_prop_1 False)
+qed
+
+theorem evaluate_switch: "evaluate (y#ys) C = evaluate (ys@[y]) C"
+  by (metis append_self_conv2 choice_commute concat_prop3 eval_prop1)
+
+theorem evaluate_split: "xs\<noteq>[] \<Longrightarrow> ys \<noteq> [] \<Longrightarrow> evaluate (xs@ys) C = evaluate xs C \<union>\<^sub>p evaluate ys C"
+proof (induction xs)
+  case Nil
+  then show ?case by auto
+next
+  case (Cons a xs)
+  then show ?case
+  proof (cases xs)
+    case Nil
+    then show ?thesis apply auto
+      by (simp add: Cons.prems(2) concat_prop3)
+  next
+    case (Cons b list)
+    then show ?thesis
+      by (metis Cons.IH Cons.prems(2) append_Cons choice_assoc_1 concat_prop3 list.discI) 
+  qed
+qed
+
+theorem evaluate_switch2: "evaluate (yss@yse) C = evaluate (yse@yss) C"
+proof (induction yss)
+  case Nil
+  then show ?case by auto
+next
+  case (Cons y yss)
+  then show "evaluate ((y # yss) @ yse) C = evaluate (yse @ y # yss) C"
+  proof (cases "yse")
+    case Nil
+    then show ?thesis by auto
+  next
+    case (Cons x yse')
+    have "evaluate ((y # yss) @ (x # yse')) C = evaluate ((y # yss)) C \<union>\<^sub>p evaluate ((x # yse')) C"
+      using evaluate_split by blast
+    have "evaluate ((y # yss) @ (x # yse')) C = evaluate ((x # yse') @ y # yss) C"
+      by (metis append_Nil2 choice_commute evaluate_split self_append_conv2)
+    then show ?thesis
+      by (simp add: local.Cons)
+  qed
+qed
+
+theorem eval_perm: "a#ys' \<in> set (permutations ys) \<Longrightarrow> evaluate (a#ys') C = evaluate ys C"
+proof -
+  assume "a#ys' \<in> set (permutations ys)"
+  then show "evaluate (a#ys') C = evaluate ys C"
+  proof (induction "size ys" arbitrary: ys ys' a)
+    case 0
+    then show ?case by auto
+  next
+    case (Suc x)
+    obtain yss yse where "ys=yss@a#yse"
+      by (meson Suc.prems perm_inv_3 permutation_split_set)
+    then show ?case
+    proof (cases "ys' = []")
+      case True
+      then show ?thesis apply auto
+        using Suc.prems singleton_permutation by fastforce
+    next
+      case False
+      have "evaluate ([a]) C \<union>\<^sub>p evaluate (yss@yse) C = evaluate ([a]) C \<union>\<^sub>p evaluate (yse@yss) C"
+        apply (cases "yss=[]") apply auto apply (cases "yse=[]")
+        apply simp
+        by (simp add: evaluate_switch2)
+      have "size (yss@yse) > 0"
+        using False Suc.prems \<open>ys = yss @ a # yse\<close> append_self_conv2 length_greater_0_conv by fastforce
+
+      have "ys' \<in> set (permutations (yss@yse))"
+        by (metis Suc.prems \<open>ys = yss @ a # yse\<close> perm_split)
+      have "evaluate (yss@yse) C = evaluate ys' C"
+        by (smt (verit) Suc.hyps(1) Suc.hyps(2) Suc.prems \<open>ys' \<in> set (permutations (yss @ yse))\<close> diff_Suc_1' length_Cons length_inv perm_inv_3 permutations.elims)
+
+      have "evaluate (yss@a#yse) C = evaluate (yss) C \<union>\<^sub>p (evaluate ([a]) C \<union>\<^sub>p evaluate (yse) C)" sorry
+      have "... = evaluate ([a]) C \<union>\<^sub>p (evaluate (yss) C \<union>\<^sub>p evaluate (yse) C)"
+        by (metis choice_assoc_1 choice_commute)
+      have "... = evaluate ([a]) C \<union>\<^sub>p evaluate (yss@yse) C" apply (cases "yss=[]") apply auto
+        using \<open>0 < length (yss @ yse)\<close> \<open>evaluate (yss @ a # yse) C = evaluate yss C \<union>\<^sub>p (evaluate [a] C \<union>\<^sub>p evaluate yse C)\<close> \<open>evaluate yss C \<union>\<^sub>p (evaluate [a] C \<union>\<^sub>p evaluate yse C) = evaluate [a] C \<union>\<^sub>p (evaluate yss C \<union>\<^sub>p evaluate yse C)\<close> concat_prop3 apply fastforce
+        apply (cases "yse=[]") apply auto 
+        using \<open>0 < length (yss @ yse)\<close> \<open>evaluate (yss @ a # yse) C = evaluate yss C \<union>\<^sub>p (evaluate [a] C \<union>\<^sub>p evaluate yse C)\<close> \<open>evaluate yss C \<union>\<^sub>p (evaluate [a] C \<union>\<^sub>p evaluate yse C) = evaluate [a] C \<union>\<^sub>p (evaluate yss C \<union>\<^sub>p evaluate yse C)\<close> concat_prop3
+        apply (simp add: eval_prop1)
+        by (simp add: evaluate_split)
+      have "... = evaluate ([a]) C \<union>\<^sub>p evaluate (ys') C"
+        by (simp add: \<open>evaluate (yss @ yse) C = evaluate ys' C\<close>)
+      have "... = evaluate (a#ys') C"
+        by (simp add: False concat_prop3)
+      then show ?thesis
+        using \<open>evaluate (yss @ a # yse) C = evaluate yss C \<union>\<^sub>p (evaluate [a] C \<union>\<^sub>p evaluate yse C)\<close> \<open>evaluate [a] C \<union>\<^sub>p (evaluate yss C \<union>\<^sub>p evaluate yse C) = evaluate [a] C \<union>\<^sub>p evaluate (yss @ yse) C\<close> \<open>evaluate [a] C \<union>\<^sub>p evaluate (yss @ yse) C = evaluate [a] C \<union>\<^sub>p evaluate ys' C\<close> \<open>evaluate yss C \<union>\<^sub>p (evaluate [a] C \<union>\<^sub>p evaluate yse C) = evaluate [a] C \<union>\<^sub>p (evaluate yss C \<union>\<^sub>p evaluate yse C)\<close> \<open>ys = yss @ a # yse\<close> by presburger
+    qed
+  qed
+qed
+
+theorem perm_eval: "xs \<in> set (permutations ys) \<Longrightarrow> evaluate xs C = evaluate ys C"
+proof -
+  assume "xs \<in> set (permutations ys)"
+  then show "evaluate xs C = evaluate ys C"
+  proof (induction "size xs" arbitrary: ys xs)
+    case 0
+    have "ys = []"
+      using "0.hyps" "0.prems" length_inv by force
+    then show ?case
+      using "0.hyps" by auto
+  next
+    case (Suc n)
+    obtain a xs' where "xs=a#xs'"
+      by (meson Suc.hyps(2) Suc_length_conv)
+    have "ys \<in> set (permutations (a#xs'))"
+      using Suc.prems \<open>xs = a # xs'\<close> perm_inv_3 by blast
+    then obtain ys' where "a#ys' \<in> set (permutations ys)"
+      using Suc.prems \<open>xs = a # xs'\<close> by auto
+    have "evaluate xs' C = evaluate ys' C"
+      by (metis (no_types, lifting) Suc.hyps(1) Suc.hyps(2) Suc.prems \<open>a # ys' \<in> set (permutations ys)\<close> \<open>xs = a # xs'\<close> length_Cons old.nat.inject perm_lemma_1 permutations_set_equality)
+    have "evaluate (a#ys') C = evaluate ys C"
+      by (simp add: \<open>a # ys' \<in> set (permutations ys)\<close> eval_perm)
+    then show ?case
+      by (metis Suc.prems \<open>a # ys' \<in> set (permutations ys)\<close> \<open>evaluate xs' C = evaluate ys' C\<close> \<open>xs = a # xs'\<close> \<open>ys \<in> set (permutations (a # xs'))\<close> concat_prop3 singleton_permutation)
+  qed
+qed
+
+theorem perm_prop: "[t. t \<leftarrow> xs, \<not>p t] @ [t. t \<leftarrow> xs, p t] \<in> set (permutations xs)"
+proof (induction xs)
+  case Nil
+  then show ?case by auto
+next
+  case (Cons x xs)
+  then show ?case
+  proof (cases "p x")
+    case True
+    have "[t. t \<leftarrow> (x#xs), \<not>p t] @ [t. t \<leftarrow> (x#xs), p t] = [t. t \<leftarrow> xs, \<not>p t] @ x#[t. t \<leftarrow> xs, p t]"
+      using True by auto
+    have "([t. t \<leftarrow> xs, \<not>p t] @ x#[t. t \<leftarrow> xs, p t]) \<in> set (permutations (x#[t. t \<leftarrow> xs, \<not>p t] @ [t. t \<leftarrow> xs, p t]))"
+      by (meson insert_perm_rel l4)
+    have "([t. t \<leftarrow> xs, \<not>p t] @ [t. t \<leftarrow> xs, p t]) \<in> set (permutations xs)"
+      by (simp add: local.Cons)
+    have "[t. t \<leftarrow> (x#xs), \<not>p t] @ [t. t \<leftarrow> (x#xs), p t] \<in> set (permutations (x#xs))"
+      by (metis (no_types, lifting) \<open>concat (map (\<lambda>t. if \<not> p t then [t] else []) (x # xs)) @ concat (map (\<lambda>t. if p t then [t] else []) (x # xs)) = concat (map (\<lambda>t. if \<not> p t then [t] else []) xs) @ x # concat (map (\<lambda>t. if p t then [t] else []) xs)\<close> local.Cons perm_inv_2)
+    then show ?thesis
+      by blast 
+  next
+    case False
+    have "[t. t \<leftarrow> (x#xs), \<not>p t] @ [t. t \<leftarrow> (x#xs), p t] = x#[t. t \<leftarrow> xs, \<not>p t] @ [t. t \<leftarrow> xs, p t]"
+      using False by auto
+    have "([t. t \<leftarrow> xs, \<not>p t] @ [t. t \<leftarrow> xs, p t]) \<in> set (permutations xs)"
+      by (simp add: local.Cons)
+    have "[t. t \<leftarrow> (x#xs), \<not>p t] @ [t. t \<leftarrow> (x#xs), p t] \<in> set (permutations (x#xs))"
+      by (metis (no_types, lifting) \<open>concat (map (\<lambda>t. if \<not> p t then [t] else []) (x # xs)) @ concat (map (\<lambda>t. if p t then [t] else []) (x # xs)) = x # concat (map (\<lambda>t. if \<not> p t then [t] else []) xs) @ concat (map (\<lambda>t. if p t then [t] else []) xs)\<close> local.Cons perm_1)
+    then show ?thesis
+      by blast
+  qed
+qed
+
+theorem size_prop: "size ([t. t \<leftarrow> xs, \<not>p t] @ [t. t \<leftarrow> xs, p t]) = size xs"
+proof (induction xs)
+  case Nil
+  then show ?case by auto
+next
+  case (Cons x xs')
+  then show ?case apply (cases "p x") by auto
+qed
+
+theorem evaluate_split1: "size (xs@ys) \<noteq> 1 \<Longrightarrow> evaluate xs C \<union>\<^sub>p evaluate ys C = evaluate (xs@ys) C"
+proof (cases "xs@ys = []")
+  case True
+  then show ?thesis by (auto simp: evaluate_def Fail_def choice_def S_def restr_post_def restrict_r_def)
+next
+  case False
+  assume "size (xs@ys) \<noteq> 1"
+  then show ?thesis proof (cases "xs")
+    case Nil
+    have "size ys>1"
+      by (metis False Suc_lessI \<open>length (xs @ ys) \<noteq> 1\<close> length_greater_0_conv local.Nil nat_1 nat_one_as_int self_append_conv2)
+    then show ?thesis using Nil apply (auto simp: evaluate_def)
+      by (metis Choice_prop_18 One_nat_def choice_commute length_map)
+  next
+    case Cons1: (Cons x xs')
+    then show ?thesis
+    proof (cases "ys")
+      case Nil
+      then show ?thesis apply (auto simp: evaluate_def)
+        by (metis Choice_prop_18 False One_nat_def Suc_lessI \<open>length (xs @ ys) \<noteq> 1\<close> choice_commute length_greater_0_conv length_map self_append_conv)
+    next
+      case (Cons y ys')
+      then show ?thesis
+        by (metis Cons1 evaluate_split list.distinct(1))
+    qed
+  qed
+qed
+
+theorem evaluate_split2: "size xs \<noteq>1 \<Longrightarrow> evaluate xs C  = evaluate [t. t \<leftarrow> xs, t =x] C \<union>\<^sub>p evaluate [t. t \<leftarrow> xs, t\<noteq>x] C"
 proof (cases "xs=[]")
   case True
   then show ?thesis by (auto simp: evaluate_def Fail_def choice_def S_def restr_post_def restrict_r_def)
 next
   case False
   assume a1: "size xs \<noteq>1"
+  have "size xs > 1"
+    by (meson False a1 length_0_conv less_one linorder_neqE_nat)
+  then have "size ([t. t \<leftarrow> xs, t\<noteq>x] @ [t. t \<leftarrow> xs, t=x]) > 1" using size_prop[of "\<lambda>t. t=x" xs] by auto
+  have "evaluate [t. t \<leftarrow> xs, t =x] C \<union>\<^sub>p evaluate [t. t \<leftarrow> xs, t\<noteq>x] C = evaluate ([t. t \<leftarrow> xs, t=x] @ [t. t \<leftarrow> xs, t \<noteq> x]) C"
+    by (metis (no_types, lifting) \<open>1 < length (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) xs) @ concat (map (\<lambda>t. if t = x then [t] else []) xs))\<close> append.right_neutral evaluate_split evaluate_split1 less_numeral_extra(4) self_append_conv2)
+  have "[t. t \<leftarrow> xs, t=x] @ [t. t \<leftarrow> xs, t \<noteq> x] \<in> set (permutations xs)" using perm_prop[of "\<lambda>t. t\<noteq>x" xs] by auto
   from False a1 show ?thesis
-  proof (induction xs arbitrary: x)
-    case Nil
-    then show ?case by simp
-  next
-    case (Cons y ys)
-    have l1: "evaluate (y#ys) = evaluate [y] \<union>\<^sub>p evaluate ys"
-      by (metis Cons.prems(2) One_nat_def concat_prop3 length_Cons list.size(3))
-    then show "evaluate (y#ys) = evaluate [t. t \<leftarrow> (y#ys), t =x] \<union>\<^sub>p evaluate [t. t \<leftarrow> (y#ys), t\<noteq>x]"
-    proof (cases "size ys=1")
-      case True
-      then show ?thesis apply (auto simp: evaluate_def)
-        apply (smt (verit) Choice.simps(2) Choice_prop_1_2 Choice_prop_22 Cons_eq_append_conv True append.right_neutral choice_assoc_1 choice_commute concat.simps(1) concat.simps(2) length_0_conv length_Suc_conv_rev list.map_disc_iff list.simps(9) zero_neq_one)
-        by (smt (verit) Choice.simps(2) Choice_prop_1_2 Choice_prop_22 Cons_eq_append_conv True append.right_neutral choice_assoc_1 choice_commute concat.simps(1) concat.simps(2) length_0_conv length_Suc_conv_rev list.map_disc_iff list.simps(9) zero_neq_one)
-    next
-      case f2: False
-      have l2: "size ys>1"
-        using Cons.prems(2) f2 nat_neq_iff by auto
-      have " evaluate ys = (evaluate [t. t \<leftarrow> (ys), t=x] \<union>\<^sub>p evaluate [t. t \<leftarrow> (ys), t\<noteq>x])"
-        using Cons.IH False \<open>1 < length ys\<close> gr_implies_not_zero by auto
-      then show ?thesis
-      proof (cases "x=y")
-        case t3: True
-        have "[t. t \<leftarrow> (y#ys), t =x] = y#[t. t \<leftarrow> ys, t =x]" using t3 by auto
-        then show "evaluate (y#ys) = evaluate [t. t \<leftarrow> (y#ys), t=x] \<union>\<^sub>p evaluate [t. t \<leftarrow> (y#ys), t\<noteq>x]"
-        proof (cases "[t. t \<leftarrow> ys, t=x] = []")
-          case t4: True
-          then show ?thesis apply auto 
-            apply (smt (verit) \<open>evaluate ys = evaluate (concat (map (\<lambda>t. if t = x then [t] else []) ys)) \<union>\<^sub>p evaluate (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) ys))\<close> choice_assoc_1 choice_commute concat_prop3 local.l1 non_empty1 non_empty11 skip_prop_12)
-            by (metis (no_types, lifting) \<open>evaluate ys = evaluate (concat (map (\<lambda>t. if t = x then [t] else []) ys)) \<union>\<^sub>p evaluate (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) ys))\<close> choice_assoc_1 choice_commute local.l1 non_empty1 non_empty11 skip_prop_12 t4)
-        next
-          case f4: False
-          have "evaluate [t. t \<leftarrow> (y#ys), t=x] = evaluate [y] \<union>\<^sub>p evaluate [t. t \<leftarrow> ys, t=x]"
-            by (metis (no_types, lifting) \<open>concat (map (\<lambda>t. if t = x then [t] else []) (y # ys)) = y # concat (map (\<lambda>t. if t = x then [t] else []) ys)\<close> concat_prop3 f4)
-          moreover have "evaluate [t. t \<leftarrow> (y#ys), t\<noteq>x] = evaluate [t. t \<leftarrow> ys, t\<noteq>x]" using t3
-            by simp
-          ultimately show ?thesis
-            by (smt (verit) \<open>evaluate ys = evaluate (concat (map (\<lambda>t. if t = x then [t] else []) ys)) \<union>\<^sub>p evaluate (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) ys))\<close> append.left_neutral choice_assoc_1 concat.simps(2) list.simps(9) local.l1 t3)
-        qed
-      next
-        case f3: False
-        have "[t. t \<leftarrow> (y#ys), t\<noteq>x] = y#[t. t \<leftarrow> ys, t\<noteq>x]" using f3 by auto
-        then show "evaluate (y#ys) = evaluate [t. t \<leftarrow> (y#ys), t=x] \<union>\<^sub>p evaluate [t. t \<leftarrow> (y#ys), t\<noteq>x]"
-        proof (cases "[t. t \<leftarrow> ys, t\<noteq>x] = []")
-          case t4: True
-          then show ?thesis apply auto
-            apply (metis (no_types, lifting) \<open>evaluate ys = evaluate (concat (map (\<lambda>t. if t = x then [t] else []) ys)) \<union>\<^sub>p evaluate (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) ys))\<close> choice_assoc_1 choice_commute local.l1 non_empty1 non_empty11 skip_prop_12 t4) 
-            by (smt (verit) \<open>evaluate ys = evaluate (concat (map (\<lambda>t. if t = x then [t] else []) ys)) \<union>\<^sub>p evaluate (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) ys))\<close> choice_assoc_1 choice_commute concat_prop3 local.l1 non_empty1 non_empty11 skip_prop_12)
-        next
-          case f4: False
-          have "evaluate [t. t \<leftarrow> (y#ys), t\<noteq>x] = evaluate [y] \<union>\<^sub>p evaluate [t. t \<leftarrow> ys, t\<noteq>x]"
-            by (metis (mono_tags, lifting) \<open>concat (map (\<lambda>t. if t \<noteq> x then [t] else []) (y # ys)) = y # concat (map (\<lambda>t. if t \<noteq> x then [t] else []) ys)\<close> concat_prop3 f4)
-          moreover have "evaluate [t. t \<leftarrow> (y#ys), t=x] = evaluate [t. t \<leftarrow> ys, t=x]" using f3
-            by simp
-          ultimately show ?thesis
-            using \<open>evaluate ys = evaluate (concat (map (\<lambda>t. if t = x then [t] else []) ys)) \<union>\<^sub>p evaluate (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) ys))\<close> choice_assoc_1 local.l1 by force
-        qed
-      qed
-    qed
-  qed
+    using \<open>concat (map (\<lambda>t. if t = x then [t] else []) xs) @ concat (map (\<lambda>t. if t \<noteq> x then [t] else []) xs) \<in> set (permutations xs)\<close> \<open>evaluate (concat (map (\<lambda>t. if t = x then [t] else []) xs)) C \<union>\<^sub>p evaluate (concat (map (\<lambda>t. if t \<noteq> x then [t] else []) xs)) C = evaluate (concat (map (\<lambda>t. if t = x then [t] else []) xs) @ concat (map (\<lambda>t. if t \<noteq> x then [t] else []) xs)) C\<close> perm_eval by fastforce
 qed
 
-theorem size_prop: "size [t. t\<leftarrow>a, t=x] + size [t. t\<leftarrow>a, t\<noteq>x] = size a"
+
+theorem size_prop1: "size [t. t\<leftarrow>a, t=x] + size [t. t\<leftarrow>a, t\<noteq>x] = size a"
 proof (induction a)
   case Nil
   then show ?case by auto
@@ -2545,7 +2744,7 @@ qed
 theorem evaluate_prop: "size xs = 1 \<Longrightarrow> \<forall>t \<in> set xs. t=x \<Longrightarrow> evaluate xs = evaluate [x]"
   by (metis impossible_Cons length_0_conv less_one linorder_le_less_linear list.set_intros(1) neq_Nil_conv zero_neq_one)
 
-theorem evaluate_prop2: "size xs > 1 \<Longrightarrow> \<forall>t \<in> set xs. t=x \<Longrightarrow> evaluate xs = evaluate [x] \<union>\<^sub>p evaluate [x]"
+theorem evaluate_prop2: "size xs > 1 \<Longrightarrow> \<forall>t \<in> set xs. t=x \<Longrightarrow> evaluate xs C = evaluate [x] C \<union>\<^sub>p evaluate [x] C"
 proof (induction xs)
   case Nil
   then show ?case by simp
@@ -2559,24 +2758,24 @@ next
     then show ?thesis using Cons by auto
   next
     case f1: False
-    have "evaluate (a # xs) = evaluate [x] \<union>\<^sub>p evaluate xs"
+    have "evaluate (a # xs) C = evaluate [x] C \<union>\<^sub>p evaluate xs C"
       by (simp add: f1 \<open>a = x\<close> concat_prop3)
     then show ?thesis
     proof (cases "size xs=1")
       case True
       then show ?thesis
-        by (metis Cons.prems(1) Cons.prems(2) One_nat_def Suc_length_conv \<open>evaluate (a # xs) = evaluate [x] \<union>\<^sub>p evaluate xs\<close> diff_Suc_1' length_0_conv nth_Cons_0 nth_Cons_pos nth_mem zero_less_one)
+        using Cons.prems(2) \<open>evaluate (a # xs) C = evaluate [x] C \<union>\<^sub>p evaluate xs C\<close> evaluate_prop by fastforce
     next
       case False
-      have "evaluate xs = evaluate [x] \<union>\<^sub>p evaluate [x]"
+      have "evaluate xs C = evaluate [x] C \<union>\<^sub>p evaluate [x] C"
         by (meson Cons.IH Cons.prems(2) False f1 length_0_conv less_one linorder_neqE_nat list.set_intros(2))
       then show ?thesis
-        by (simp add: \<open>evaluate (a # xs) = evaluate [x] \<union>\<^sub>p evaluate xs\<close> choice_idem_5)
+        by (simp add: \<open>evaluate (a # xs) C = evaluate [x] C \<union>\<^sub>p evaluate xs C\<close> choice_idem_5)
     qed
   qed
 qed
 
-theorem equal_eval: "equal_cnf a b \<Longrightarrow> evaluate a = evaluate b"
+theorem equal_eval: "equal_cnf a b \<Longrightarrow> evaluate a C = evaluate b C"
 proof (induction "size a" arbitrary: b a rule: less_induct)
       case less
   assume a1: "equal_cnf a b"
@@ -2613,19 +2812,21 @@ next
       have "\<forall>t \<in> set ax. t = x" using o2 by auto
       obtain anx where o3: "anx = [t. t\<leftarrow>a, t\<noteq>x]" by simp
       have "size a = size ax + size anx" using o2 o3
-        by (simp add: size_prop)
+        by (simp add: size_prop1)
       obtain bx where o4: "bx = [t. t\<leftarrow>b, t=x]" by simp
       have "\<forall>t \<in> set bx. t = x" using o4 by auto
       obtain bnx where o5: "bnx = [t. t\<leftarrow>b, t\<noteq>x]" by simp
       have "size b = size bx + size bnx" using o4 o5
-        by (simp add: size_prop)
+        by (simp add: size_prop1)
       have l2: "ax\<noteq>[]" by (simp add: \<open>ax = concat (map (\<lambda>t. if t = x then [t] else []) a)\<close> o1)
       have l3: "bx\<noteq>[]" using a1 \<open>bx = [t. t\<leftarrow>b, t=x]\<close> apply (auto simp: equal_cnf_def)
         using ge1 apply presburger
         by (metis (no_types, lifting) Un_iff image_insert insert_iff insert_inter_insert list.simps(15) not_Cons_self2 o1)
       have l4: "set anx = set bnx" using less(2) \<open>anx = [t. t\<leftarrow>a, t\<noteq>x]\<close> \<open>bnx = [t. t\<leftarrow>b, t\<noteq>x]\<close> by (auto simp: equal_cnf_def)
-      have l5: "evaluate a = evaluate ax \<union>\<^sub>p evaluate anx" using o2 o3 \<open>size a \<noteq> 1\<close> evaluate_split by blast
-      have l6: "evaluate b = evaluate bx \<union>\<^sub>p evaluate bnx" using o4 o5 \<open>size b \<noteq> 1\<close> evaluate_split by blast
+      
+      have l5: "evaluate a C = evaluate ax C \<union>\<^sub>p evaluate anx C" apply (simp add: o2 o3) using l1 evaluate_split2[of a C]
+        using ge1 by blast
+      have l6: "evaluate b C = evaluate bx C \<union>\<^sub>p evaluate bnx C" apply (simp add: o4 o5) using l1 evaluate_split2[of b C] o4 o5 \<open>size b \<noteq> 1\<close> evaluate_split by blast
       then show ?thesis
       proof (cases "anx=[]")
         case True
@@ -2633,7 +2834,7 @@ next
         have l2: "\<forall>t \<in> set ax. t = x" using True o2 less l1 by auto
         have l3: "size ax > 1" using l1 o2 o3 True apply auto
           by (metis One_nat_def Suc_lessI \<open>length a = length ax + length anx\<close> add.right_neutral ge0 ge1 length_greater_0_conv list.size(3))
-        have "evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]" using l3 l2 evaluate_prop2 by auto
+        have "evaluate ax C = evaluate [x] C \<union>\<^sub>p evaluate [x] C" using l3 l2 evaluate_prop2 by auto
         have "bnx = []"
           using True local.l4 by auto
         have l1: "\<forall>t \<in> set b. t = x" using True o3 less
@@ -2641,15 +2842,15 @@ next
         have l2: "\<forall>t \<in> set bx. t = x" using True o4 less l1 by auto
         have l3: "size bx > 1" using l1 o2 o3 True
           by (metis One_nat_def Suc_lessI \<open>bnx = []\<close> \<open>length b = length bx + length bnx\<close> \<open>length b \<noteq> 1\<close> a1 add.right_neutral equal_empty ge0 length_greater_0_conv list.size(3)) 
-        have "evaluate bx = evaluate [x] \<union>\<^sub>p evaluate [x]"
+        have "evaluate bx C = evaluate [x] C \<union>\<^sub>p evaluate [x] C"
           using evaluate_prop2 local.l2 local.l3 by auto
         then show ?thesis
-          by (simp add: True \<open>bnx = []\<close> \<open>evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> local.l5 local.l6)
+          by (simp add: True \<open>bnx = []\<close> \<open>evaluate ax C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> local.l5 local.l6)
       next
         case f1: False
         have "bnx \<noteq> []"
           using f1 local.l4 by auto
-        have "evaluate ax = evaluate [x] \<or> evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]"
+        have "evaluate ax C  = evaluate [x] C \<or> evaluate ax C = evaluate [x] C \<union>\<^sub>p evaluate [x] C"
         proof (cases "size ax=1")
           case True
           have "evaluate ax = evaluate [x]" using o2
@@ -2660,12 +2861,12 @@ next
           case False
           have "size ax>1"
             using False local.l2 nat_neq_iff by auto
-          then have "evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]" using o2 evaluate_prop2
+          then have "evaluate ax C = evaluate [x] C \<union>\<^sub>p evaluate [x] C" using o2 evaluate_prop2
             using \<open>\<forall>t\<in>set ax. t = x\<close> by blast
           then show ?thesis
             by simp
         qed
-        have "evaluate bx = evaluate [x] \<or> evaluate bx = evaluate [x] \<union>\<^sub>p evaluate [x]"
+        have "evaluate bx C = evaluate [x] C \<or> evaluate bx C = evaluate [x] C \<union>\<^sub>p evaluate [x] C"
         proof (cases "size bx=1")
           case True
           have "evaluate bx = evaluate [x]" using o4
@@ -2676,7 +2877,7 @@ next
           case False
           have "size bx>1"
             by (meson False length_0_conv less_one linorder_neqE_nat local.l3)
-          then have "evaluate bx = evaluate [x] \<union>\<^sub>p evaluate [x]" using o2 evaluate_prop2
+          then have "evaluate bx C = evaluate [x] C \<union>\<^sub>p evaluate [x] C" using o2 evaluate_prop2
             using \<open>\<forall>t\<in>set bx. t = x\<close> by blast
           then show ?thesis
             by simp
@@ -2689,7 +2890,7 @@ next
           have "\<forall>t \<in> set bnx. t = y"
             using \<open>anx = [y]\<close> local.l4 by auto
 
-          have "evaluate bnx = evaluate [y] \<or> evaluate bnx = evaluate [y] \<union>\<^sub>p evaluate [y]"
+          have "evaluate bnx C = evaluate [y] C \<or> evaluate bnx C = evaluate [y] C \<union>\<^sub>p evaluate [y] C"
           proof (cases "size bnx=1")
             case True
             have "evaluate bnx = evaluate [y]" using o4
@@ -2700,20 +2901,20 @@ next
             case False
             have "size bnx>1"
               by (meson False \<open>bnx \<noteq> []\<close> length_0_conv less_one linorder_neqE_nat)
-            then have "evaluate bnx = evaluate [y] \<union>\<^sub>p evaluate [y]" using o2 evaluate_prop2
+            then have "evaluate bnx C = evaluate [y] C \<union>\<^sub>p evaluate [y] C" using o2 evaluate_prop2
               using \<open>\<forall>t\<in>set bnx. t = y\<close> by blast
             then show ?thesis
               by simp
           qed
-          have "evaluate ax \<union>\<^sub>p evaluate anx = evaluate bx \<union>\<^sub>p evaluate bnx"
-            by (metis \<open>anx = [y]\<close> \<open>evaluate ax = evaluate [x] \<or> evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> \<open>evaluate bnx = evaluate [y] \<or> evaluate bnx = evaluate [y] \<union>\<^sub>p evaluate [y]\<close> \<open>evaluate bx = evaluate [x] \<or> evaluate bx = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> choice_idem_5 choice_idem_6)
+          have "evaluate ax C \<union>\<^sub>p evaluate anx C = evaluate bx C \<union>\<^sub>p evaluate bnx C"
+            by (metis \<open>anx = [y]\<close> \<open>evaluate ax C = evaluate [x] C \<or> evaluate ax C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> \<open>evaluate bnx C = evaluate [y] C \<or> evaluate bnx C = evaluate [y] C \<union>\<^sub>p evaluate [y] C\<close> \<open>evaluate bx C = evaluate [x] C \<or> evaluate bx C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> choice_idem_5 choice_idem_6)
           then show ?thesis
             by (simp add: local.l5 local.l6)
         next
           case False
           have "size anx > 1"
             using False f1 nat_neq_iff by auto
-          have "evaluate ax \<union>\<^sub>p evaluate anx = evaluate bx \<union>\<^sub>p evaluate bnx"
+          have "evaluate ax C \<union>\<^sub>p evaluate anx C = evaluate bx C \<union>\<^sub>p evaluate bnx C"
           proof (cases "size bnx = 1")
             case True
             obtain y where "bnx=[y]" using True apply auto
@@ -2721,7 +2922,7 @@ next
             have "\<forall>t \<in> set anx. t = y"
               using \<open>bnx = [y]\<close> local.l4 by auto
   
-            have "evaluate anx = evaluate [y] \<or> evaluate anx = evaluate [y] \<union>\<^sub>p evaluate [y]"
+            have "evaluate anx = evaluate [y] \<or> evaluate anx C = evaluate [y] C \<union>\<^sub>p evaluate [y] C"
             proof (cases "size anx=1")
               case True
               have "evaluate anx = evaluate [y]" using o4
@@ -2732,23 +2933,23 @@ next
               case False
               have "size anx>1"
                 by (meson False \<open>anx \<noteq> []\<close> length_0_conv less_one linorder_neqE_nat)
-              then have "evaluate anx = evaluate [y] \<union>\<^sub>p evaluate [y]" using o2 evaluate_prop2
+              then have "evaluate anx C = evaluate [y] C \<union>\<^sub>p evaluate [y] C" using o2 evaluate_prop2
                 using \<open>\<forall>t\<in>set anx. t = y\<close> by blast
               then show ?thesis
                 by simp
             qed
             then show ?thesis
-              by (metis \<open>bnx = [y]\<close> \<open>evaluate ax = evaluate [x] \<or> evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> \<open>evaluate bx = evaluate [x] \<or> evaluate bx = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> choice_idem_5 choice_idem_6)
+              by (metis \<open>bnx = [y]\<close> \<open>evaluate ax C = evaluate [x] C \<or> evaluate ax C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> \<open>evaluate bx C = evaluate [x] C \<or> evaluate bx C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> choice_idem_5 choice_idem_6)
           next
             case False
             have "size bnx > 1"
               using False \<open>bnx \<noteq> []\<close> nat_neq_iff by auto
             have "equal_cnf anx bnx"
               using equal_cnf_def False \<open>1 < length anx\<close> local.l4 by fastforce
-            have "evaluate anx = evaluate bnx"
+            have "evaluate anx C = evaluate bnx C"
               by (simp add: \<open>equal_cnf anx bnx\<close> \<open>length a = length ax + length anx\<close> less.hyps local.l2)
             then show ?thesis
-              by (metis \<open>evaluate ax = evaluate [x] \<or> evaluate ax = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> \<open>evaluate bx = evaluate [x] \<or> evaluate bx = evaluate [x] \<union>\<^sub>p evaluate [x]\<close> choice_idem_6)
+              by (metis (full_types) \<open>evaluate ax C = evaluate [x] C \<or> evaluate ax C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> \<open>evaluate bx C = evaluate [x] C \<or> evaluate bx C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> choice_idem_6)
           qed
           then show ?thesis
             by (simp add: local.l5 local.l6) 
@@ -2759,17 +2960,25 @@ next
 qed
 qed
 
+theorem eval_simp: "\<forall>C. evaluate a C = evaluate b C \<Longrightarrow> evaluate a = evaluate b"
+proof -
+  assume "\<forall>C. evaluate a C = evaluate b C"
+  then show ?thesis by auto
+qed
+
+theorem equal_eval2: "equal_cnf a b \<Longrightarrow> evaluate a = evaluate b"
+  using equal_eval by blast
+
+
 theorem eq_reflexive: "equal xs xs"
   by (auto simp: equal_def)
 
-theorem comp_prop: "tr \<in> set (xs ;\<^sub>c ys) \<Longrightarrow> \<exists>x y. x \<in> set xs \<and> y \<in> set ys \<and> x@y = tr \<and> x \<noteq> [] \<and> y \<noteq> []"
+theorem comp_prop: "tr \<in> set (xs ;\<^sub>c ys) \<Longrightarrow> \<exists>x y. x \<in> set xs \<and> y \<in> set ys \<and> x@y = tr"
   by (auto simp: composition_cnf_def non_empty_def)
 
-theorem comp_prop2: "x \<noteq> [] \<Longrightarrow> y \<noteq> [] \<Longrightarrow> x \<in> set xs \<Longrightarrow> y \<in> set ys \<Longrightarrow> x@y \<in> set (xs ;\<^sub>c ys)"
+theorem comp_prop2: "x \<in> set xs \<Longrightarrow> y \<in> set ys \<Longrightarrow> x@y \<in> set (xs ;\<^sub>c ys)"
   by (auto simp: composition_cnf_def non_empty_def)
 
-theorem choice_prop: "tr \<in> set (xs \<union>\<^sub>c ys) \<Longrightarrow> (tr \<in> set xs \<or> tr \<in> set ys) \<and> tr \<noteq> []"
-  oops
 theorem choice_prop: "tr \<in> set (xs \<union>\<^sub>c ys) \<Longrightarrow> (tr \<in> set xs \<or> tr \<in> set ys)"
   by (auto simp: choice_cnf_def non_empty_def)
 
@@ -2794,224 +3003,339 @@ theorem "size (a \<union>\<^sub>c b) = size (a) + size (b)"
 theorem comp_size: "x \<noteq> [] \<Longrightarrow> length (((xx # x) # xs) ;\<^sub>c b) = length ((x # xs) ;\<^sub>c b)"
   apply (induction b) by (auto simp: composition_cnf_def non_empty_def)
 
-theorem comp_size2: "size ([[a]] ;\<^sub>c b) = size (non_empty b)"
+theorem comp_size2: "size ([[a]] ;\<^sub>c b) = size b"
   by (auto simp: composition_cnf_def non_empty_def)
 
-theorem comp_size3: "size (a ;\<^sub>c b) = size (non_empty a) * size (non_empty b)"
-proof (induction a)
+theorem comp_size3: "size (a ;\<^sub>c b) = size a * size b"
+  apply (auto simp: composition_cnf_def)
+  apply (induction a) by auto
+
+theorem feas_prop: "all_feasible xs \<Longrightarrow> is_feasible (Concat xs C)"
+  apply (induction xs)
+  apply auto
+  apply (simp add: skip_is_feasible)
+  by (metis Concat.simps(2) Concat_prop_10 compose_feasible)
+
+theorem feas_prop3: "is_feasible (evaluate [] C)"
+  apply (auto simp: evaluate_def)
+  using fail_is_feasible by auto
+
+theorem feas_prop4: "is_feasible (evaluate [[]] C)"
+  apply (auto simp: evaluate_def)
+  by (simp add: skip_is_feasible)
+
+theorem feas_prop5: "is_feasible x \<Longrightarrow> is_feasible (evaluate [[x]] C)"
+  by (auto simp: is_feasible_def evaluate_def)
+
+theorem eval_prop4: "xs \<noteq> [] \<Longrightarrow> evaluate [x # xs] C = evaluate [[x]] C ; evaluate [xs] C"
+  apply (auto simp: evaluate_def)
+  using Concat_prop_10 by auto
+
+theorem feas_prop6: "all_feasible xs \<Longrightarrow> is_feasible (evaluate [xs] C)"
+proof (induction xs)
   case Nil
-  then show ?case by (auto simp: composition_cnf_def non_empty_def)
+  then show ?case using feas_prop4 by auto
 next
-  case cons1: (Cons x xs)
-  then show "length ((x # xs) ;\<^sub>c b) = length (non_empty (x # xs)) * length (non_empty b)"
-  proof (induction x)
-    case Nil
-    then show ?case by (auto simp: composition_cnf_def non_empty_def)
+  case (Cons x xs)
+  have "is_feasible x"
+    using Cons.prems by auto
+  then show ?case
+  proof(cases "xs=[]")
+    case True
+    then show ?thesis apply auto
+      by (simp add: \<open>is_feasible x\<close> feas_prop5)
   next
-    case (Cons xx x)
-    then show ?case
-    proof (cases "x=[]")
-      case True
-      have "length (non_empty ([xx] # xs)) = length (non_empty xs) + 1" by (auto simp: non_empty_def)
-      have "non_empty ([xx] # xs) = non_empty [[xx]] @ non_empty xs" by (auto simp: non_empty_def)
-      have "([xx] # xs) ;\<^sub>c b = [xs @ ys. xs \<leftarrow> non_empty ([xx] # xs), ys \<leftarrow> non_empty b]" by (auto simp: composition_cnf_def)
-      have "... = [xs @ ys. xs \<leftarrow> non_empty [[xx]], ys \<leftarrow> non_empty b] @ [xs @ ys. xs \<leftarrow> non_empty xs, ys \<leftarrow> non_empty b]"
-        using \<open>non_empty ([xx] # xs) = non_empty [[xx]] @ non_empty xs\<close> by fastforce
-      have "... = ([[xx]] ;\<^sub>c b) @ (xs ;\<^sub>c b)"
-        by (simp add: composition_cnf_def)
-      have "size ([[xx]] ;\<^sub>c b) = size (non_empty b)"
-        by (simp add: comp_size2)
-      have "size (non_empty (xs ;\<^sub>c b)) = length (non_empty xs) * length (non_empty b)"
-        by (metis Cons.prems non_empty15)
-      have "length (([xx] # xs) ;\<^sub>c b) = size (non_empty b) + length (non_empty xs) * length (non_empty b)"
-        by (simp add: Cons.prems \<open>([xx] # xs) ;\<^sub>c b = concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty ([xx] # xs)))\<close> \<open>concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty ([xx] # xs))) = concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty [[xx]])) @ concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty xs))\<close> \<open>concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty [[xx]])) @ concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty xs)) = [[xx]] ;\<^sub>c b @ xs ;\<^sub>c b\<close> \<open>length ([[xx]] ;\<^sub>c b) = length (non_empty b)\<close>)
-      have "... = (1 + length (non_empty xs)) * length (non_empty b)"
-        by simp
-      have "... = length (non_empty ([xx] # xs)) * length (non_empty b)"
-        using \<open>length (non_empty ([xx] # xs)) = length (non_empty xs) + 1\<close> by fastforce
-      have "length (([xx] # xs) ;\<^sub>c b) = length (non_empty ([xx] # xs)) * length (non_empty b)"
-        using \<open>(1 + length (non_empty xs)) * length (non_empty b) = length (non_empty ([xx] # xs)) * length (non_empty b)\<close> \<open>length (([xx] # xs) ;\<^sub>c b) = length (non_empty b) + length (non_empty xs) * length (non_empty b)\<close> \<open>length (non_empty b) + length (non_empty xs) * length (non_empty b) = (1 + length (non_empty xs)) * length (non_empty b)\<close> by argo
-      then show ?thesis
-        by (simp add: True)
-    next
-      case False
-      have "length (non_empty ((xx # x) # xs)) = length (non_empty (x # xs))"
-        apply (induction xs) using False by (auto simp: non_empty_def)
-      
-      have "length (((xx # x) # xs) ;\<^sub>c b) = length ((x # xs) ;\<^sub>c b)"
-        by (simp add: False comp_size)
-      have "... = length (non_empty (x # xs)) * length (non_empty b)"
-        by (simp add: Cons.IH Cons.prems)
-      have "... = length (non_empty ((xx # x) # xs)) * length (non_empty b)" using comp_size False apply auto
-        by (simp add: \<open>length (non_empty ((xx # x) # xs)) = length (non_empty (x # xs))\<close>)
-      then show "length (((xx # x) # xs) ;\<^sub>c b) = length (non_empty ((xx # x) # xs)) * length (non_empty b)"
-        by (simp add: Cons.IH Cons.prems \<open>length (((xx # x) # xs) ;\<^sub>c b) = length ((x # xs) ;\<^sub>c b)\<close>)
-    qed
+    case False
+    then have "evaluate [x # xs] C = evaluate [[x]] C ; evaluate [xs] C"
+      by (simp add: eval_prop4)
+    then show ?thesis
+      using Cons.IH Cons.prems compose_feasible by auto
   qed
 qed
 
-theorem comp_distrib_l: "equal_cnf (a ;\<^sub>c (b \<union>\<^sub>c c))  ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))"
-proof-
-  have "set (a ;\<^sub>c (b \<union>\<^sub>c c)) \<subseteq> set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))"
-    by (smt (verit) append_is_Nil_conv choice_prop choice_prop2 comp_prop comp_prop2 subsetI)
-  have "set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c)) \<subseteq> set (a ;\<^sub>c (b \<union>\<^sub>c c))" apply auto using choice_prop choice_prop2 comp_prop comp_prop2
-    by (smt (verit, del_insts))
-  have "size (a ;\<^sub>c (b \<union>\<^sub>c c)) = size ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))" apply (auto simp: choice_cnf_def) using choice_prop comp_size3 distrib_right length_append mult.commute non_empty14 non_empty15
-    by (smt (verit, best) non_empty4)
-  show ?thesis
-    by (simp add: equal_cnf_def \<open>length (a ;\<^sub>c (b \<union>\<^sub>c c)) = length ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> \<open>set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c)) \<subseteq> set (a ;\<^sub>c (b \<union>\<^sub>c c))\<close> \<open>set (a ;\<^sub>c (b \<union>\<^sub>c c)) \<subseteq> set ((a ;\<^sub>c b) \<union>\<^sub>c (a ;\<^sub>c c))\<close> subset_antisym)
+theorem feas_prop7: "\<forall>bb \<in> set b. all_feasible bb \<Longrightarrow> is_feasible (evaluate b C)"
+proof (induction b)
+  case Nil
+  then show ?case apply (auto simp: evaluate_def is_feasible_def Fail_def) [1] done
+next
+  case (Cons bb b)
+  have "all_feasible bb"
+    by (simp add: Cons.prems)
+  then show "is_feasible (evaluate (bb # b) C)"
+  proof (cases "b=[]")
+    case True
+    then show ?thesis apply (auto simp: evaluate_def)
+      by (simp add: \<open>all_feasible bb\<close> feas_prop)
+  next
+    case False
+    have "evaluate (bb # b) C = evaluate [bb] C \<union>\<^sub>p evaluate b C"
+      by (simp add: False concat_prop3)
+    have "is_feasible (evaluate [bb] C)"
+      by (simp add: \<open>all_feasible bb\<close> feas_prop6)
+    then show ?thesis
+      by (simp add: Cons.IH Cons.prems \<open>evaluate (bb # b) C = evaluate [bb] C \<union>\<^sub>p evaluate b C\<close> choice_feasible)
+  qed
 qed
 
-theorem compose_equiv: "evaluate [x] ; evaluate b \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b)"
+theorem cnf_state_prop: "complete_cnf_state (x#b) \<subseteq> C \<Longrightarrow> complete_cnf_state b \<subseteq> C"
+  by (auto simp: complete_cnf_state_def)
+
+theorem cnf_state_prop2: "complete_state xs \<subseteq> C \<Longrightarrow> S (evaluate [xs] C) \<subseteq> C"
+proof (induction xs)
+  case Nil
+  then show ?case by (auto simp: evaluate_def Skip_def S_def complete_state_def Field_def) 
+next
+  case (Cons x xs)
+  then show ?case
+  proof (cases "xs=[]")
+    case True
+    then show ?thesis using Cons(2) by (auto simp: evaluate_def Skip_def S_def complete_state_def Field_def)
+  next
+    case False
+    have "evaluate [x # xs] C = evaluate [[x]] C ; evaluate [xs] C"
+      using False eval_prop4 by auto
+    then show ?thesis
+      by (metis Cons.prems append_is_Nil_conv eval_prop in_set_conv_decomp_first set_ConsD state_prop7)
+  qed
+qed
+
+theorem cnf_state_prop1: "complete_cnf_state xs \<subseteq> C \<Longrightarrow> S (evaluate xs C) \<subseteq> C"
+proof (induction xs)
+  case Nil
+  then show ?case by (auto simp: evaluate_def Fail_def S_def)
+next
+  case (Cons x xs)
+  then have "complete_cnf_state (xs) \<subseteq> C" apply (auto simp:)
+    using cnf_state_prop by blast
+  have "complete_cnf_state [x] \<subseteq> C" using Cons(2) by (auto simp: complete_cnf_state_def)
+  then have "complete_state x \<subseteq> C" by (auto simp: complete_cnf_state_def)
+  then show "S (evaluate (x # xs) C) \<subseteq> C"
+  proof (cases "xs=[]")
+    case True
+    then show ?thesis apply simp
+      by (simp add: \<open>complete_state x \<subseteq> C\<close> cnf_state_prop2)
+  next
+    case False
+    then show ?thesis
+      by (metis Cons.IH Un_least \<open>complete_cnf_state xs \<subseteq> C\<close> \<open>complete_state x \<subseteq> C\<close> cnf_state_prop2 state_prop1)
+  qed
+qed
+
+theorem skip_left_neutral: "complete_cnf_state b \<subseteq> C \<Longrightarrow> Skip C ; evaluate b C \<equiv>\<^sub>p evaluate b C"
 proof -
-  obtain x' where o1: "non_empty [x] = x'" by simp
-  obtain b' where o2: "non_empty b = b'" by simp
-  have "evaluate x' \<equiv>\<^sub>p evaluate [x]" using concat_prop7 o1
-    using equiv_is_symetric by blast
-  have "evaluate b' \<equiv>\<^sub>p evaluate b" using o2 concat_prop7
-    using equiv_is_symetric by auto
+  assume "complete_cnf_state b \<subseteq> C"
+  then have "S (evaluate b C) \<subseteq> C"
+    by (simp add: cnf_state_prop1)
+  show "Skip C ; evaluate b C \<equiv>\<^sub>p evaluate b C"
+    by (simp add: \<open>S (evaluate b C) \<subseteq> C\<close> skip_prop_6)
+qed
+
+theorem skip_right_neutral: "\<forall>bb \<in> set b. all_feasible bb \<Longrightarrow> complete_cnf_state b \<subseteq> C \<Longrightarrow> evaluate b C ; Skip C \<equiv>\<^sub>p evaluate b C"
+proof -
+  assume "\<forall>bb \<in> set b. all_feasible bb"
+  assume "complete_cnf_state b \<subseteq> C"
+  then have "S (evaluate b C) \<subseteq> C"
+    by (simp add: cnf_state_prop1)
+  have "is_feasible (evaluate b C)"
+    by (simp add: \<open>\<forall>bb\<in>set b. all_feasible bb\<close> feas_prop7)
+  show "evaluate b C ; Skip C \<equiv>\<^sub>p evaluate b C "
+    by (simp add: Big_choice.skip_prop \<open>S (evaluate b C) \<subseteq> C\<close> \<open>is_feasible (evaluate b C)\<close>)
+qed
+
+theorem feas_prop8: "all_feasible x \<Longrightarrow> all_feasible b1 \<Longrightarrow> all_feasible (x @ b1)"
+  apply (induction x) by auto
+
+theorem state_prop: "y \<in>set ys \<Longrightarrow> complete_state (ys) = complete_state (y#ys)"
+proof (induction ys)
+  case Nil
+  then show ?case apply auto done
+next
+  case (Cons y' ys)
+  then show ?case
+  proof (cases "y'=y")
+    case True
+    then show ?thesis apply auto
+      apply (metis UnCI complete_state_union_1)
+      by (metis UnE UnI2 complete_state_union_1)
+  next
+    case False
+    have "y \<in> set ys"
+      using Cons.prems False by auto
+    have "complete_state ys = complete_state (y # ys)"
+      by (simp add: Cons.IH \<open>y \<in> set ys\<close>)
+    then show ?thesis
+      by (metis append_Cons complete_state_union_1 complete_state_union_3)
+  qed
+qed 
+
+theorem state_prop8: "set xs \<subseteq> set ys \<Longrightarrow> complete_state xs \<subseteq> complete_state ys"
+proof (induction xs)
+  case Nil
+  then show ?case  apply (auto simp: complete_state_def) [1] done
+next
+  case Cons1: (Cons x xs)
+  have "complete_state xs \<subseteq> complete_state ys"
+    using Cons1.IH Cons1.prems by auto
+  have "complete_state [x] \<subseteq> complete_state ys"
+    by (metis Cons1.prems complete_state_union_1 list.set_intros(1) state_prop subsetD sup.orderI)
+  then show "complete_state (x # xs) \<subseteq> complete_state ys"
+    by (metis Un_least \<open>complete_state xs \<subseteq> complete_state ys\<close> complete_state_union_1) 
+qed
+
+theorem state_prop9: "complete_cnf_state (xs # [ys]) = complete_state (xs @ ys)"
+  apply (simp add: complete_cnf_state_def)
+  by (auto simp add: complete_state_union_3)
+
+theorem compose_equiv: "complete_cnf_state (x#b) \<subseteq> C \<Longrightarrow> all_feasible x \<Longrightarrow> \<forall>bb \<in> set b. all_feasible bb \<Longrightarrow> evaluate [x] C ; evaluate b C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b) C"
+proof -
+  assume a1: "all_feasible x"
+  assume a2: "\<forall>bb \<in> set b. all_feasible bb"
+  assume a3: "complete_cnf_state (x#b) \<subseteq> C"
+  have "complete_cnf_state b \<subseteq> C"
+    using \<open>complete_cnf_state (x # b) \<subseteq> C\<close> cnf_state_prop by blast
   show ?thesis
 proof (cases "x=[]")
   case True
-  then have "evaluate [x] = Fail {}" apply (auto simp: Fail_def evaluate_def Skip_def) done
-  from True have "[x] ;\<^sub>c b = []" apply (auto simp: composition_cnf_def)
-    by (simp add: non_empty2) 
-  have "evaluate ([x] ;\<^sub>c b) = Fail {}"
-    by (simp add: \<open>[x] ;\<^sub>c b = []\<close> concat_prop2)
-  then show ?thesis
-    by (simp add: Big_choice.fail_compose \<open>evaluate [x] = Fail {}\<close>)
+  then have "evaluate [x] C = Skip C" apply (auto simp: evaluate_def Skip_def) done
+  from True have "[x] ;\<^sub>c b = b" apply (auto simp: composition_cnf_def)
+    by (simp add: map_idI)
+  have "evaluate ([x] ;\<^sub>c b) = evaluate b"
+    by (simp add: \<open>[x] ;\<^sub>c b = b\<close>)
+  have "is_feasible (evaluate b C)"
+    by (simp add: \<open>\<forall>bb\<in>set b. all_feasible bb\<close> feas_prop7)
+  have "evaluate [[]] C = Skip C" apply (auto simp: evaluate_def Skip_def) done
+  moreover have "evaluate ([[]] ;\<^sub>c b) = evaluate b"
+    using True \<open>[x] ;\<^sub>c b = b\<close> by auto
+  ultimately show ?thesis using True apply auto
+    using \<open>complete_cnf_state b \<subseteq> C\<close> skip_left_neutral by auto
 next
   case x_non: False
   have "evaluate [x] = Concat x" by (auto simp: evaluate_def)
-  then show ?thesis using x_non
-proof (induction "size (non_empty b)" arbitrary: x b rule: less_induct)
+  then show ?thesis using x_non a1 a2 a3
+proof (induction "size b" arbitrary: x b rule: less_induct)
   case less
   then show ?case
-  proof(cases "non_empty b=[]")
+  proof(cases "b=[]")
     case True
-    then show ?thesis
-      by (metis comp_cnf1 concat_prop11 eval_prop list.size(3) non_empty2 zero_neq_one)
+    then show ?thesis apply (auto simp: composition_cnf_def evaluate_def)
+      by (simp add: fail_compose_r)
   next
     case ge0: False
-    obtain b1 b' where o2: "non_empty b = b1#b'" using ge0
+    obtain b1 b' where o2: "b = b1#b'" using ge0
       using list.exhaust by auto
-    then have "evaluate [x] ; evaluate (b1#b') \<equiv>\<^sub>p evaluate [x] ; (evaluate [b1] \<union>\<^sub>p evaluate b')" using composition_equiv equals_equiv_relation_3
-      by (metis concat_prop4)
-    have "... \<equiv>\<^sub>p (evaluate [x] ; evaluate [b1] \<union>\<^sub>p evaluate [x] ; evaluate b')"
+    then have "evaluate [x] C ; evaluate (b1#b') C \<equiv>\<^sub>p evaluate [x] C ; (evaluate [b1] C \<union>\<^sub>p evaluate b' C)" using composition_equiv equals_equiv_relation_3
+      by (metis concat_prop4_1)
+    have "... \<equiv>\<^sub>p (evaluate [x] C ; evaluate [b1] C \<union>\<^sub>p evaluate [x] C ; evaluate b' C)"
       using compose_distrib1_3 by blast
-    have "... \<equiv>\<^sub>p Concat x ; Concat b1 \<union>\<^sub>p evaluate [x] ; evaluate b'" apply (auto simp: evaluate_def)
+    have "... \<equiv>\<^sub>p (Concat x C) ; (Concat b1 C) \<union>\<^sub>p (evaluate [x] C) ; (evaluate b' C)" apply (auto simp: evaluate_def)
       using choice_commute_3 by auto
     then show ?thesis using less
-    proof(cases "size (non_empty b)=1")
+    proof(cases "size b=1")
       case True
-      obtain y where o1: "non_empty b=[y]"
+      obtain y where o1: "b=[y]"
         by (metis One_nat_def True length_0_conv length_Suc_conv)
       then show ?thesis
       proof (cases "size y=0")
         case True
-        then have "evaluate [x] ; evaluate [y] \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y])" apply (auto simp: composition_cnf_def evaluate_def Fail_def Skip_def)
-          by (metis ge0 non_empty0 non_empty2 o1)
-        then have False using True ge0 length_0_conv non_empty0 non_empty2 o1
-          by metis
-        then show ?thesis by simp
+        have "all_feasible x"
+          by (simp add: less.prems(3))
+        have " complete_cnf_state [x] \<subseteq> C" using less(6) by (auto simp: complete_cnf_state_def)
+        then have "evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y]) C" using skip_right_neutral[of "[x]" C] apply (auto simp: composition_cnf_def evaluate_def)
+          using True less.prems(3) by force
+        then show ?thesis
+          using o1 by auto
       next
         case False
         have "[x] ;\<^sub>c [y] = [x@y]" using less(3) False apply auto
           by (simp add: concat_prop9)
-        then have "evaluate [x] ; evaluate [y] \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y])"
+        then have "evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y]) C"
           using less(3) False apply (auto simp: evaluate_def)
           using Concat_prop_5 equals_equiv_relation_3 apply auto
           by (simp add: Concat_prop_5 equals_equiv_relation_3 concat_prop9)
-        have "[x] ;\<^sub>c b = [x] ;\<^sub>c [y]" using comp_cnf4 o1
+        have "[x] ;\<^sub>c b = [x] ;\<^sub>c [y]" using o1
           by metis
         have "size b = 1 \<Longrightarrow> evaluate b = evaluate [y]"
           by (simp add: eval_prop3 o1)
-        moreover have "size b > 1 \<Longrightarrow> evaluate b = evaluate [y] \<union>\<^sub>p Skip {}"
-          by (simp add: eval_prop2 o1)
+        moreover have "size b > 1 \<Longrightarrow> evaluate b C = evaluate [y] C \<union>\<^sub>p Skip C"
+          using True by auto
         moreover have "size b \<ge> 1" using True
-          by (metis non_empty_reduces_size)
-        ultimately have "evaluate [x] ; evaluate b \<equiv>\<^sub>p evaluate [x] ; (evaluate [y] \<union>\<^sub>p Skip {})"
-          by (metis \<open>evaluate [x] ; evaluate (b1 # b') \<equiv>\<^sub>p evaluate [x] ; (evaluate [b1] \<union>\<^sub>p evaluate b')\<close> concat_prop2 equals_equiv_relation_3 list.inject nless_le o1 o2 special_empty1)
-        have "... \<equiv>\<^sub>p evaluate [x] ; evaluate [y]" using comp_prop1 by blast
-        then have "evaluate [x] ; evaluate b \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y])"
-          by (metis (mono_tags, lifting) \<open>1 < length b \<Longrightarrow> evaluate b = evaluate [y] \<union>\<^sub>p Skip {}\<close> \<open>1 \<le> length b\<close> \<open>evaluate [x] ; evaluate [y] \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y])\<close> \<open>length b = 1 \<Longrightarrow> evaluate b = evaluate [y]\<close> equiv_is_transitive nless_le)
-        then show "evaluate [x] ; evaluate b \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b)"
-          using \<open>[x] ;\<^sub>c b = [x] ;\<^sub>c [y]\<close> by force
+          by simp
+        then show "evaluate [x] C ; evaluate b C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b) C"
+          by (simp add: \<open>evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y]) C\<close> o1)
       qed
-      have "evaluate [x] ; evaluate [y] \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y])"
-        apply (auto simp: evaluate_def Fail_def)
-        by (metis Choice.simps(2) concat_prop11 evaluate_def list.simps(8) list.simps(9))
+      have "evaluate [x] C ; evaluate [y] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [y]) C"
+        using \<open>evaluate [x] C ; evaluate b C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b) C\<close> o1 by auto
     next
       case False
-      have "length (non_empty b) > 1"
+      have "length b > 1"
         using False o2 by force
-      obtain b1 b2 nb where "b1#b2#nb = non_empty b"
+      obtain b1 b2 nb where "b=b1#b2#nb"
         by (metis False One_nat_def Suc_length_conv length_0_conv neq_Nil_conv o2)
-      have "evaluate [x] ; evaluate b = evaluate [x] ; evaluate (b1#b2#nb)"
-        using False \<open>b1#b2#nb = non_empty b\<close> eval_prop by fastforce
+      have "evaluate [x] C ; evaluate b C = evaluate [x] C ; evaluate (b1#b2#nb) C"
+        using False \<open>b=b1#b2#nb\<close> eval_prop by fastforce
       have "[x] ;\<^sub>c b = [x] ;\<^sub>c (b1#b2#nb)"
-        using \<open>b1#b2#nb = non_empty b\<close> comp_cnf4 by auto
-      have "evaluate (b1#b2#nb) = evaluate [b1] \<union>\<^sub>p evaluate (b2#nb)" apply (auto simp: evaluate_def)
+        by (simp add: \<open>b=b1 # b2 # nb \<close>)
+      have "evaluate (b1#b2#nb) C = evaluate [b1] C \<union>\<^sub>p evaluate (b2#nb) C" apply (auto simp: evaluate_def)
         using Choice_prop_1_4 by force
-      have "evaluate [x] ; (evaluate [b1] \<union>\<^sub>p evaluate (b2#nb)) \<equiv>\<^sub>p (evaluate [x] ; evaluate [b1] \<union>\<^sub>p evaluate [x] ; evaluate (b2#nb))"
+      have "evaluate [x] C ; (evaluate [b1] C \<union>\<^sub>p evaluate (b2#nb) C) \<equiv>\<^sub>p (evaluate [x] C ; evaluate [b1] C \<union>\<^sub>p evaluate [x] C ; evaluate (b2#nb) C)"
         using compose_distrib1_3 by auto
-      have "evaluate [x] ; evaluate [b1] \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [b1])" using less
-        apply (cases "non_empty nb \<noteq> []")
-        apply (meson concat_prop11)
-        using concat_prop11 by blast
-      have "length (non_empty (b2#nb)) < length (non_empty b)"
-        by (metis \<open>b1 # b2 # nb = non_empty b\<close> impossible_Cons le_neq_implies_less non_empty0 non_empty_reduces_size nonempty_monotonic)
-      have "evaluate [x] ; evaluate (b2#nb) \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c (b2#nb))" using less
-        using \<open>length (non_empty (b2 # nb)) < length (non_empty b)\<close> by blast
-      have "evaluate ([x] ;\<^sub>c [b1]) \<union>\<^sub>p evaluate ([x] ;\<^sub>c (b2 # nb)) \<equiv>\<^sub>p evaluate (([x] ;\<^sub>c [b1]) \<union>\<^sub>c ([x] ;\<^sub>c (b2 # nb)))"
-        by (simp add: choice_cnf_thm)
-      have "(evaluate ([x] ;\<^sub>c [b1]) \<union>\<^sub>p evaluate ([x] ;\<^sub>c (b2#nb))) \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c (b1#b2#nb))"
-        by (metis \<open>b1 # b2 # nb = non_empty b\<close> \<open>evaluate ([x] ;\<^sub>c [b1]) \<union>\<^sub>p evaluate ([x] ;\<^sub>c (b2 # nb)) \<equiv>\<^sub>p evaluate (([x] ;\<^sub>c [b1]) \<union>\<^sub>c ([x] ;\<^sub>c (b2 # nb)))\<close> cnf_choice2 comp_distrib_l equal_eval non_empty0)
-      
-      then show "evaluate [x] ; evaluate b \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b)" using equiv_is_transitive equiv_is_symetric equiv_is_reflexive
-        by (smt (verit, best) \<open>[x] ;\<^sub>c b = [x] ;\<^sub>c (b1 # b2 # nb)\<close> \<open>evaluate (b1 # b2 # nb) = evaluate [b1] \<union>\<^sub>p evaluate (b2 # nb)\<close> \<open>evaluate [x] ; (evaluate [b1] \<union>\<^sub>p evaluate (b2 # nb)) \<equiv>\<^sub>p evaluate [x] ; evaluate [b1] \<union>\<^sub>p evaluate [x] ; evaluate (b2 # nb)\<close> \<open>evaluate [x] ; evaluate (b2 # nb) \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c (b2 # nb))\<close> \<open>evaluate [x] ; evaluate [b1] \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [b1])\<close> \<open>evaluate [x] ; evaluate b = evaluate [x] ; evaluate (b1 # b2 # nb)\<close> choice_equiv) 
+      have "all_feasible x"
+        by (simp add: less.prems(3))
+      moreover have "all_feasible b1"
+        by (metis \<open>b=b1 # b2 # nb\<close> less.prems(4) list.set_intros(1))
+      ultimately have "\<forall>x \<in> set ([x] ;\<^sub>c [b1]). all_feasible x" apply (auto simp: composition_cnf_def)
+        by (simp add: feas_prop8)
+      have "complete_cnf_state (x # [b1]) \<subseteq> complete_cnf_state (x # b)" using less(6) \<open>b=b1#b2#nb\<close> apply (simp add: complete_cnf_state_def)
+        by auto
+      have "complete_cnf_state (x # [b1]) \<subseteq> C"
+        using \<open>complete_cnf_state [x, b1] \<subseteq> complete_cnf_state (x # b)\<close> less.prems(5) by auto
+      then have "complete_state (x @ b1) \<subseteq> C"
+        by (simp add: state_prop9)
+      have "evaluate [x] C ; evaluate [b1] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [b1]) C" using concat_prop11[of x b1 C]
+        by (simp add: \<open>all_feasible b1\<close> \<open>complete_state (x @ b1) \<subseteq> C\<close> feas_prop8 less.prems(3))
+      have "length ((b2#nb)) < length (b)"
+        by (simp add: \<open>b = b1 # b2 # nb\<close>)
+      moreover have "evaluate [x] = Concat x"
+        by (simp add: less.prems(1))
+      moreover have "x \<noteq> []"
+        by (simp add: less.prems(2))
+      moreover have "all_feasible x"
+        by (simp add: less.prems(3))
+      moreover have "Ball (set (b2 # nb)) all_feasible"
+        by (simp add: \<open>b = b1 # b2 # nb\<close> less.prems(4))
+      moreover have "complete_cnf_state (x # b2 # nb) \<subseteq> C" using less(6) \<open>b=b1#b2#nb\<close> apply (simp add: complete_cnf_state_def)
+        by blast
+      ultimately have "evaluate [x] C ; evaluate (b2#nb) C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c (b2#nb)) C" using less(1)[of "b2 # nb" x] by auto
+      have "evaluate ([x] ;\<^sub>c [b1]) C \<union>\<^sub>p evaluate ([x] ;\<^sub>c (b2 # nb)) C \<equiv>\<^sub>p evaluate (([x] ;\<^sub>c [b1]) \<union>\<^sub>c ([x] ;\<^sub>c (b2 # nb))) C"
+        by (simp add: choice_cnf_def concat_prop5 equiv_is_symetric)
+      have "... \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c (b1#b2#nb)) C" apply (auto simp: composition_cnf_def)
+        by (metis cnf_choice2 equals_equiv_relation_3)
+      then show "evaluate [x] C ; evaluate b C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b) C"
+        by (smt (verit, ccfv_SIG) \<open>b = b1 # b2 # nb\<close> \<open>evaluate ([x] ;\<^sub>c [b1]) C \<union>\<^sub>p evaluate ([x] ;\<^sub>c (b2 # nb)) C \<equiv>\<^sub>p evaluate (([x] ;\<^sub>c [b1]) \<union>\<^sub>c ([x] ;\<^sub>c (b2 # nb))) C\<close> \<open>evaluate (b1 # b2 # nb) C = evaluate [b1] C \<union>\<^sub>p evaluate (b2 # nb) C\<close> \<open>evaluate [x] C ; (evaluate [b1] C \<union>\<^sub>p evaluate (b2 # nb) C) \<equiv>\<^sub>p evaluate [x] C ; evaluate [b1] C \<union>\<^sub>p evaluate [x] C ; evaluate (b2 # nb) C\<close> \<open>evaluate [x] C ; evaluate (b2 # nb) C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c (b2 # nb)) C\<close> \<open>evaluate [x] C ; evaluate [b1] C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c [b1]) C\<close> choice_equiv equiv_is_transitive)
     qed
   qed
 qed
 qed
 qed
 
-theorem comp_prop4: "evaluate (a ;\<^sub>c b) \<equiv>\<^sub>p evaluate a ; evaluate b"
-proof (induction "size a" arbitrary: a b rule: less_induct)
-  case less
-  then show ?case
-  proof (cases "size a = 0")
-  case 0: True
-  then show "evaluate (a ;\<^sub>c b) \<equiv>\<^sub>p evaluate a ; evaluate b" apply auto
-    by (metis concat_prop1 concat_prop2 equals_equiv_relation_2 equiv_is_symetric equiv_is_transitive fail_compose_l fail_equiv)
-next
-  case Suc: False
-  obtain x a' where o1: "x#a'=a"
-    by (metis Suc length_0_conv list.exhaust)
-  have l1: "evaluate [x] ; evaluate b \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c b)"
-    by (simp add: compose_equiv)
-  have l2: "evaluate a' ; evaluate b \<equiv>\<^sub>p evaluate (a' ;\<^sub>c b)"
-    using equiv_is_symetric less o1 by fastforce
-  have l3: "equal_cnf (([x] ;\<^sub>c b) \<union>\<^sub>c (a' ;\<^sub>c b)) ((x#a') ;\<^sub>c b)"
-    by (metis choic_cnf1 equal_cnf_def)
-  have "evaluate (x # a') ; evaluate b \<equiv>\<^sub>p (evaluate [x] \<union>\<^sub>p evaluate a') ; evaluate b"
-    using composition_equiv concat_prop4 equiv_is_reflexive by blast
-  have "... \<equiv>\<^sub>p (evaluate [x] ; evaluate b \<union>\<^sub>p evaluate a' ; evaluate b)"
-    by (simp add: compose_distrib2_3)
-  have "... \<equiv>\<^sub>p (evaluate [x] ; evaluate b \<union>\<^sub>p evaluate (a' ;\<^sub>c b)) " using less l1 l2
-    by (smt (verit) choice_equiv choice_idem_6 compose_distrib2_1 compose_distrib2_3)
-  have "... \<equiv>\<^sub>p (evaluate ([x] ;\<^sub>c b) \<union>\<^sub>p evaluate (a' ;\<^sub>c b))"
-    by (metis choice_equiv evaluate_equiv local.l1 non_empty15)
-  have "... \<equiv>\<^sub>p evaluate (([x] ;\<^sub>c b) \<union>\<^sub>c (a' ;\<^sub>c b))"
-    using choice_cnf_thm by blast
-  have "... \<equiv>\<^sub>p evaluate ((x#a') ;\<^sub>c b)"
-    by (metis choic_cnf1 concat_prop7 non_empty15)
-  have "... = evaluate (a ;\<^sub>c b)"
-    by (simp add: o1)
-  then show "evaluate (a ;\<^sub>c b) \<equiv>\<^sub>p evaluate a ; evaluate b" using equiv_is_transitive
-    by (smt (verit, best) \<open>evaluate ([x] ;\<^sub>c b) \<union>\<^sub>p evaluate (a' ;\<^sub>c b) \<equiv>\<^sub>p evaluate (([x] ;\<^sub>c b) \<union>\<^sub>c (a' ;\<^sub>c b))\<close> choic_cnf1 choice_equiv compose_distrib2_1 concat_prop3 equiv_is_symetric local.l1 local.l2 o1)
-qed
-qed
+theorem state_prop10: "complete_cnf_state (a) \<subseteq> complete_cnf_state (a @ b)"
+  by (auto simp: complete_cnf_state_def)
+theorem state_prop11: "complete_cnf_state (b) \<subseteq> complete_cnf_state (a @ b)"
+  by (auto simp: complete_cnf_state_def)
+
+theorem state_prop12: "set xs \<subseteq> set ys \<Longrightarrow> complete_cnf_state xs \<subseteq> complete_cnf_state ys"
+  apply (induction xs) by (auto simp: complete_cnf_state_def)
+
+theorem eval_choice: "evaluate xs C \<union>\<^sub>p evaluate ys C \<equiv>\<^sub>p evaluate (xs \<union>\<^sub>c ys) C"
+  apply (cases "xs=[]") apply (auto simp: evaluate_def choice_cnf_def) [1]
+  using fail_choice_l apply blast
+  apply (cases "ys=[]") apply (auto simp: evaluate_def choice_cnf_def) [1]
+  using fail_choice_l apply blast
+  by (simp add: choice_cnf_def equiv_is_reflexive evaluate_split)
+
+theorem comp_choice: "([x] ;\<^sub>c b) \<union>\<^sub>c (a' ;\<^sub>c b) = (x#a') ;\<^sub>c b"
+  by (auto simp: composition_cnf_def choice_cnf_def)
+
 
 theorem normal_prop15: "set a = set b \<Longrightarrow> normal_of a B = normal_of b B"
 proof (induction a)
@@ -3073,10 +3397,14 @@ theorem normal_prop18: "normal_of a B \<Longrightarrow> normal_of b B \<Longrigh
   apply (simp add: cnf_choice1)
   by (metis choice_cnf_commute cnf_choice2 normal_prop12)
 
-theorem normal_prop19: "normal_of [x] B \<Longrightarrow> normal_of b B \<Longrightarrow> normal_of [x@ys. ys \<leftarrow> non_empty b] B"
+theorem basic_prop6: "basic (map ((@) x) bs) \<subseteq> basic [x] \<union> basic bs"
+  apply (induction bs) apply auto
+  by (smt (verit) UnE UnI1 UnI2 basic_decomp1 basic_monotone5 subset_eq)
+
+theorem normal_prop19: "normal_of [x] B \<Longrightarrow> normal_of b B \<Longrightarrow> normal_of [x@ys. ys \<leftarrow> b] B"
 proof -
   assume a1: "normal_of [x] B" and  "normal_of b B"
-  have "basic [x@ys. ys \<leftarrow> non_empty b] \<subseteq> basic [x] \<union> basic b" proof (induction b)
+  have "basic [x@ys. ys \<leftarrow> b] \<subseteq> basic [x] \<union> basic b" proof (induction b)
     case Nil
     then show ?case apply (auto simp: basic_def non_empty_def) done
   next
@@ -3085,43 +3413,47 @@ proof -
     proof (cases "bb = []")
       case True
       then show ?thesis
-        by (metis (no_types, lifting) Un_mono basic_monotone1 basic_monotone2 dual_order.trans list.set_intros(1) local.Cons non_empty3)
+        by (meson basic_prop6)
     next
       case f1: False
       then show ?thesis
       proof (cases "x=[]")
         case True
         then show ?thesis
-          by (metis append_self_conv2 basic_monotone le_supI2 map_idI non_empty_is_smaller) 
+          by simp
       next
         case f2: False
         then show ?thesis
         proof (cases "bs=[]")
           case True
           then show ?thesis apply auto
-            by (metis (no_types, lifting) Un_iff basic_monotone5 f1 list.exhaust list.simps(9) map_is_Nil_conv non_empty1 non_empty5)
+            by (metis (no_types, lifting) Un_iff basic_monotone5)
         next
           case False
-          have "map ((@) x) (non_empty (bb # bs)) = (x@bb)#map ((@) x) (non_empty (bs))"
-            by (metis (no_types, lifting) f1 list.exhaust map_eq_Cons_conv non_empty5)
-          have "basic (map ((@) x) (non_empty (bb # bs))) = basic [x @ bb] \<union> basic (map ((@) x) (non_empty bs))"
-            using \<open>map ((@) x) (non_empty (bb # bs)) = (x @ bb) # map ((@) x) (non_empty bs)\<close> basic_decomp1 by auto
+          have "map ((@) x) ((bb # bs)) = (x@bb)#map ((@) x) ((bs))"
+            by (metis (no_types, lifting) map_eq_Cons_conv)
+          have "basic (map ((@) x) ((bb # bs))) = basic [x @ bb] \<union> basic (map ((@) x) (bs))"
+            using \<open>map ((@) x) ((bb # bs)) = (x @ bb) # map ((@) x) (bs)\<close> basic_decomp1 by auto
           have "... \<subseteq> basic [x @ bb] \<union> basic [x] \<union> basic bs"
-            using Un_mono local.Cons by blast
+            by (simp add: basic_prop6 inf_sup_aci(6) le_supI2)
           have "... = basic [x] \<union> basic [bb] \<union> basic bs"
             using basic_monotone5 by auto
           have "... = basic [x] \<union> basic (bb#bs)"
             using basic_decomp1 by auto
           then show ?thesis
-            using \<open>basic (map ((@) x) (non_empty (bb # bs))) = basic [x @ bb] \<union> basic (map ((@) x) (non_empty bs))\<close> \<open>basic [x @ bb] \<union> basic (map ((@) x) (non_empty bs)) \<subseteq> basic [x @ bb] \<union> basic [x] \<union> basic bs\<close> \<open>basic [x @ bb] \<union> basic [x] \<union> basic bs = basic [x] \<union> basic [bb] \<union> basic bs\<close> by blast
+            using \<open>basic (map ((@) x) (bb # bs)) = basic [x @ bb] \<union> basic (map ((@) x) bs)\<close> \<open>basic [x @ bb] \<union> basic (map ((@) x) bs) \<subseteq> basic [x @ bb] \<union> basic [x] \<union> basic bs\<close> \<open>basic [x @ bb] \<union> basic [x] \<union> basic bs = basic [x] \<union> basic [bb] \<union> basic bs\<close> by auto
         qed
       qed
     qed
   qed
-  have "basic [x] \<union> basic b \<subseteq> insert \<lparr>State = {}, Pre = {}, post = {}\<rparr> B" using a1 apply (auto simp: normal_of_def)
-    by (metis (no_types, lifting) Un_commute \<open>normal_of b B\<close> insert_iff insert_is_Un normal_of_def subsetD)
+  have "basic [x] \<subseteq> {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip (complete_state (set_to_list B))} \<union> B" apply (auto simp: normal_of_def)
+    by (smt (verit, del_insts) Fail_def UnE a1 insertE normal_of_def singleton_iff subsetD)
+  have "basic b \<subseteq> {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip (complete_state (set_to_list B))} \<union> B" apply (auto simp: normal_of_def)
+    by (metis (no_types, lifting) Fail_def UnE \<open>normal_of b B\<close> insertE normal_of_def singleton_iff subset_iff)
+  have "basic [x] \<union> basic b \<subseteq> {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip (complete_state (set_to_list B))} \<union> B"
+    using \<open>basic [x] \<subseteq> {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip (complete_state (set_to_list B))} \<union> B\<close> \<open>basic b \<subseteq> {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip (complete_state (set_to_list B))} \<union> B\<close> by auto
   show ?thesis apply (auto simp: normal_of_def)
-    using \<open>basic (map ((@) x) (non_empty b)) \<subseteq> basic [x] \<union> basic b\<close> \<open>basic [x] \<union> basic b \<subseteq> insert \<lparr>State = {}, Pre = {}, post = {}\<rparr> B\<close> insertE subsetD apply auto[1]
+    apply (metis (no_types, lifting) Fail_def UnE \<open>basic (map ((@) x) b) \<subseteq> basic [x] \<union> basic b\<close> \<open>basic [x] \<union> basic b \<subseteq> {\<lparr>State = {}, Pre = {}, post = {}\<rparr>, Skip (complete_state (set_to_list B))} \<union> B\<close> insertE singleton_iff subsetD)
     using \<open>normal_of b B\<close> normal_prop4 by auto
 qed
 
@@ -3133,8 +3465,8 @@ proof (induction "size a" arbitrary: a rule: "less_induct")
   then show ?case
   proof (cases "a = []")
     case t1: True
-    then show ?thesis
-      by (metis comp_cnf2 less.prems(1) non_empty1)
+    then show ?thesis apply (auto simp: composition_cnf_def)
+      using less.prems(1) by auto
   next
     case f1: False
     obtain x xs where o1: "a=x#xs"
@@ -3142,27 +3474,27 @@ proof (induction "size a" arbitrary: a rule: "less_induct")
     then show "normal_of (a ;\<^sub>c b) B"
     proof (cases "size a = 1")
       case t2: True
-      have "normal_of ([x] ;\<^sub>c b) B" proof (cases "non_empty b=[]")
+      have "normal_of ([x] ;\<^sub>c b) B" proof (cases "b=[]")
         case t3: True
-        then show ?thesis apply (metis comp_cnf1 less.prems(1) normal_prop12 o1) done
+        then show ?thesis apply (auto simp: composition_cnf_def) apply (metis  less.prems(1) normal_prop12 o1) done
       next
         case f3: False
-        have "[x] ;\<^sub>c b = [xs @ ys. xs \<leftarrow> non_empty [x], ys \<leftarrow> non_empty b]"
+        have "[x] ;\<^sub>c b = [xs @ ys. xs \<leftarrow> [x], ys \<leftarrow> b]"
           by (simp add: composition_cnf_def)
         then show "normal_of ([x] ;\<^sub>c b) B"
         proof (cases "x=[]")
           case t4: True
-          then show ?thesis apply auto
-            by (metis \<open>finite B\<close> comp_cnf2 non_empty2 normal_prop17 normal_prop2)
+          then show ?thesis apply auto apply (auto simp: composition_cnf_def)
+            by (simp add: less.prems(2) map_idI)
         next
           case f4: False
           have "[xs @ ys. xs \<leftarrow> non_empty [x], ys \<leftarrow> non_empty b] = [x@ys. ys \<leftarrow> non_empty b]" using f4 by (auto simp: non_empty_def)
           have "normal_of [x] B"
             using less.prems(1) normal_prop12 o1 by auto
-          have "normal_of ([x@ys. ys \<leftarrow> non_empty b]) B"
+          have "normal_of ([x@ys. ys \<leftarrow> b]) B" using \<open>normal_of [x] B\<close> less.prems(2) normal_prop19[of x B b]
             by (simp add: \<open>normal_of [x] B\<close> less.prems(2) normal_prop19)
           then show ?thesis
-            by (simp add: \<open>[x] ;\<^sub>c b = concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty [x]))\<close> \<open>concat (map (\<lambda>xs. map ((@) xs) (non_empty b)) (non_empty [x])) = map ((@) x) (non_empty b)\<close>)
+            using \<open>[x] ;\<^sub>c b = concat (map (\<lambda>xs. map ((@) xs) b) [x])\<close> by auto
         qed
       qed
       then show ?thesis
@@ -3170,7 +3502,7 @@ proof (induction "size a" arbitrary: a rule: "less_induct")
     next
       case False
       have "(x # xs) ;\<^sub>c b = [x] ;\<^sub>c b @ xs ;\<^sub>c b"
-        by (metis choic_cnf1 choice_cnf_def non_empty15)
+        by (metis choic_cnf1 choice_cnf_def)
       have "normal_of ([x] ;\<^sub>c b) B"
         by (metis False One_nat_def Suc_lessI f1 length_Cons length_greater_0_conv less.hyps less.prems(1) less.prems(2) list.size(3) normal_prop12 o1) 
       have "normal_of ((x#xs) ;\<^sub>c b) B"
@@ -3181,61 +3513,214 @@ proof (induction "size a" arbitrary: a rule: "less_induct")
   qed
 qed
 
-theorem civilized_thm1: "civilized_n p B n \<Longrightarrow> \<exists>(y::'a CNF). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+theorem state_prop13: "normal_of [x] B \<Longrightarrow> complete_cnf_state [x] \<subseteq> complete_state (set_to_list B)"
+proof (induction x)
+  case Nil
+  then show ?case apply (auto simp: normal_of_def complete_cnf_state_def)
+    using complete_state_union_2 by fastforce 
+next
+  case (Cons a x)
+  have "complete_cnf_state [[a]] \<subseteq> complete_state (set_to_list B)"
+  proof(cases "a=Fail{}")
+    case True
+    then have "complete_cnf_state [[a]] = {}" by (auto simp: Fail_def complete_cnf_state_def complete_state_def S_def)
+    then show ?thesis
+      by simp
+  next
+    case f1: False
+    then show ?thesis
+    proof (cases "a=Skip (complete_state (set_to_list B))")
+      case True
+      then have "complete_cnf_state [[a]] = complete_state (set_to_list B)" apply (auto simp: complete_state_def complete_cnf_state_def)
+        apply (simp add: skip_prop_9)
+        by (simp add: skip_prop_9)
+      then show ?thesis
+        by simp
+    next
+      case False
+      have "a \<in> B" using Cons(2) f1 False apply (auto simp: normal_of_def)
+        by (simp add: basic_def)
+      then show ?thesis apply (auto simp: complete_cnf_state_def)
+        by (metis Cons.prems UnCI complete_state_union_1 normal_of_def set_list_set state_prop) 
+    qed
+  qed
+  moreover have "complete_cnf_state [x] \<subseteq> complete_state (set_to_list B)"
+    using Cons.IH Cons.prems normal_prop11 by blast
+  ultimately show "complete_cnf_state [a # x] \<subseteq> complete_state (set_to_list B)" apply (auto simp: complete_cnf_state_def)
+    by (metis (no_types, lifting) complete_state_union_1 in_mono le_supI)
+qed
+
+theorem state_prop14: "normal_of xs B \<Longrightarrow> complete_cnf_state xs \<subseteq> complete_state (set_to_list B)"
+proof (induction xs)
+  case Nil
+  then show ?case by (auto simp: normal_of_def complete_cnf_state_def)
+next
+  case (Cons x xs)
+  have "complete_cnf_state (xs) \<subseteq> complete_state (set_to_list B)"
+    using Cons.IH Cons.prems normal_prop12 by auto
+  moreover have "complete_cnf_state [x] \<subseteq> complete_state (set_to_list B)"
+    by (meson Cons.prems normal_prop12 state_prop13)
+  ultimately show "complete_cnf_state (x # xs) \<subseteq> complete_state (set_to_list B)" by (auto simp: complete_cnf_state_def)
+qed
+
+theorem feas_prop9: "all_feasible (set_to_list B) \<Longrightarrow> normal_of xs B \<Longrightarrow> \<forall>tr \<in> set xs. all_feasible tr"
+  sorry
+
+theorem comp_prop4: "all_feasible x \<Longrightarrow> all_feasible y \<Longrightarrow> complete_state x \<subseteq> C \<Longrightarrow> complete_state y \<subseteq> C \<Longrightarrow> evaluate ([x] ;\<^sub>c [y]) C \<equiv>\<^sub>p evaluate [x] C ; evaluate [y] C"
+  apply (auto simp: evaluate_def composition_cnf_def)
+  by (metis Big_choice.skip_prop Concat.simps(1) Concat_prop_5 Concat_state append_Nil2 equals_equiv_relation_3 equiv_is_symetric feas_prop self_append_conv2 skip_is_idempondent_composition skip_prop_6)
+
+theorem "complete_cnf_state (x#ys) \<subseteq> C \<Longrightarrow> \<forall>tr\<in>set (x#ys). all_feasible tr \<Longrightarrow> evaluate ([x] ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate ([x]) C ; evaluate (ys) C"
+proof (induction ys)
+  case Nil
+  then show ?case apply (auto simp: evaluate_def composition_cnf_def)
+  apply (simp add: equiv_is_symetric fail_compose_r) done
+next
+  case (Cons y ys)
+  have "all_feasible x"
+    by (simp add: Cons.prems(2))
+  have "all_feasible y"
+    by (simp add: Cons.prems(2))
+  have "complete_state (x) \<subseteq> C"
+    using Cons.prems(1) complete_state_union_3 state_prop9 by (auto simp: complete_cnf_state_def)
+  have "complete_state (y) \<subseteq> C"
+    using Cons.prems(1) complete_state_union_3 state_prop9 by (auto simp: complete_cnf_state_def)
+  then show "evaluate ([x] ;\<^sub>c (y # ys)) C \<equiv>\<^sub>p evaluate [x] C ; evaluate (y # ys) C"
+  proof (cases "ys=[]")
+    case True
+    then show ?thesis apply (auto simp: )
+      by (simp add: \<open>all_feasible x\<close> \<open>all_feasible y\<close> \<open>complete_state x \<subseteq> C\<close> \<open>complete_state y \<subseteq> C\<close> comp_prop4) 
+  next
+    case False
+    then show ?thesis
+      by (simp add: Cons.prems(1) Cons.prems(2) compose_equiv equiv_is_symetric set_subset_Cons subset_code(1))
+  qed
+qed 
+
+theorem compose_equiv2: "complete_cnf_state xs \<subseteq> C \<Longrightarrow>    
+    complete_cnf_state ys \<subseteq> C \<Longrightarrow>
+    \<forall>tr\<in>set xs. all_feasible tr \<Longrightarrow>
+    \<forall>tr\<in>set ys. all_feasible tr \<Longrightarrow> evaluate (xs ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate xs C ; evaluate ys C"
+proof (induction xs)
+  case Nil
+  then show ?case apply auto
+    by (simp add: Big_choice.fail_compose concat_prop1 concat_prop2 equiv_is_symetric)
+next
+  case (Cons x xs)
+  have "evaluate (x # xs) C \<equiv>\<^sub>p evaluate [x] C \<union>\<^sub>p evaluate (xs) C"
+    using concat_prop4_1 by auto
+  then show "evaluate ((x # xs) ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate (x # xs) C ; evaluate ys C"
+  proof (cases "ys=[]")
+    case True
+    then have "(x # xs) ;\<^sub>c ys = []" by (auto simp: composition_cnf_def)
+    then show ?thesis using True
+      by (simp add: concat_prop2 equiv_is_symetric fail_compose_r)
+  next
+    case f1: False
+    have "evaluate ((x # xs) ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c ys) C \<union>\<^sub>p evaluate (xs ;\<^sub>c ys) C"
+      by (metis comp_choice equiv_is_symetric eval_choice)
+    have "complete_cnf_state (x#ys) \<subseteq> C"
+    proof -
+      have "complete_cnf_state [x] \<subseteq> C"
+        by (metis Cons.prems(1) Cons_eq_appendI append_Nil dual_order.trans state_prop10)
+      moreover have "complete_cnf_state ys \<subseteq> C"
+        by (simp add: Cons.prems(2))
+      ultimately show "complete_cnf_state (x#ys) \<subseteq> C" by (auto simp: complete_cnf_state_def)
+    qed
+    have "(\<forall>tr\<in>set (x#ys). all_feasible tr)"
+      by (simp add: Cons.prems(3) Cons.prems(4))
+    have "evaluate ([x] ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate ([x]) C ; evaluate (ys) C"
+      by (meson Cons.prems(3) Cons.prems(4) \<open>complete_cnf_state (x # ys) \<subseteq> C\<close> compose_equiv equiv_is_symetric list.set_intros(1))
+    then show "evaluate ((x # xs) ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate (x # xs) C ; evaluate ys C"
+    proof (cases "xs=[]")
+      case True
+      then show ?thesis using f1 apply auto
+        by (simp add: \<open>evaluate ([x] ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate [x] C ; evaluate ys C\<close>)
+    next
+      case False
+      have "evaluate (xs ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate (xs) C ; evaluate (ys) C"
+        by (metis Cons.IH Cons.prems(1) Cons.prems(2) Cons.prems(3) Cons.prems(4) cnf_state_prop list.set_intros(2))
+      have "(evaluate ([x]) C ; evaluate (ys) C) \<union>\<^sub>p (evaluate (xs) C ; evaluate (ys) C) \<equiv>\<^sub>p (evaluate [x] C \<union>\<^sub>p evaluate (xs) C) ; evaluate ys C"
+        by (metis compose_distrib2_1 compose_distrib2_3)
+      then show "evaluate ((x # xs) ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate (x # xs) C ; evaluate ys C"
+        by (smt (verit, ccfv_SIG) \<open>evaluate ((x # xs) ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate ([x] ;\<^sub>c ys) C \<union>\<^sub>p evaluate (xs ;\<^sub>c ys) C\<close> \<open>evaluate ([x] ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate [x] C ; evaluate ys C\<close> \<open>evaluate (xs ;\<^sub>c ys) C \<equiv>\<^sub>p evaluate xs C ; evaluate ys C\<close> choice_commute choice_equiv equiv_is_transitive eval_prop1 evaluate_switch)
+    qed
+  qed
+qed 
+
+theorem civilized_thm1: "all_feasible (set_to_list B) \<Longrightarrow> S p \<subseteq> C \<Longrightarrow> civilized_n p B n \<Longrightarrow> \<exists>(y::'a CNF). evaluate y C \<equiv>\<^sub>p p \<and> normal_of y B"
 proof -
   assume a1: "civilized_n p B n"
+  assume a2: "all_feasible (set_to_list B) "
   have finite_b: "finite B"
     using a1 civilized_finite by auto 
-  from a1 finite_b show "\<exists>(y::'a CNF). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+  from a1 a2 finite_b show "\<exists>(y::'a CNF). evaluate y C \<equiv>\<^sub>p p \<and> normal_of y B"
   proof (induction n arbitrary: p B)
     case 0
-    obtain B' where o0: "B' = insert (Fail{}) B" by simp
+    obtain B' where o0: "B' = {Fail{}, Skip (complete_state (set_to_list B))} \<union> B" by simp
     show ?case
     proof (cases "p \<in> B'")
       case True
     then have "normal_of [[p]] B" using 0 o0 normal_prop3 apply (simp add: Fail_def) by (auto simp: normal_of_def basic_def)
-    moreover have "evaluate [[p]] = p" by (auto simp: evaluate_def)
+    moreover have "evaluate [[p]] C = p" by (auto simp: evaluate_def)
     ultimately show ?thesis
-      by (metis equiv_is_reflexive)
+      using equiv_is_reflexive by force
     next
       case False
-      have "p = Fail {}" using 0 
-        apply (simp add: False Fail_def)
-        using False o0 by auto
+      have "p = Fail {} \<or> p = Skip (complete_state (set_to_list B))" 
+        using 0 o0 apply (auto simp:)
+        using False by auto[1]
+      have "normal_of [[(Skip (complete_state (set_to_list B)))]] B" apply (auto simp: normal_of_def basic_def)
+        by (simp add: "0.prems"(3))
+      have "evaluate [[(Skip (complete_state (set_to_list B)))]] (S p) \<equiv>\<^sub>p (Skip (complete_state (set_to_list B)))" by (auto simp: evaluate_def equiv_def)
       then show ?thesis
-        using False o0 by auto
+        apply (cases "p = Fail {}") apply auto
+        using False o0 apply blast
+        using \<open>normal_of [[Skip (complete_state (set_to_list B))]] B\<close> \<open>p = Fail {} \<or> p = Skip (complete_state (set_to_list B))\<close>
+        using False o0 by fastforce
     qed
     have a2: "p \<in> B'"
       using "0.prems"(1)
       using o0 by auto
   next
     case (Suc n)
-    have IH: "\<And>p. civilized_n p B n \<Longrightarrow> \<exists>y. evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
-      by (simp add: Suc.IH Suc.prems(2))
+    have IH: "\<And>p. civilized_n p B n \<Longrightarrow> \<exists>y. evaluate y C \<equiv>\<^sub>p p \<and> normal_of y B"
+      using Suc.IH Suc.prems(3) equals_equiv_relation_2
+      by (simp add: Suc.prems(2))
     assume a3: "civilized_n p B (Suc n)"
-    then show "\<exists>y. evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+    then show "\<exists>y. evaluate y C \<equiv>\<^sub>p p \<and> normal_of y B"
     proof (cases "civilized_n p B n")
       case True
       then show ?thesis
-        by (simp add: IH)
+        using IH by auto
     next
       case False
       have "civilized_n p B (Suc n)"
         using a3 by auto
       obtain a b where o1: "civilized_n a B n \<and> civilized_n b B n \<and> (a ; b = p \<or> a \<union>\<^sub>p b = p)"
         using False a3 by auto
-      obtain a_y where o2: "evaluate a_y \<equiv>\<^sub>p a \<and> normal_of a_y B" using o1 IH by auto
-      obtain b_y where o3: "evaluate b_y \<equiv>\<^sub>p b \<and> normal_of b_y B" using o1 IH by auto
+      obtain a_y where o2: "evaluate a_y C \<equiv>\<^sub>p a \<and> normal_of a_y B" using o1 IH by auto
+      obtain b_y where o3: "evaluate b_y C \<equiv>\<^sub>p b \<and> normal_of b_y B" using o1 IH by auto
+      have "\<forall>tr \<in> set a_y. all_feasible tr" using o2 Suc(3) apply (auto simp: normal_of_def)
+        using feas_prop9 o2 by blast
+      have "\<forall>tr \<in> set b_y. all_feasible tr" using o3 Suc(3) apply (auto simp: normal_of_def)
+        using feas_prop9 o3 by blast
+      have "complete_cnf_state a_y \<subseteq> C" sorry
+      have "complete_cnf_state b_y \<subseteq> C" sorry
       then show ?thesis
       proof (cases "a ; b = p")
         case True
         have "normal_of (a_y ;\<^sub>c b_y) B"
           by (simp add: normal_prop20 o2 o3)
-        have "evaluate (a_y ;\<^sub>c b_y) \<equiv>\<^sub>p a ; b" using o2 o3
-          using comp_prop4 composition_equiv equiv_is_transitive by blast
-        have "\<exists>y. evaluate y \<equiv>\<^sub>p a ; b \<and> normal_of y B"
-          using \<open>evaluate (a_y ;\<^sub>c b_y) \<equiv>\<^sub>p a ; b\<close> \<open>normal_of (a_y ;\<^sub>c b_y) B\<close> by auto 
-        then show "\<exists>y. evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+        have "evaluate (a_y ;\<^sub>c b_y) C \<equiv>\<^sub>p evaluate (a_y) C ; evaluate (b_y) C" 
+          using \<open>complete_cnf_state a_y \<subseteq> C\<close> \<open>complete_cnf_state b_y \<subseteq> C\<close> \<open>\<forall>tr \<in> set a_y. all_feasible tr\<close> \<open>\<forall>tr \<in> set b_y. all_feasible tr\<close> apply (auto simp: composition_cnf_def)
+          by (metis compose_equiv2 composition_cnf_def)
+        have "evaluate (a_y ;\<^sub>c b_y) C \<equiv>\<^sub>p a ; b" using o2 o3
+          using comp_prop4 composition_equiv equiv_is_transitive compose_equiv2 composition_cnf_def map_eq_conv
+          using \<open>evaluate (a_y ;\<^sub>c b_y) C \<equiv>\<^sub>p evaluate a_y C ; evaluate b_y C\<close> by blast
+        have "\<exists>y. evaluate y C \<equiv>\<^sub>p a ; b \<and> normal_of y B"
+          using \<open>evaluate (a_y ;\<^sub>c b_y) C \<equiv>\<^sub>p a ; b\<close> \<open>normal_of (a_y ;\<^sub>c b_y) B\<close> by blast
+        then show "\<exists>y. evaluate y C \<equiv>\<^sub>p p \<and> normal_of y B"
           by (simp add: True) 
       next
         case False
@@ -3243,68 +3728,369 @@ proof -
           using False o1 by auto
         have "normal_of (a_y \<union>\<^sub>c b_y) B"
           by (simp add: normal_prop18 o2 o3)
-        have "evaluate (a_y \<union>\<^sub>c b_y) \<equiv>\<^sub>p a \<union>\<^sub>p b" using o2 o3
-          by (meson choice_cnf_thm choice_equiv equiv_is_symetric equiv_is_transitive)
-        have "\<exists>y. evaluate y \<equiv>\<^sub>p a \<union>\<^sub>p b \<and> normal_of y B"
-          using \<open>evaluate (a_y \<union>\<^sub>c b_y) \<equiv>\<^sub>p a \<union>\<^sub>p b\<close> \<open>normal_of (a_y \<union>\<^sub>c b_y) B\<close> by auto 
-        then show "\<exists>y. evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
+        have "evaluate (a_y \<union>\<^sub>c b_y) C \<equiv>\<^sub>p a \<union>\<^sub>p b" using o2 o3
+          by (metis choice_cnf_def choice_equiv concat_prop5 equiv_is_transitive)
+        have "\<exists>y. evaluate y C \<equiv>\<^sub>p a \<union>\<^sub>p b \<and> normal_of y B"
+          using \<open>evaluate (a_y \<union>\<^sub>c b_y) C \<equiv>\<^sub>p a \<union>\<^sub>p b\<close> \<open>normal_of (a_y \<union>\<^sub>c b_y) B\<close> by blast
+        then show "\<exists>y. evaluate y C \<equiv>\<^sub>p p \<and> normal_of y B"
           by (simp add: \<open>a \<union>\<^sub>p b = p\<close>)
       qed
     qed
   qed
 qed
 
-theorem civilized_thm2: "civilized p B \<Longrightarrow> \<exists>(y::'a CNF). evaluate y \<equiv>\<^sub>p p \<and> normal_of y B"
-  using civilized_def civilized_thm1 by blast
 
+lemma set_to_list_prop: "finite F \<Longrightarrow> y \<notin> F \<Longrightarrow> count_list (set_to_list F) y = 0"
+proof -
+  assume "finite F"
+  assume "y \<notin> F"
+  have "y \<notin> set (set_to_list F)"
+    by (simp add: \<open>finite F\<close> \<open>y \<notin> F\<close> set_list_set)
+  then show "count_list (set_to_list F) y = 0"
+    by simp
+qed
+
+lemma set_to_list_prop2: "finite F \<Longrightarrow> count_list (set_to_list (F - {y})) y = 0"
+  by (simp add: set_to_list_prop)
+
+lemma set_to_list_prop3: "count_list (set_to_list {y}) y = 1"
+proof -
+  have "finite {y}" by auto
+  have "set_to_list {y} = [y]"
+    by (simp add: set_to_list_one)
+  have "count_list ([y]) y = 1" by auto
+  show ?thesis
+    using \<open>set_to_list {y} = [y]\<close> by auto
+qed
+
+lemma set_to_list_prop4: "count_list (set_to_list {}) y = 0"
+  by (simp add: set_to_list_prop)
+
+lemma set_to_list_prop5: "finite F \<Longrightarrow> y \<notin> F \<Longrightarrow> set_to_list (insert y F) \<in> set (permutations (y # set_to_list F))"
+proof (induction F rule: finite_induct)
+  case empty
+  have "set_to_list {} = []"
+    by (simp add: empty_prop1)
+  have "set (permutations (set_to_list {})) = {[]}" apply auto
+    apply (metis \<open>set_to_list {} = []\<close> permutation_set_equality set_empty)
+    by (simp add: \<open>set_to_list {} = []\<close>)
+  then show ?case
+    by (metis perm_1 set_to_list_one singletonI)
+next
+  case (insert x F)
+  then show ?case
+proof (cases "x=y")
+  case True
+  then show ?thesis sorry
+next
+  case False
+  have "set_to_list (insert y F) \<in> set (permutations (y # set_to_list F))"
+    using insert.IH insert.prems by blast
+  have "set_to_list (insert y (insert x F)) = set_to_list (insert x (insert y F))"
+    by (simp add: insert_commute)
+  then show ?thesis sorry
+qed
+qed
+
+lemma "finite F \<Longrightarrow> count_list (set_to_list (insert x F)) x = 1"
+proof (induction F rule: finite_induct)
+  case empty
+  then show ?case apply (auto)
+    by (simp add: set_to_list_prop3)
+next
+  case (insert y F)
+  then show "count_list (set_to_list (insert x (insert y F))) x = 1"
+  proof (cases "x=y")
+    case True
+    then show ?thesis apply auto
+      using insert.IH by auto
+  next
+    case False
+    have "insert x (insert y F) = insert y (insert x F)"
+      by (simp add: insert_commute)
+    have "set_to_list (insert y (insert x F)) \<in> set (permutations (y#set_to_list (insert x F)))" using insert(2)
+      by (metis False finite.insertI insert.hyps(1) insertE set_to_list_prop5)
+    have "count_list (set_to_list (insert y (insert x F))) x = count_list (y#set_to_list (insert x F)) x"
+      by (meson \<open>set_to_list (insert y (insert x F)) \<in> set (permutations (y # set_to_list (insert x F)))\<close> count_invariant in_set_member)
+    have "count_list (y#set_to_list (insert x F)) x = 1"
+      using False insert.IH by force
+    have "count_list (set_to_list (insert y (insert x F))) x = 1"
+      using \<open>count_list (set_to_list (insert y (insert x F))) x = count_list (y # set_to_list (insert x F)) x\<close> \<open>count_list (y # set_to_list (insert x F)) x = 1\<close> by auto
+    then show "count_list (set_to_list (insert x (insert y F))) x = 1"
+      by (simp add: \<open>insert x (insert y F) = insert y (insert x F)\<close>)
+  qed
+qed
+
+lemma set_to_list_prop6: "finite F \<Longrightarrow> x \<notin> F \<Longrightarrow> count_list (set_to_list (insert x F)) y = count_list (x#set_to_list F) y"
+proof -
+  assume "finite F" assume "x \<notin> F"
+  have "set_to_list (insert x F) \<in> set (permutations (x#set_to_list F))" using set_to_list_prop5[of F y]
+    by (meson \<open>finite F\<close> \<open>x \<notin> F\<close> set_to_list_prop5)
+  show "count_list (set_to_list (insert x F)) y = count_list (x#set_to_list F) y"
+    by (meson \<open>set_to_list (insert x F) \<in> set (permutations (x # set_to_list F))\<close> count_invariant in_set_member)
+qed
+
+lemma set_to_list_prop7: "finite F \<Longrightarrow> x \<notin> F \<Longrightarrow> x \<noteq> y \<Longrightarrow> count_list (set_to_list (insert x F)) y = count_list (set_to_list F) y"
+proof -
+  assume "x \<notin> F" assume "x \<noteq> y" assume "finite F"
+  have "set (set_to_list (insert x F)) = insert x F" using set_list_set[of "insert x F"] using \<open>finite F\<close> by auto
+  show ?thesis
+  proof (cases "y \<in> F")
+    case True
+    have "y \<in> set (set_to_list (insert x F))"
+      by (simp add: True \<open>set (set_to_list (insert x F)) = insert x F\<close>)
+    have "y \<in> set (set_to_list F)"
+      by (simp add: True \<open>finite F\<close> set_list_set)
+    have "count_list (set_to_list (insert x F)) y = count_list (x#set_to_list F) y" using \<open>x \<notin> F\<close>
+      by (simp add: \<open>finite F\<close> set_to_list_prop6)
+    have "... = count_list (set_to_list F) y"
+      by (simp add: \<open>x \<noteq> y\<close>)
+    then show ?thesis
+      by (simp add: \<open>count_list (set_to_list (insert x F)) y = count_list (x # set_to_list F) y\<close>)
+  next
+    case False
+    have "y \<notin> set (set_to_list (insert x F))"
+      using False \<open>set (set_to_list (insert x F)) = insert x F\<close> \<open>x \<noteq> y\<close> by auto
+    then show ?thesis
+      by (simp add: False \<open>finite F\<close> set_to_list_prop)
+  qed
+qed
+
+lemma set_to_list_prop8: "x=y \<Longrightarrow> count_list (yst@x#ynd) y = count_list (yst@ynd) y + 1"
+  by auto
+lemma set_to_list_prop9: "x\<noteq>y \<Longrightarrow> count_list (yst@x#ynd) y = count_list (yst@ynd) y"
+  by auto
+
+lemma set_to_list_prop10: "xs \<in> set (permutations ys) \<Longrightarrow> count_list xs = count_list ys"
+proof (induction "size xs" arbitrary: xs ys)
+  case 0
+  have "xs=[]"
+    using "0.hyps" by auto
+  have "ys=[]"
+    using "0.prems" \<open>xs = []\<close> permutation_set_equality by fastforce
+  then show ?case
+    by (simp add: \<open>xs = []\<close>)
+next
+  case (Suc n)
+  obtain x xs' where "x#xs' = xs"
+    by (metis Suc.hyps(2) Suc_length_conv)
+  obtain ys' where "x#ys' \<in> set (permutations ys)"
+    using Suc.prems \<open>x # xs' = xs\<close> by auto
+  have "ys' \<in> set (permutations xs')"
+    by (metis Suc.prems \<open>x # xs' = xs\<close> \<open>x # ys' \<in> set (permutations ys)\<close> perm_lemma_1 permutations_set_equality)
+  have "count_list xs' = count_list ys'"
+    by (metis Suc.hyps(1) Suc.hyps(2) \<open>x # xs' = xs\<close> \<open>ys' \<in> set (permutations xs')\<close> length_Cons length_inv old.nat.inject)
+  have "count_list (x#xs') = count_list xs"
+    by (simp add: \<open>x # xs' = xs\<close>)
+  have "length ys' = n"
+    using Suc.hyps(2) \<open>x # xs' = xs\<close> \<open>ys' \<in> set (permutations xs')\<close> length_inv by fastforce
+  obtain yst ynd where "ys = yst@x#ynd"
+    by (meson \<open>x # ys' \<in> set (permutations ys)\<close> perm_inv_3 permutation_split_set)
+  have "count_list (ys') = count_list (yst@ynd)"
+    by (metis Suc.hyps(1) \<open>length ys' = n\<close> \<open>x # ys' \<in> set (permutations ys)\<close> \<open>ys = yst @ x # ynd\<close> perm_split)
+  have "\<forall>y\<noteq>x. count_list (x#ys') y = count_list (yst@x#ynd) y"
+    by (simp add: \<open>count_list ys' = count_list (yst @ ynd)\<close>)
+  moreover have "count_list (x#ys') x = count_list (yst@x#ynd) x"
+    by (metis \<open>x # ys' \<in> set (permutations ys)\<close> \<open>ys = yst @ x # ynd\<close> count_invariant in_set_member)
+  ultimately have "\<forall>y. count_list (x#ys') y = count_list (yst@x#ynd) y"
+    by simp
+  have "count_list (yst@x#ynd) = count_list ys"
+    by (simp add: \<open>ys = yst @ x # ynd\<close>)
+  have "count_list (x#ys') = count_list (x#xs')" using \<open>count_list xs' = count_list ys'\<close> by auto
+  show "count_list xs = count_list ys"
+    using \<open>\<forall>y. count_list (x # ys') y = count_list (yst @ x # ynd) y\<close> \<open>count_list (x # ys') = count_list (x # xs')\<close> \<open>x # xs' = xs\<close> \<open>ys = yst @ x # ynd\<close> by presburger
+qed
+
+
+lemma set_to_list_prop11: "finite F \<Longrightarrow> count_list (set_to_list F) x \<le> 1"
+proof (induction "card F" arbitrary: F)
+  case 0
+  then show ?case apply auto
+    by (simp add: set_to_list_prop4)
+next
+  case (Suc n)
+  obtain y ys where "y#ys=set_to_list F"
+    by (metis Suc.hyps(2) Suc.prems card.empty empty_prop1 nat.distinct(1) neq_Nil_conv)
+  obtain F' where "F' = F - {y}" by simp
+  obtain ys' where "ys' = set_to_list F'" by simp
+  have "ys' \<in> set (permutations ys)"
+    by (metis Diff_insert_absorb Suc.prems \<open>F' = F - {y}\<close> \<open>y # ys = set_to_list F\<close> \<open>ys' = set_to_list F'\<close> distinct.simps(2) finite_Diff list.simps(15) perm_inv_3 perm_lemma_1 set_list_set set_to_list_distinct set_to_list_prop5)
+  have "set_to_list F \<in> set (permutations (y#set_to_list F'))"
+    by (metis \<open>y # ys = set_to_list F\<close> \<open>ys' = set_to_list F'\<close> \<open>ys' \<in> set (permutations ys)\<close> perm_1 perm_inv_3)
+  have "count_list (set_to_list F') = count_list ys'"
+    by (simp add: \<open>ys' = set_to_list F'\<close>)
+  have "... = count_list ys" using \<open>ys' \<in> set (permutations ys)\<close>
+    by (simp add: set_to_list_prop10)
+  have "count_list (set_to_list F) x = count_list (y#set_to_list F') x"
+    by (metis \<open>set_to_list F \<in> set (permutations (y # set_to_list F'))\<close> set_to_list_prop10)
+  then show ?case
+  proof (cases "y=x")
+    case True
+    have "count_list (set_to_list F') y = 0"
+      by (simp add: Suc.prems \<open>F' = F - {y}\<close> set_to_list_prop2)
+    have "count_list (y#set_to_list F') y = 1"
+      by (simp add: \<open>count_list (set_to_list F') y = 0\<close>)
+    then have "count_list (set_to_list F) y = 1" using \<open>F' = F - {y}\<close>
+      using True \<open>count_list (set_to_list F) x = count_list (y # set_to_list F') x\<close> by argo
+    then show "count_list (set_to_list F) x \<le> 1"
+      by (simp add: True)
+  next
+    case False
+    have "count_list (y#set_to_list F') x = count_list (set_to_list F') x" using False by auto
+    have "count_list (set_to_list F') x \<le> 1"
+      by (metis Diff_empty One_nat_def Suc.hyps(1) Suc.hyps(2) Suc.prems \<open>F' = F - {y}\<close> \<open>y # ys = set_to_list F\<close> card_Diff_insert diff_Suc_1' finite_Diff insert_absorb insert_not_empty list.set_intros(1) set_list_set)
+    then show ?thesis
+      using \<open>count_list (set_to_list F) x = count_list (y # set_to_list F') x\<close> \<open>count_list (y # set_to_list F') x = count_list (set_to_list F') x\<close> by argo
+  qed
+qed
+
+lemma set_to_list_prop12: "finite F \<Longrightarrow> x \<in> F \<Longrightarrow> count_list (set_to_list F) x = 1"
+proof (induction F rule: finite_induct)
+  case empty
+  then show ?case apply auto done
+next
+  case (insert y F)
+  obtain fs fe where "set_to_list (insert y F) = fs@y#fe"
+    by (metis insert.hyps(1) set_list_prop)
+  have "count_list (set_to_list (insert y F)) x = count_list (fs@y#fe) x"
+    by (simp add: \<open>set_to_list (insert y F) = fs @ y # fe\<close>)
+  then show ?case
+  proof (cases "x=y")
+    case True
+    show ?thesis
+      by (metis True \<open>set_to_list (insert y F) = fs @ y # fe\<close> finite.insertI insert.hyps(1) le_add2 order_antisym set_to_list_prop11 set_to_list_prop8)
+  next
+    case False
+    then have "count_list (fs@y#fe) x = count_list (fs@fe) x" by (auto simp: set_to_list_def)
+    have "count_list (fs@fe) x = count_list (set_to_list F) x"
+      by (metis False \<open>count_list (fs @ y # fe) x = count_list (fs @ fe) x\<close> \<open>count_list (set_to_list (insert y F)) x = count_list (fs @ y # fe) x\<close> insert.hyps(1) insert.hyps(2) set_to_list_prop7)
+    then show ?thesis
+      by (metis False \<open>count_list (fs @ y # fe) x = count_list (fs @ fe) x\<close> \<open>set_to_list (insert y F) = fs @ y # fe\<close> insert.IH insert.prems insert_iff)
+  qed
+qed
+
+lemma set_to_list_prop13: "count_list xs x = 1 \<Longrightarrow> count_list (set_to_list (set xs)) x = 1"
+  by (metis List.finite_set count_notin set_to_list_prop12 zero_neq_one)
+
+lemma set_to_list_prop14: "finite F \<Longrightarrow> complete_state (set_to_list (insert y F)) = complete_state (set_to_list (F)) \<union> S y"
+proof -
+  assume "finite F"
+  then have "finite (insert y F)" by auto
+  then obtain x xs where "x#xs = set_to_list (insert y F)" apply auto
+    by (metis \<open>finite (insert y F)\<close> ex_in_conv insert_not_empty list.set_cases set_list_set)
+  show "complete_state (set_to_list (insert y F)) = complete_state (set_to_list (F)) \<union> S y"
+  proof (cases "y \<in> F")
+    case yinf: True
+    have "complete_state (set_to_list (insert y F)) = complete_state (set_to_list F)"
+      by (simp add: insert_absorb yinf)
+    then show ?thesis
+      by (metis \<open>finite F\<close> complete_state_prop set_list_set state_prop yinf)
+  next
+    case ynotinf: False
+    then show ?thesis
+      by (metis \<open>finite F\<close> complete_state_prop permutation_complete_state_equality set_to_list_prop5)
+  qed
+qed
+
+
+theorem set_to_list_prop15: "civilized p B \<Longrightarrow> S p \<subseteq> complete_state (set_to_list B)"
+proof -
+  assume "civilized p B"
+  then obtain n where "civilized_n p B n" by (auto simp: civilized_def)
+  then show "S p \<subseteq> complete_state (set_to_list B)"
+  proof (induction n arbitrary: p)
+    case 0
+    then show ?case apply auto
+      apply (metis UnCI finite_insert mk_disjoint_insert set_to_list_prop14)
+      apply (metis empty_iff skip_prop_9 special_empty1)
+      by (simp add: skip_prop_9)
+  next
+    case (Suc n)
+    then show ?case
+    proof (cases "civilized_n p B n")
+      case True
+      then show ?thesis
+        by (simp add: Suc.IH)
+    next
+      case False
+      obtain p1 p2 where "(p1 \<union>\<^sub>p p2 = p \<or> p1 ; p2 = p) \<and> civilized_n p1 B n \<and> civilized_n p2 B n"
+        using False Suc.prems equals_equiv_relation_3 by auto
+      have "S p1 \<subseteq> complete_state (set_to_list B)"
+        by (simp add: Suc.IH \<open>(p1 \<union>\<^sub>p p2 = p \<or> p1 ; p2 = p) \<and> civilized_n p1 B n \<and> civilized_n p2 B n\<close>)
+      have "S p2 \<subseteq> complete_state (set_to_list B)"
+        by (simp add: Suc.IH \<open>(p1 \<union>\<^sub>p p2 = p \<or> p1 ; p2 = p) \<and> civilized_n p1 B n \<and> civilized_n p2 B n\<close>)
+      then show ?thesis 
+        using \<open>(p1 \<union>\<^sub>p p2 = p \<or> p1 ; p2 = p) \<and> civilized_n p1 B n \<and> civilized_n p2 B n\<close> \<open>S p1 \<subseteq> complete_state (set_to_list B)\<close> \<open>S p2 \<subseteq> complete_state (set_to_list B)\<close> by auto
+    qed
+  qed
+qed
+
+theorem civilized_thm2: "all_feasible (set_to_list B) \<Longrightarrow> civilized p B \<Longrightarrow> \<exists>(y::'a CNF). evaluate y (complete_state (set_to_list B)) \<equiv>\<^sub>p p \<and> normal_of y B"
+  by (meson civilized_def civilized_thm1 set_to_list_prop15)
 
 theorem fail_is_civilized: "finite B \<Longrightarrow> civilized (Fail{}) B"
   apply (induction B rule: "finite_induct")
   using civ_prop_1 civilized_empty3 apply blast
   by (meson civ_prop_1 civilized_empty3 finite_insert)
 
-theorem civilized_thm3: "\<exists>(y::'a CNF). evaluate y = p \<and> normal_of y B \<Longrightarrow> civilized p B"
+theorem skip_is_civilized: "finite B \<Longrightarrow> civilized (Skip (complete_state (set_to_list B))) B"
 proof -
-  assume a1: "\<exists>(y::'a CNF). evaluate y = p \<and> normal_of y B"
+  assume "finite B"
+  then have "civilized_n (Skip (complete_state (set_to_list B))) B 0" by auto
+  then show ?thesis
+    using civ_prop_1 by blast
+qed
+
+theorem civilized_thm3: "\<exists>(y::'a CNF). evaluate y (complete_state (set_to_list B)) = p \<and> normal_of y B \<Longrightarrow> civilized p B"
+proof -
+  assume a1: "\<exists>(y::'a CNF). evaluate y (complete_state (set_to_list B)) = p \<and> normal_of y B"
+  obtain C where "C=complete_state (set_to_list B)" by simp
   have "finite B"
     using a1 normal_prop4 by auto
-  obtain y where "evaluate y = p \<and> normal_of y B"
-    using a1 by auto
+  obtain y where "evaluate y C = p \<and> normal_of y B"
+    using \<open>C = complete_state (set_to_list B)\<close> a1 by blast
   then show "civilized p B"
-  proof (induction y)
+  proof (induction y arbitrary: p)
     case Nil
     then show ?case apply (auto simp: evaluate_def normal_of_def civilized_def Fail_def basic_def)
-      by (metis \<open>evaluate y = p \<and> normal_of y B\<close> civilized_def normal_civilized)
+      by (metis Fail_def civilized_empty3)
   next
     case (Cons a y)
     then show "civilized p B"
     proof (induction a)
       case Nil
-      then show ?case apply (auto simp: )
-        by (simp add: normal_civilized)
+      have "evaluate ([] # y) C = Skip C \<union>\<^sub>p evaluate (y) C" apply (auto simp: evaluate_def)
+        by (metis Choice.simps(1) Choice.simps(2) Choice_prop_1_2 Choice_state_1 complete_state_union_1 skip_prop_10 skip_prop_9 special_empty1)
+      have "civilized (evaluate y C) B"
+        by (simp add: Cons.IH Nil.prems(2) \<open>finite B\<close> normal_prop6)
+      have "civilized (Skip C) B"
+        using \<open>C = complete_state (set_to_list B)\<close> \<open>finite B\<close> skip_is_civilized by auto
+      then show ?case
+        by (metis Nil.prems(2) \<open>civilized (evaluate y C) B\<close> \<open>evaluate ([] # y) C = Skip C \<union>\<^sub>p evaluate y C\<close> civ_prop_3)
     next
       case (Cons a1 a2)
-      assume "evaluate ((a1 # a2) # y) = p \<and> normal_of ((a1 # a2) # y) B"
+      assume "evaluate ((a1 # a2) # y) C = p \<and> normal_of ((a1 # a2) # y) B"
       then show "civilized p B"
       proof (cases "y = []")
         case True
         from Cons True show ?thesis apply (auto simp: civilized_def)
-          using civilized_def normal_civilized apply blast
-          using \<open>finite B\<close> by blast
+          using civilized_def normal_civilized
+          using \<open>C = complete_state (set_to_list B)\<close> by blast
       next
         case False
         from Cons False show ?thesis
-          using normal_civilized by blast
+          using normal_civilized
+          using \<open>C = complete_state (set_to_list B)\<close> by blast
       qed
     qed
   qed
 qed
 
-theorem composition_cnf_prop1: "[[x]] ;\<^sub>c xs = [x#ys. ys \<leftarrow> non_empty xs]"
+theorem composition_cnf_prop1: "[[x]] ;\<^sub>c xs = [x#ys. ys \<leftarrow> xs]"
   by (auto simp: composition_cnf_def non_empty_def)
 
 
-theorem composition_cnf_prop2: "[y#ys] ;\<^sub>c xs = [( y#ys)@t. t \<leftarrow> non_empty xs]"
+theorem composition_cnf_prop2: "[y#ys] ;\<^sub>c xs = [( y#ys)@t. t \<leftarrow> xs]"
   by (auto simp: composition_cnf_def non_empty_def)
 
 
@@ -3917,7 +4703,7 @@ proof -
     by (simp add: \<open>concat (map (\<lambda>path_m. map ((\<interleave>) path_m) xs) ys) ! (y_ind * length xs + x_ind) = (ys ! y_ind) \<interleave> (xs ! x_ind)\<close> \<open>concat (map (\<lambda>path_m. map ((\<interleave>) path_m) ys) xs) ! (x_ind * length ys + y_ind) = (xs ! x_ind) \<interleave> (ys ! y_ind)\<close> inter_perm)
 qed
 
-theorem perm_prop: "xs \<in> set (permutations xs') \<Longrightarrow> ys  \<in> set (permutations ys') \<Longrightarrow> xs@ys \<in> set (permutations (xs'@ys'))"
+theorem perm_prop1: "xs \<in> set (permutations xs') \<Longrightarrow> ys  \<in> set (permutations ys') \<Longrightarrow> xs@ys \<in> set (permutations (xs'@ys'))"
 proof (induction xs arbitrary: xs')
   case Nil
   then show ?case
@@ -3969,7 +4755,7 @@ next
     using local.l3 map_nth by auto
   have f2: "concat (map (\<lambda>x_ind. map (\<lambda>y_ind. xy ! (x_ind * sy + y_ind)) [0..<sy]) [sx..<Suc sx]) \<in> set (permutations (new_xy))" using l1 Suc(1)
     by (metis \<open>concat (map (\<lambda>x_ind. map (\<lambda>y_ind. new_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<1]) = new_xy\<close> \<open>concat (map (\<lambda>x_ind. map (\<lambda>y_ind. xy ! (x_ind * sy + y_ind)) [0..<sy]) [sx..<Suc sx]) = concat (map (\<lambda>x_ind. map (\<lambda>y_ind. new_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<1])\<close> in_set_member permutation_reflexive)
-  have "(concat (map (\<lambda>x_ind. map (\<lambda>y_ind. old_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<sx])@concat (map (\<lambda>x_ind. map (\<lambda>y_ind. new_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<1])) \<in> set (permutations (old_xy@new_xy))" using f1 f2 perm_prop
+  have "(concat (map (\<lambda>x_ind. map (\<lambda>y_ind. old_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<sx])@concat (map (\<lambda>x_ind. map (\<lambda>y_ind. new_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<1])) \<in> set (permutations (old_xy@new_xy))" using f1 f2 perm_prop1
     by (metis \<open>concat (map (\<lambda>x_ind. map (\<lambda>y_ind. xy ! (x_ind * sy + y_ind)) [0..<sy]) [sx..<Suc sx]) = concat (map (\<lambda>x_ind. map (\<lambda>y_ind. new_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<1])\<close>)
   then have "concat (map (\<lambda>x_ind. map (\<lambda>y_ind. old_xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<sx]) =
              concat (map (\<lambda>x_ind. map (\<lambda>y_ind.     xy ! (x_ind * sy + y_ind)) [0..<sy]) [0..<sx])"
@@ -4122,7 +4908,7 @@ next
     using \<open>c = concat (map (\<lambda>y. map (\<lambda>x. f x y) [x]) yss)\<close> \<open>d = concat (map (\<lambda>y. map (\<lambda>x. f x y) xs) yss)\<close>
     using \<open>h = concat (map (\<lambda>y. map (\<lambda>x. f x y) (x # xs)) yss)\<close> by auto
   ultimately have "a @ c @ b @ d \<in> set (permutations (g@h))"
-    by (metis \<open>a @ c @ b @ d \<in> set (permutations (a @ b @ c @ d))\<close> append.assoc perm_inv_3 perm_prop permutations_set_equality)
+    by (metis \<open>a @ c @ b @ d \<in> set (permutations (a @ b @ c @ d))\<close> append.assoc perm_inv_3 perm_prop1 permutations_set_equality)
   then have "concat (map (\<lambda>y. map (\<lambda>x. f x y) [x]) [y]) @ concat (map (\<lambda>y. map (\<lambda>x. f x y) [x]) yss) @ concat (map (\<lambda>y. map (\<lambda>x. f x y) xs) [y]) @ concat (map (\<lambda>y. map (\<lambda>x. f x y) xs) yss) \<in> 
         set (permutations (concat (map (\<lambda>y. map (\<lambda>x. f x y) (x # xs)) (y # yss))))"
     using \<open>a = concat (map (\<lambda>y. map (\<lambda>x. f x y) [x]) [y])\<close> \<open>b = concat (map (\<lambda>y. map (\<lambda>x. f x y) xs) [y])\<close> \<open>c = concat (map (\<lambda>y. map (\<lambda>x. f x y) [x]) yss)\<close> \<open>d = concat (map (\<lambda>y. map (\<lambda>x. f x y) xs) yss)\<close>
@@ -4132,7 +4918,7 @@ qed
 qed
 qed
 
-theorem perm_prop1: "[f x y. x \<leftarrow> xs, y \<leftarrow> ys] \<in> set (permutations xy) \<Longrightarrow> [f x y. y \<leftarrow> ys, x \<leftarrow> xs] \<in> set (permutations xy)"
+theorem perm_prop3: "[f x y. x \<leftarrow> xs, y \<leftarrow> ys] \<in> set (permutations xy) \<Longrightarrow> [f x y. y \<leftarrow> ys, x \<leftarrow> xs] \<in> set (permutations xy)"
 proof (induction "size xs" arbitrary: xy xs rule: "less_induct")
   case less1: less
   then show ?case
@@ -4201,7 +4987,7 @@ proof (induction "size xs" arbitrary: xy xs rule: "less_induct")
         using \<open>concat (map (\<lambda>x. map (f x) (y # yss)) [x]) \<in> set (permutations xy'')\<close> \<open>length [x] < length xs\<close> \<open>xy'' = concat (map (\<lambda>x. map (f x) (y # yss)) [x])\<close> \<open>ys = y # yss\<close> less.prems(2) by blast
 
       ultimately have "concat (map (\<lambda>y. map (\<lambda>x. f x y) [x]) (y#yss)) @ concat (map (\<lambda>y. map (\<lambda>x. f x y) xss) (y#yss)) \<in> set (permutations (concat (map (\<lambda>x. map (\<lambda>y. f x y) ys) xs)))"
-        by (smt (z3) \<open>concat (map (\<lambda>y. map (\<lambda>x. f x y) xss) (y # yss)) \<in> set (permutations xy')\<close> \<open>xy'' = concat (map (\<lambda>x. map (f x) (y # yss)) [x])\<close> \<open>xy'' @ xy' = concat (map (\<lambda>x. map (f x) ys) xs)\<close> \<open>ys = y # yss\<close> map_eq_conv perm_prop)
+        by (smt (z3) \<open>concat (map (\<lambda>y. map (\<lambda>x. f x y) xss) (y # yss)) \<in> set (permutations xy')\<close> \<open>xy'' = concat (map (\<lambda>x. map (f x) (y # yss)) [x])\<close> \<open>xy'' @ xy' = concat (map (\<lambda>x. map (f x) ys) xs)\<close> \<open>ys = y # yss\<close> map_eq_conv perm_prop1)
       have "concat (map (\<lambda>y. map (\<lambda>x. f x y) [x]) (y # yss)) @ concat (map (\<lambda>y. map (\<lambda>x. f x y) xss) (y # yss)) \<in> set (permutations (concat (map (\<lambda>y. map (\<lambda>x. f x y) (x # xss)) (y # yss))))"
         by (metis perm_prop5)
       have "concat (map (\<lambda>y. map (\<lambda>x. f x y) (x # xss)) (y#yss)) \<in> set (permutations xy)" using less(4)
@@ -4223,7 +5009,7 @@ proof -
   have "[xy ! ((x_ind*sy)+y_ind). x_ind \<leftarrow> [0..<sx], y_ind \<leftarrow> [0..<sy]] = [f x_ind y_ind. x_ind \<leftarrow> [0..<sx], y_ind \<leftarrow> [0..<sy]]"
     by (simp add: \<open>f = (\<lambda>x y. xy ! (x * sy + y))\<close>)
   have "[f x_ind y_ind. x_ind \<leftarrow> [0..<sx], y_ind \<leftarrow> [0..<sy]] \<in> set (permutations xy)" apply (simp add: \<open>f = (\<lambda>x y. xy ! ((x*sy)+y))\<close>) using \<open>size xy = sx * sy\<close> is_perm[of xy sx sy] by simp
-  then have "[f x_ind y_ind. y_ind \<leftarrow> [0..<sy], x_ind \<leftarrow> [0..<sx]] \<in> set (permutations xy)" using perm_prop1[of f "[0..<sy]" "[0..<sx]" xy] by simp
+  then have "[f x_ind y_ind. y_ind \<leftarrow> [0..<sy], x_ind \<leftarrow> [0..<sx]] \<in> set (permutations xy)" using perm_prop3[of f "[0..<sy]" "[0..<sx]" xy] by simp
   show ?thesis
     using \<open>concat (map (\<lambda>y_ind. map (\<lambda>x_ind. f x_ind y_ind) [0..<sx]) [0..<sy]) \<in> set (permutations xy)\<close> \<open>f = (\<lambda>x y. xy ! (x * sy + y))\<close> by auto
 qed
@@ -4380,8 +5166,12 @@ theorem inter_prop1: "xs \<noteq> [] \<Longrightarrow> interleave xs ys \<noteq>
   using interleave.elims by blast
 
 theorem perm_is_equal: "xs \<in> set (permutations ys) \<Longrightarrow> evaluate xs = evaluate ys"
-  apply (auto simp: evaluate_def)
-  by (metis Choice_prop_1_1 perm_prop_2)
+proof -
+  assume "xs \<in> set (permutations ys)"
+  have "\<forall>C. evaluate xs C = evaluate ys C"
+    using \<open>xs \<in> set (permutations ys)\<close> perm_eval by auto
+  then show ?thesis by auto
+qed
 
 theorem "evaluate (xs \<parallel> ys) = evaluate (ys \<parallel> xs)"
   using is_permutation perm_is_equal
