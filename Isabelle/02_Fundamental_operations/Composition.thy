@@ -123,15 +123,15 @@ lemma range_decreases_composition: "Range_p (y;x) \<subseteq> Range_p x"
   by (auto simp: Range_p_def composition_def corestrict_r_def restrict_r_def restr_post_def)
 
 text \<open>Composition is not refinement-safe due to the example below. All involved programs are feasible and q1 is independant from p2 and q2 from p1\<close>
-theorem "p \<subseteq>\<^sub>p q \<Longrightarrow> p;a \<subseteq>\<^sub>p q;a"
+theorem "p \<sqsubseteq>\<^sub>p q \<Longrightarrow> p;a \<sqsubseteq>\<^sub>p q;a"
   oops
 
-theorem composition_subsafety: "a \<preceq>\<^sub>p b \<Longrightarrow> a;c \<preceq>\<^sub>p b;c" \<comment> \<open>Composition_subsafety\<close>
-  apply (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def composition_def restr_post_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
+theorem composition_subsafety: "a \<subseteq>\<^sub>p b \<Longrightarrow> a;c \<subseteq>\<^sub>p b;c" \<comment> \<open>Composition_subsafety\<close>
+  apply (auto simp: specialize_def extends_def weakens_def strengthens_def restrict_r_def composition_def restr_post_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
   by fastforce
 
-theorem composition_subsafety2: "a \<preceq>\<^sub>p b \<Longrightarrow> c;a \<preceq>\<^sub>p c;b" \<comment> \<open>Composition_subsafety\<close>
-  by (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def composition_def restr_post_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
+theorem composition_subsafety2: "a \<subseteq>\<^sub>p b \<Longrightarrow> c;a \<subseteq>\<^sub>p c;b" \<comment> \<open>Composition_subsafety\<close>
+  by (auto simp: specialize_def extends_def weakens_def strengthens_def restrict_r_def composition_def restr_post_def corestrict_r_def S_def Field_def Range_iff Domain_iff Un_def)
 
 value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr>" \<comment> \<open>q1\<close>
 value "\<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr>" \<comment> \<open>q2\<close>
@@ -140,13 +140,13 @@ value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr>" \<comment> \
 value "\<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>" \<comment> \<open>p2\<close>
 
 
-value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> \<subseteq>\<^sub>p \<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr>"
-value "\<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr> \<subseteq>\<^sub>p \<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>"
+value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> \<sqsubseteq>\<^sub>p \<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr>"
+value "\<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr> \<sqsubseteq>\<^sub>p \<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>"
 
 value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr>"
 value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>"
 
-value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr> \<subseteq>\<^sub>p  \<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>"
+value "\<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2,3}, post={(2,4),(3,5)}\<rparr> \<sqsubseteq>\<^sub>p  \<lparr>State={1::nat}, Pre={1}, post={(1,2),(1,3)}\<rparr> ; \<lparr>State={1::nat}, Pre={2}, post={(2,4)}\<rparr>"
 
 theorem comp_range_p_prop: "Range_p (q) \<subseteq> C \<Longrightarrow> Range_p (p;q) \<subseteq> C"
   by (auto simp: Range_p_def composition_def restrict_r_def corestrict_r_def restr_post_def)

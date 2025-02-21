@@ -60,10 +60,10 @@ next
     by (simp add: local.Cons) 
 qed
 
-
 theorem conc_elems_state: "x \<in> set (conc_elems xs) \<Longrightarrow> S x = complete_state xs"
-  apply (simp add: conc_elems_def)
-  by (metis Concat_state imageE permutation_complete_state_equality)
+  apply (auto simp add: conc_elems_def) using Concat_state[of xs] permutation_complete_state_equality[of _ xs]
+  apply (metis Concat.simps(1) Concat_state simp_5 state_composition_1)
+  by (metis Choice.simps(2) Choice_prop_1_1 Choice_state_1 Concat_state in_set_member member_rec(2) state_prop8 subset_iff)
 
 
 theorem atomic_conc_complete_state: "S (atomic_conc xs) = complete_state xs"
@@ -81,14 +81,15 @@ proof -
   show ?thesis using l1 l2 l3 l4 l5 by simp
 qed
 
-theorem atomic_conc_equivalence: "S (Concat xs) = S (atomic_conc xs)"
+theorem atomic_conc_equivalence: "xs \<noteq> [] \<Longrightarrow> S (Concat xs C) = S (atomic_conc xs)"
 proof -
-  have fold_eq: "\<forall>p\<in>set (permutations xs). S (Concat p) = complete_state xs"
-    by (metis Concat_state permutation_complete_state_equality)
+  assume False: "xs \<noteq> []"
+  have fold_eq: "\<forall>p\<in>set (permutations xs). S (Concat p C) = complete_state xs"
+    by (metis Concat_state False perm_prop2 permutation_complete_state_equality)
   have "S (atomic_conc xs) = complete_state xs"
     by (simp add: atomic_conc_complete_state)
-  moreover have "S (Concat xs) = complete_state xs"
-    by (simp add: Concat_state)
+  moreover have "S (Concat xs C) = complete_state xs"
+    using Concat_state False by auto
   ultimately show ?thesis by simp
 qed
 
@@ -166,8 +167,9 @@ theorem skip_prop_5: "fold (;) xs (Skip (complete_state (a # xs)) ; a) \<equiv>\
   by (simp add: complete_state_prop list_equiv_comp_equiv list_equiv_reflexive skip_prop_6)
 
 
-theorem get_trace: "x \<in> set (conc_elems xs) \<Longrightarrow> \<exists>tr. tr \<in> set (permutations xs) \<and> x = Concat tr"
-  by (auto simp: conc_elems_def)
+theorem get_trace: "xs \<noteq> [] \<Longrightarrow> x \<in> set (conc_elems xs) \<Longrightarrow> \<exists>tr. tr \<in> set (permutations xs) \<and> x = Concat tr C"
+  apply (auto simp: conc_elems_def)
+  by (smt (verit) Concat.elims Concat.simps(2) Concat.simps(3) perm_prop2)
 
 
 theorem skip_prop_6: "Skip (S p \<union> x) ; p \<equiv>\<^sub>p Skip (S p) ; p"
@@ -290,7 +292,7 @@ theorem fold_compress_3: "\<exists>s' e'. (s';a);e' \<equiv>\<^sub>p (foldl (;) 
 theorem conc_elems_dec:"x \<in> set (conc_elems (a # xs)) \<Longrightarrow> \<exists>s' e'. (s';a);e' = x \<or> s';a=x \<or> a = x\<or> a;e' = x"
 proof -
   fix x xs assume a1: "x \<in> set (conc_elems (a # xs))"
-  obtain tr where o1: "tr \<in> set (permutations (a # xs)) \<and> x = Concat tr" using get_trace a1 by blast
+  obtain tr C where o1: "tr \<in> set (permutations (a # xs)) \<and> x = Concat tr C" using get_trace a1 by blast
   obtain x\<^sub>s x\<^sub>e where o2: "x\<^sub>s@[a]@x\<^sub>e = tr"
     by (metis Cons_eq_appendI append_eq_append_conv2 append_self_conv o1 permutation_split_set)
   show "\<exists>s' e'. (s';a);e' = x \<or> s';a=x \<or> a = x\<or> a;e' = x"
@@ -298,7 +300,7 @@ proof -
     case True
     have l1: "a#x\<^sub>e = tr"
       using True o2 by auto
-    have l2: "x = Concat (a#x\<^sub>e)"
+    have l2: "x = Concat (a#x\<^sub>e) C"
       by (simp add: local.l1 o1)
     have l3: "(foldl (;) (Skip (complete_state (a#x\<^sub>e))) (a#x\<^sub>e)) = Skip (complete_state (a#x\<^sub>e)) ; (foldl (;) (a) (x\<^sub>e))"
       by (simp add: simp_2)
@@ -347,9 +349,9 @@ proof -
       case False
       obtain x1\<^sub>e xt\<^sub>e where o4: "x1\<^sub>e#xt\<^sub>e = x\<^sub>e"
         by (metis False permutations.elims)
-      have l7: "Concat tr = Concat (x\<^sub>s@(a#x\<^sub>e))"
+      have l7: "Concat tr C = Concat (x\<^sub>s@(a#x\<^sub>e)) C"
         using o2 by auto
-      have l8: "... = (Concat x\<^sub>s ; a) ; Concat x\<^sub>e"
+      have l8: "... = ((Concat x\<^sub>s C) ; a) ; (Concat x\<^sub>e C)"
         by (smt (verit) Concat.elims Concat.simps(2) Concat_prop_1 False Nil_is_append_conv \<open>\<And>thesis. (\<And>x1\<^sub>e xt\<^sub>e. x1\<^sub>e # xt\<^sub>e = x\<^sub>e \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> \<open>\<And>thesis. (\<And>x1\<^sub>s xt\<^sub>s. x1\<^sub>s # xt\<^sub>s = x\<^sub>s \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> \<open>\<And>thesis. (\<And>x\<^sub>s x\<^sub>e. x\<^sub>s @ [a] @ x\<^sub>e = tr \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> append_Cons append_eq_append_conv2 append_self_conv2 foldl_Cons foldl_Nil foldl_append list.distinct(1) list.inject local.l7 not_Cons_self2 o2 o3)
       show ?thesis
         using local.l7 local.l8 o1 by auto
@@ -357,8 +359,9 @@ proof -
   qed
 qed
 
-theorem concat_prop_1: "tr \<in> set (permutations xs) \<Longrightarrow> Concat tr \<in> set (conc_elems xs)"
-  by (auto simp: conc_elems_def)
+theorem concat_prop_1: "xs \<noteq> [] \<Longrightarrow> tr \<in> set (permutations xs) \<Longrightarrow> Concat tr (complete_state xs) \<in> set (conc_elems xs)"
+  apply (auto simp: conc_elems_def) [1]
+  by (simp add: permutation_complete_state_equality)
 
 
 
@@ -396,27 +399,28 @@ qed
 
 theorem atomic_conc_inv: "tr \<in> set (conc_elems xs) \<Longrightarrow> tr \<union>\<^sub>p atomic_conc xs \<equiv>\<^sub>p atomic_conc xs"
   apply (auto simp: atomic_conc_def)
-  by (smt (verit, ccfv_threshold) Choice.simps(2) Choice_prop_1_3 Nil_is_append_conv append_self_conv2 choice_commute choice_decomp_1 in_set_conv_decomp_first program_is_subprogram_of_choice subprogram_is_order)
+  by (smt (verit, ccfv_threshold) Choice.simps(2) Choice_prop_1_3 Nil_is_append_conv append_self_conv2 choice_commute choice_decomp_1 in_set_conv_decomp_first program_is_specialize_of_choice specialize_is_order)
 
-theorem atomic_conc_inv2: "x \<in> set (conc_elems xs) \<Longrightarrow> x \<preceq>\<^sub>p atomic_conc xs"
+theorem atomic_conc_inv2: "x \<in> set (conc_elems xs) \<Longrightarrow> x \<subseteq>\<^sub>p atomic_conc xs"
 proof -
   assume "x \<in> set (conc_elems xs)"
   then obtain pps :: "'a Program \<Rightarrow> 'a Program list \<Rightarrow> 'a Program list" and ppsa :: "'a Program \<Rightarrow> 'a Program list \<Rightarrow> 'a Program list" and ppsb :: "'a Program \<Rightarrow> 'a Program list \<Rightarrow> 'a Program list" and ppsc :: "'a Program \<Rightarrow> 'a Program list \<Rightarrow> 'a Program list" where
     f1: "conc_elems xs = pps x (conc_elems xs) @ x # ppsa x (conc_elems xs)"
     by (meson in_set_conv_decomp)
-  then have f2: "x \<preceq>\<^sub>p \<Union>\<^sub>p (conc_elems xs) \<or> [] = pps x (conc_elems xs) @ ppsa x (conc_elems xs)"
-    by (metis (no_types) Choice_prop_1_3 program_is_subprogram_of_choice)
+  then have f2: "x \<subseteq>\<^sub>p \<Union>\<^sub>p (conc_elems xs) \<or> [] = pps x (conc_elems xs) @ ppsa x (conc_elems xs)"
+    by (metis (no_types) Choice_prop_1_3 program_is_specialize_of_choice)
   { assume "x \<noteq> \<Union>\<^sub>p (conc_elems xs)"
     then have "\<not> List.member (insert_all x []) (conc_elems xs)"
       by (metis (no_types) Choice.simps(2) Un_iff append.right_neutral in_set_member insert_all.simps(1) member_rec(1) perm_inv_3 set_append singleton_permutation)
-    then have "x \<preceq>\<^sub>p \<Union>\<^sub>p (conc_elems xs)"
+    then have "x \<subseteq>\<^sub>p \<Union>\<^sub>p (conc_elems xs)"
       using f2 f1 in_set_member by fastforce }
   then show ?thesis
-    by (metis (full_types) atomic_conc_def subprogram_is_preorder)
+    by (metis (full_types) atomic_conc_def specialize_is_preorder)
 qed
 
-theorem atomic_conc_inv3: "Concat xs \<preceq>\<^sub>p atomic_conc xs"
-  by (meson atomic_conc_inv2 concat_prop_1 in_set_member permutation_reflexive)
+theorem atomic_conc_inv3: "xs \<noteq> [] \<Longrightarrow> Concat xs (complete_state xs) \<subseteq>\<^sub>p atomic_conc xs"
+  using atomic_conc_inv2 concat_prop_1 in_set_member permutation_reflexive
+  by metis
 
 theorem perm_prop: "set (permutations (a@b)) = set (permutations (b@a))"
   apply (induction a arbitrary: b)
@@ -627,8 +631,17 @@ qed
 
 
 
-theorem atomic_prop2: "ys \<in> set (permutations xs) \<Longrightarrow> Concat ys \<preceq>\<^sub>p atomic_conc xs"
-  by (simp add: atomic_conc_inv2 concat_prop_1)
+theorem atomic_prop2: "xs \<noteq> [] \<Longrightarrow> ys \<in> set (permutations xs) \<Longrightarrow> Concat ys (complete_state xs) \<subseteq>\<^sub>p atomic_conc xs"
+proof -
+  assume "ys \<in> set (permutations xs)"
+  have "complete_state xs = complete_state ys"
+    by (simp add: \<open>ys \<in> set (permutations xs)\<close> permutation_complete_state_equality)
+  have "Concat ys (complete_state xs) \<in> set (conc_elems xs)" apply (auto simp: conc_elems_def)
+    using \<open>complete_state xs = complete_state ys\<close> \<open>ys \<in> set (permutations xs)\<close> by auto
+  show "Concat ys (complete_state xs) \<subseteq>\<^sub>p atomic_conc xs"
+    using atomic_conc_inv2[of "Concat ys (complete_state xs)" xs] concat_prop_1[of xs ys]
+    by (simp add: \<open>Concat ys (complete_state xs) \<in> set (conc_elems xs)\<close>)
+qed
 
 theorem atomic_prop3: "atomic_conc [a,b] \<equiv>\<^sub>p a ; b \<union>\<^sub>p b ; a"
 proof -
@@ -683,8 +696,8 @@ lemma set_to_list_set: "finite xs \<Longrightarrow> set (set_to_list xs) = xs"
 
 value "drop 3 [1::nat, 2,3,4,5,6,7]"
 
-theorem subprogram_prop: "a \<triangleq> b \<Longrightarrow> b \<preceq>\<^sub>p a \<and> a \<preceq>\<^sub>p b"
-  by (auto simp: subprogram_def extends_def Definitions.equal_def weakens_def strengthens_def restrict_r_def S_def Field_def)
+theorem specialize_prop: "a \<triangleq> b \<Longrightarrow> b \<subseteq>\<^sub>p a \<and> a \<subseteq>\<^sub>p b"
+  by (auto simp: specialize_def extends_def Definitions.equal_def weakens_def strengthens_def restrict_r_def S_def Field_def)
 
 theorem atomic_prop6: "atomic_conc [a \<union>\<^sub>p b, c] \<equiv>\<^sub>p atomic_conc [a,c] \<union>\<^sub>p atomic_conc [b,c]"
 proof -

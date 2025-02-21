@@ -45,7 +45,7 @@ theorem char_rel_weakens: "is_feasible p\<^sub>1 \<Longrightarrow> weakens p\<^s
   by (simp add: Domain.simps)
 
 
-theorem char_rel_prop1: "p \<subseteq>\<^sub>p q \<Longrightarrow> char_rel p \<sslash>\<^sub>r (Domain (char_rel q)) \<subseteq> char_rel q"
+theorem char_rel_prop1: "p \<sqsubseteq>\<^sub>p q \<Longrightarrow> char_rel p \<sslash>\<^sub>r (Domain (char_rel q)) \<subseteq> char_rel q"
   by (auto simp: char_rel_def refines_def strengthens_def restrict_r_def)
 
 theorem charrel_strengthen: "all_feasible [p, q] \<Longrightarrow> char_rel p \<sslash>\<^sub>r (Domain (char_rel q)) \<subseteq> char_rel q = strengthens p q" \<comment> \<open>Charrel_strengthen\<close>
@@ -54,10 +54,10 @@ theorem charrel_strengthen: "all_feasible [p, q] \<Longrightarrow> char_rel p \<
 theorem charrel_weaken: "all_feasible [p, q] \<Longrightarrow> Domain (char_rel q) \<subseteq> Domain (char_rel p) = weakens p q" \<comment> \<open>Charrel_weaken\<close>
   by (auto simp: char_rel_def weakens_def restrict_r_def is_feasible_def Domain_iff subset_iff)
 
-theorem charrel_subprogram: "q \<preceq>\<^sub>p p \<Longrightarrow> char_rel q \<le> char_rel p" \<comment> \<open>Charrel_subprogram\<close>
-  by (auto simp: subprogram_def char_rel_def extends_def weakens_def strengthens_def restrict_r_def)
+theorem charrel_specialize: "q \<subseteq>\<^sub>p p \<Longrightarrow> char_rel q \<le> char_rel p" \<comment> \<open>Charrel_specialize\<close>
+  by (auto simp: specialize_def char_rel_def extends_def weakens_def strengthens_def restrict_r_def)
 
-theorem charrel_refine: "q \<subseteq>\<^sub>p p \<Longrightarrow> char_rel q \<sslash>\<^sub>r (Pre p) \<le> char_rel p" \<comment> \<open>Charrel_refine\<close>
+theorem charrel_refine: "q \<sqsubseteq>\<^sub>p p \<Longrightarrow> char_rel q \<sslash>\<^sub>r (Pre p) \<le> char_rel p" \<comment> \<open>Charrel_refine\<close>
   by (auto simp: refines_def char_rel_def extends_def weakens_def strengthens_def restrict_r_def)
 
 theorem char_rel_prop6: "Field (char_rel a) \<subseteq> S a"

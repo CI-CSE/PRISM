@@ -26,45 +26,45 @@ theorem "Infeas C = \<lparr>State=C, Pre=TRUE C, post=FALSE\<rparr>"
   by (auto simp: Infeas_def TRUE_def FALSE_def ID_def)
 
 
-theorem special_refine1: "Infeas C \<subseteq>\<^sub>p Skip C" \<comment> \<open>Special_refine\<close>
+theorem special_refine1: "Infeas C \<sqsubseteq>\<^sub>p Skip C" \<comment> \<open>Special_refine\<close>
   by (auto simp: Havoc_def Skip_def Field_def Infeas_def refines_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
-theorem special_refine2: "Skip C \<subseteq>\<^sub>p Havoc C" \<comment> \<open>Special_refine\<close>
+theorem special_refine2: "Skip C \<sqsubseteq>\<^sub>p Havoc C" \<comment> \<open>Special_refine\<close>
   by (auto simp: Havoc_def Skip_def Infeas_def refines_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
-theorem special_refine3: "Havoc C \<subseteq>\<^sub>p Fail C" \<comment> \<open>Special_refine\<close>
+theorem special_refine3: "Havoc C \<sqsubseteq>\<^sub>p Fail C" \<comment> \<open>Special_refine\<close>
   by (auto simp: Havoc_def Fail_def refines_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
-theorem special_refine4: "Infeas C \<subseteq>\<^sub>p Fail C" \<comment> \<open>Special_refine\<close>
+theorem special_refine4: "Infeas C \<sqsubseteq>\<^sub>p Fail C" \<comment> \<open>Special_refine\<close>
   by (auto simp: Infeas_def Fail_def refines_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
-theorem special_subprogram1: "Fail C \<preceq>\<^sub>p Infeas C" \<comment> \<open>Special_subprogram\<close>
-  by (auto simp: Infeas_def Fail_def subprogram_def extends_def weakens_def strengthens_def S_def restrict_r_def)
+theorem special_specialize1: "Fail C \<subseteq>\<^sub>p Infeas C" \<comment> \<open>Special_specialize\<close>
+  by (auto simp: Infeas_def Fail_def specialize_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
-theorem special_subprogram2: "Infeas C \<preceq>\<^sub>p Skip C" \<comment> \<open>Special_subprogram\<close>
-by (auto simp: Infeas_def Skip_def Field_def Havoc_def subprogram_def extends_def weakens_def strengthens_def S_def restrict_r_def)
+theorem special_specialize2: "Infeas C \<subseteq>\<^sub>p Skip C" \<comment> \<open>Special_specialize\<close>
+by (auto simp: Infeas_def Skip_def Field_def Havoc_def specialize_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
-theorem special_subprogram3: "Skip C \<preceq>\<^sub>p Havoc C" \<comment> \<open>Special_subprogram\<close>
-  by (auto simp: Infeas_def Skip_def Field_def Havoc_def subprogram_def extends_def weakens_def strengthens_def S_def restrict_r_def)
+theorem special_specialize3: "Skip C \<subseteq>\<^sub>p Havoc C" \<comment> \<open>Special_specialize\<close>
+  by (auto simp: Infeas_def Skip_def Field_def Havoc_def specialize_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
-theorem "C \<subseteq> D \<Longrightarrow> Fail D \<subseteq>\<^sub>p Fail C" \<comment> \<open>Special_nonempty\<close>
+theorem "C \<subseteq> D \<Longrightarrow> Fail D \<sqsubseteq>\<^sub>p Fail C" \<comment> \<open>Special_nonempty\<close>
   by (auto simp: refines_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def)
-theorem "C \<subseteq> D \<Longrightarrow> Fail C \<preceq>\<^sub>p Fail D"
-  by (auto simp: refines_def subprogram_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def)
-theorem "C \<subseteq> D \<Longrightarrow> Infeas D \<subseteq>\<^sub>p Infeas C"
+theorem "C \<subseteq> D \<Longrightarrow> Fail C \<subseteq>\<^sub>p Fail D"
+  by (auto simp: refines_def specialize_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def)
+theorem "C \<subseteq> D \<Longrightarrow> Infeas D \<sqsubseteq>\<^sub>p Infeas C"
   by (auto simp: refines_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def)
-theorem "C \<subseteq> D \<Longrightarrow> Infeas C \<preceq>\<^sub>p Infeas D"
-  by (auto simp: refines_def subprogram_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def)
-theorem "C \<subseteq> D \<Longrightarrow> Skip D \<subseteq>\<^sub>p Skip C"
+theorem "C \<subseteq> D \<Longrightarrow> Infeas C \<subseteq>\<^sub>p Infeas D"
+  by (auto simp: refines_def specialize_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def)
+theorem "C \<subseteq> D \<Longrightarrow> Skip D \<sqsubseteq>\<^sub>p Skip C"
   by (auto simp: refines_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def Skip_def Field_def)
-theorem "C \<subseteq> D \<Longrightarrow> Skip C \<preceq>\<^sub>p Skip D"
-  by (auto simp: refines_def subprogram_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def Skip_def Field_def)
+theorem "C \<subseteq> D \<Longrightarrow> Skip C \<subseteq>\<^sub>p Skip D"
+  by (auto simp: refines_def specialize_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def Skip_def Field_def)
+theorem "C \<subseteq> D \<Longrightarrow> Havoc C \<sqsubseteq>\<^sub>p Havoc D"
+  oops
+theorem "C \<subseteq> D \<Longrightarrow> Havoc D \<sqsubseteq>\<^sub>p Havoc C"
+  oops
 theorem "C \<subseteq> D \<Longrightarrow> Havoc C \<subseteq>\<^sub>p Havoc D"
-  oops
-theorem "C \<subseteq> D \<Longrightarrow> Havoc D \<subseteq>\<^sub>p Havoc C"
-  oops
-theorem "C \<subseteq> D \<Longrightarrow> Havoc C \<preceq>\<^sub>p Havoc D"
-  by (auto simp: refines_def subprogram_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def Skip_def Field_def Havoc_def)
+  by (auto simp: refines_def specialize_def extends_def weakens_def strengthens_def Fail_def restrict_r_def S_def Infeas_def Skip_def Field_def Havoc_def)
 
 
 end

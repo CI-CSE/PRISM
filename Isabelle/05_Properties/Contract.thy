@@ -67,7 +67,7 @@ theorem sp_distrib: "b sp (p \<union> q) = b sp p \<union> b sp q" \<comment> \<
 theorem wp_distrib2: "(b wp p) \<union> (b wp q) \<subseteq> b wp (p \<union> q)" \<comment> \<open>Wp_distrib\<close>
   by (auto simp: weakest_precondition_def new_behavior_def)
 
-theorem sanity: "q \<subseteq>\<^sub>p p \<Longrightarrow>  \<lparr>a_specification=s, a_implementation=q\<rparr> \<subseteq>\<^sub>c  \<lparr>a_specification=s, a_implementation=p\<rparr>"
+theorem sanity: "q \<sqsubseteq>\<^sub>p p \<Longrightarrow>  \<lparr>a_specification=s, a_implementation=q\<rparr> \<sqsubseteq>\<^sub>c  \<lparr>a_specification=s, a_implementation=p\<rparr>"
   by (simp add: refines_c_def)
 
 theorem mai_theorem_1: "is_feasible p \<Longrightarrow> is_correct (MAI p)" \<comment> \<open>MAI_theorem\<close>

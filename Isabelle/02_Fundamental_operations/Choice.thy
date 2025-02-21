@@ -68,31 +68,31 @@ lemma condition_for_choice_simplification: "Range_p a \<inter> Pre y = {} \<Long
 lemma choice_range: "Range_p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) = Range_p p\<^sub>1 \<union> Range_p p\<^sub>2" \<comment> \<open>Choice_range\<close>
   by (auto simp: Range_p_def restr_post_def restrict_r_def)
 
-lemma refinement_safety_choice_e: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> extends (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
+lemma refinement_safety_choice_e: "q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> extends (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
   by (metis choice_state extends_def refines_def sup_mono)
 
-lemma refinement_safety_choice_w: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> weakens (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
+lemma refinement_safety_choice_w: "q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> weakens (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
   by (auto simp: refines_def weakens_def choice_def restr_post_def restrict_r_def)
 
-lemma refinement_safety_choice_s_1: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> strengthens (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
+lemma refinement_safety_choice_s_1: "q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> strengthens (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
   oops
 
-lemma refinement_safety_choice_s_2: "strengthens q\<^sub>1 p\<^sub>2 \<Longrightarrow> strengthens q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> strengthens (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
+lemma refinement_safety_choice_s_2: "strengthens q\<^sub>1 p\<^sub>2 \<Longrightarrow> strengthens q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> strengthens (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
   by (auto simp: refines_def strengthens_def choice_def restr_post_def restrict_r_def)
 
-theorem refinement_safety_choice: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) \<subseteq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>NEW T23 weak\<close>
+theorem refinement_safety_choice: "q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) \<sqsubseteq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>NEW T23 weak\<close>
   oops
-theorem refinement_safety_choice: "strengthens a c \<Longrightarrow> a \<subseteq>\<^sub>p b \<Longrightarrow> (a \<union>\<^sub>p c) \<subseteq>\<^sub>p (b \<union>\<^sub>p c)" \<comment> \<open>Choice_refsafety2\<close>
+theorem refinement_safety_choice: "strengthens a c \<Longrightarrow> a \<sqsubseteq>\<^sub>p b \<Longrightarrow> (a \<union>\<^sub>p c) \<sqsubseteq>\<^sub>p (b \<union>\<^sub>p c)" \<comment> \<open>Choice_refsafety2\<close>
   by (auto simp: refinement_safety_choice_e refinement_safety_choice_s_2 refinement_safety_choice_w refines_def weakens_def strengthens_def extends_def restrict_r_def restr_post_def)
 
-theorem refinement_safety_choice_1: "strengthens q\<^sub>1 p\<^sub>2 \<Longrightarrow> strengthens q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) \<subseteq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>NEW T23 weak\<close>
+theorem refinement_safety_choice_1: "strengthens q\<^sub>1 p\<^sub>2 \<Longrightarrow> strengthens q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) \<sqsubseteq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>NEW T23 weak\<close>
   by (simp add: refinement_safety_choice_e refinement_safety_choice_s_2 refinement_safety_choice_w refines_def)
 
-theorem refinement_safety_choice_2: "independent q\<^sub>1 p\<^sub>2 \<Longrightarrow> independent q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) \<subseteq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>NEW T23 weaker\<close>
+theorem refinement_safety_choice_2: "independent q\<^sub>1 p\<^sub>2 \<Longrightarrow> independent q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> (q\<^sub>1 \<union>\<^sub>p q\<^sub>2) \<sqsubseteq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)" \<comment> \<open>NEW T23 weaker\<close>
   by (simp add: independent_def independent_strengthens refinement_safety_choice_1)
 
-theorem choice_safety1: "a \<preceq>\<^sub>p b \<Longrightarrow> a \<union>\<^sub>p c \<preceq>\<^sub>p b \<union>\<^sub>p c" \<comment> \<open>Choice_safety1\<close>
-  by (auto simp: subprogram_def extends_def weakens_def strengthens_def restr_post_def restrict_r_def)
+theorem choice_safety1: "a \<subseteq>\<^sub>p b \<Longrightarrow> a \<union>\<^sub>p c \<subseteq>\<^sub>p b \<union>\<^sub>p c" \<comment> \<open>Choice_safety1\<close>
+  by (auto simp: specialize_def extends_def weakens_def strengthens_def restr_post_def restrict_r_def)
 
 theorem implements_safety_choice: "is_feasible c \<Longrightarrow> implements a b \<Longrightarrow> implements (a \<union>\<^sub>p c) (b \<union>\<^sub>p c)"
   oops
@@ -100,8 +100,8 @@ theorem implements_safety_choice: "is_feasible c \<Longrightarrow> implements a 
 theorem implements_safety_choice: "strengthens a c \<Longrightarrow> is_feasible c \<Longrightarrow> implements a b \<Longrightarrow> implements (a \<union>\<^sub>p c) (b \<union>\<^sub>p c)"
   by (simp add: implements_def refinement_safety_choice choice_feasible)
 
-theorem program_is_subprogram_of_choice: "p\<^sub>1 \<preceq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
-  by (auto simp: subprogram_def choice_def extends_def S_def weakens_def strengthens_def restr_post_def restrict_r_def)
+theorem program_is_specialize_of_choice: "p\<^sub>1 \<subseteq>\<^sub>p (p\<^sub>1 \<union>\<^sub>p p\<^sub>2)"
+  by (auto simp: specialize_def choice_def extends_def S_def weakens_def strengthens_def restr_post_def restrict_r_def)
 
 theorem choice_choice_range: "Range_p p \<subseteq> Range_p (p \<union>\<^sub>p q)"
   by (auto simp: Range_p_def choice_def restrict_r_def restr_post_def)
@@ -118,7 +118,7 @@ theorem empty_is_neutral: "S a = {} \<Longrightarrow> a \<union>\<^sub>p (b \<un
 theorem choice_idem_2: "a \<union>\<^sub>p (a \<union>\<^sub>p b) = a \<union>\<^sub>p b"
   by (auto simp: choice_def S_def Field_def restr_post_def restrict_r_def)
 
-theorem choice_suprogram_prop: "a \<preceq>\<^sub>p c \<Longrightarrow> b \<preceq>\<^sub>p c \<Longrightarrow> a \<union>\<^sub>p b \<preceq>\<^sub>p c"
-  by (auto simp: subprogram_def choice_def extends_def S_def weakens_def strengthens_def restr_post_def restrict_r_def Field_def)
+theorem choice_suprogram_prop: "a \<subseteq>\<^sub>p c \<Longrightarrow> b \<subseteq>\<^sub>p c \<Longrightarrow> a \<union>\<^sub>p b \<subseteq>\<^sub>p c"
+  by (auto simp: specialize_def choice_def extends_def S_def weakens_def strengthens_def restr_post_def restrict_r_def Field_def)
 
 end

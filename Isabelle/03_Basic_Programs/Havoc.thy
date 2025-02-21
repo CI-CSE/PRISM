@@ -136,7 +136,7 @@ proof -
     using l6 a0 by simp
 qed
 
-theorem refine_havoc: "p \<subseteq>\<^sub>p Havoc (S p) \<sslash>\<^sub>p Pre p" \<comment> \<open>/Refine_havoc/\<close>
+theorem refine_havoc: "p \<sqsubseteq>\<^sub>p Havoc (S p) \<sslash>\<^sub>p Pre p" \<comment> \<open>/Refine_havoc/\<close>
   apply (auto simp: refines_def)
 proof -
   show "extends p (Havoc (S p) \<sslash>\<^sub>p Pre p)"
@@ -146,10 +146,10 @@ proof -
   show "strengthens p (Havoc (S p) \<sslash>\<^sub>p Pre p)"
     by (auto simp: strengthens_def restrict_p_def restrict_r_def S_def Havoc_def Field_def)
 qed
-theorem subprogram_havoc: "p \<preceq>\<^sub>p Havoc (S p) \<sslash>\<^sub>p Pre p" \<comment> \<open>/Subprogram_havoc/\<close>
-  by (auto simp: subprogram_def extends_def weakens_def strengthens_def Havoc_def S_def restrict_p_def restrict_r_def Field_def)
+theorem specialize_havoc: "p \<subseteq>\<^sub>p Havoc (S p) \<sslash>\<^sub>p Pre p" \<comment> \<open>/Subprogram_havoc/\<close>
+  by (auto simp: specialize_def extends_def weakens_def strengthens_def Havoc_def S_def restrict_p_def restrict_r_def Field_def)
 
-theorem refine_havoc2: "is_total p \<Longrightarrow> p \<subseteq>\<^sub>p Havoc (S p)" \<comment> \<open>/refine_havoc2/\<close>
+theorem refine_havoc2: "is_total p \<Longrightarrow> p \<sqsubseteq>\<^sub>p Havoc (S p)" \<comment> \<open>/refine_havoc2/\<close>
   apply (auto simp: refines_def is_total_def)
 proof -
   show "Pre p = S p \<Longrightarrow> extends p (Havoc (S p))"
@@ -160,8 +160,8 @@ proof -
     by (auto simp: S_def strengthens_def Havoc_def restrict_p_def restrict_r_def Field_def)
 qed
 
-theorem subprogram_havoc2: "S p \<subseteq> C \<Longrightarrow> p \<preceq>\<^sub>p Havoc (C)" \<comment> \<open>/Subprogram_havoc2/\<close>
-  by (auto simp: S_def subprogram_def extends_def weakens_def strengthens_def Havoc_def restrict_r_def Field_def)
+theorem specialize_havoc2: "S p \<subseteq> C \<Longrightarrow> p \<subseteq>\<^sub>p Havoc (C)" \<comment> \<open>/Subprogram_havoc2/\<close>
+  by (auto simp: S_def specialize_def extends_def weakens_def strengthens_def Havoc_def restrict_r_def Field_def)
 
 
 end

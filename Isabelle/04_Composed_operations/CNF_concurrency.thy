@@ -870,25 +870,25 @@ lemma Conc_choice2_1: "equal_cnf ((xs \<parallel> zs) \<union>\<^sub>c (ys \<par
 theorem Conc_choice2_: "evaluate ((xs \<parallel> zs) \<union>\<^sub>c (ys \<parallel> zs)) = evaluate ((xs \<union>\<^sub>c ys) \<parallel> zs)"
   using Conc_choice2_1 equal_eval by blast
 
-theorem eval_subprogram: "evaluate ys C \<preceq>\<^sub>p evaluate (y # ys) C"
+theorem eval_specialize: "evaluate ys C \<subseteq>\<^sub>p evaluate (y # ys) C"
   apply (auto simp: evaluate_def)
-  by (metis Choice.simps(1) Choice_prop_1 Choice_prop_1_2 Choice_prop_3 fail_subprogram3 program_is_subprogram_of_choice)
+  by (metis Choice.simps(1) Choice_prop_1 Choice_prop_1_2 Choice_prop_3 fail_specialize3 program_is_specialize_of_choice)
 
-theorem eval_subprogram2: "evaluate [y] C \<preceq>\<^sub>p evaluate (y # ys) C"
+theorem eval_specialize2: "evaluate [y] C \<subseteq>\<^sub>p evaluate (y # ys) C"
   apply (auto simp: evaluate_def)
-  by (metis Choice.simps(2) Choice_prop_1_2 program_is_subprogram_of_choice subprogram_is_preorder)
+  by (metis Choice.simps(2) Choice_prop_1_2 program_is_specialize_of_choice specialize_is_preorder)
 
-lemma eval_subprogram3:"set xs \<subseteq> set [y] \<Longrightarrow> evaluate xs C \<preceq>\<^sub>p evaluate [y] C"
+lemma eval_specialize3:"set xs \<subseteq> set [y] \<Longrightarrow> evaluate xs C \<subseteq>\<^sub>p evaluate [y] C"
   apply (induction xs) apply (auto simp:)
-  apply (simp add: eval_subprogram)
-  by (metis choice_suprogram_prop concat_prop3 eval_subprogram2)
+  apply (simp add: eval_specialize)
+  by (metis choice_suprogram_prop concat_prop3 eval_specialize2)
 
-lemma eval_subprogram4:"set [x] \<subseteq> set ys \<Longrightarrow> evaluate [x] C \<preceq>\<^sub>p evaluate ys C"
+lemma eval_specialize4:"set [x] \<subseteq> set ys \<Longrightarrow> evaluate [x] C \<subseteq>\<^sub>p evaluate ys C"
   apply (induction ys) apply (auto simp:)
-  apply (simp add: eval_subprogram2)
-  by (meson eval_subprogram subprogram_is_transitive)
+  apply (simp add: eval_specialize2)
+  by (meson eval_specialize specialize_is_transitive)
 
-lemma eval_subprogram5: "size xs > 1 \<Longrightarrow> equal_cnf xs zs \<Longrightarrow> evaluate xs C = evaluate [] C \<union>\<^sub>p evaluate zs C"
+lemma eval_specialize5: "size xs > 1 \<Longrightarrow> equal_cnf xs zs \<Longrightarrow> evaluate xs C = evaluate [] C \<union>\<^sub>p evaluate zs C"
 proof -
   assume a1: "size xs > 1" and a2: "equal_cnf xs zs"
   have "evaluate xs C = evaluate zs C"
@@ -903,20 +903,20 @@ proof -
     by (simp add: \<open>evaluate [] C \<union>\<^sub>p evaluate zs C = evaluate zs C\<close> \<open>evaluate xs C = evaluate zs C\<close>)
 qed
 
-theorem eval_subprogram6: "size (ys @ zs) > 1 \<Longrightarrow> evaluate ys C \<union>\<^sub>p evaluate zs C = evaluate (ys \<union>\<^sub>c zs) C"
+theorem eval_specialize6: "size (ys @ zs) > 1 \<Longrightarrow> evaluate ys C \<union>\<^sub>p evaluate zs C = evaluate (ys \<union>\<^sub>c zs) C"
   apply (induction ys) apply (auto simp: choice_cnf_def evaluate_def)
   apply (metis Choice_prop_18 One_nat_def choice_commute length_map)
   apply (smt (verit, ccfv_threshold) Choice_prop_19 Cons_eq_appendI add_gr_0 choice_commute length_Cons length_append length_greater_0_conv length_map less_add_same_cancel1 plus_1_eq_Suc)
   by (smt (verit) Choice.simps(2) Choice_prop_1_2 Choice_prop_22 Choice_prop_7 Cons_eq_appendI choice_commute list.discI map_is_Nil_conv self_append_conv)
 
-theorem eval_subprogram7: "size xs \<noteq> 1 \<Longrightarrow> equal_cnf xs (ys \<union>\<^sub>c zs) \<Longrightarrow> evaluate xs C = evaluate ys C \<union>\<^sub>p evaluate zs C"
+theorem eval_specialize7: "size xs \<noteq> 1 \<Longrightarrow> equal_cnf xs (ys \<union>\<^sub>c zs) \<Longrightarrow> evaluate xs C = evaluate ys C \<union>\<^sub>p evaluate zs C"
   apply (cases "xs = []") apply (auto simp: choice_cnf_def)
   apply (simp add: equal_cnf_def evaluate_split1)
   apply (cases "ys = []") apply auto
-  apply (simp add: Suc_lessI eval_subprogram5)
+  apply (simp add: Suc_lessI eval_specialize5)
    apply (cases "zs = []")
   apply (simp add: equal_empty)
-   apply (simp add: Suc_lessI eval_subprogram5)
+   apply (simp add: Suc_lessI eval_specialize5)
   apply (cases "size ys = 1") using concat_prop3 equal_eval 
   apply (metis (no_types, lifting) Cons_eq_appendI One_nat_def append.right_neutral append_eq_append_conv append_eq_append_conv2 length_0_conv length_Suc_conv)
   apply (cases "size zs = 1") using equal_eval
@@ -931,18 +931,18 @@ proof -
     by (simp add: \<open>equal_cnf xs (ys @ zs)\<close> \<open>evaluate ys C \<union>\<^sub>p evaluate zs C = evaluate (ys \<union>\<^sub>c zs) C\<close> choice_cnf_def equal_eval)
 qed
 
-lemma eval_subprogram8: "evaluate [x. x \<leftarrow> xs, f x] C \<preceq>\<^sub>p evaluate xs C"
+lemma eval_specialize8: "evaluate [x. x \<leftarrow> xs, f x] C \<subseteq>\<^sub>p evaluate xs C"
 proof (induction xs)
   case Nil
-  then show ?case apply (simp add: subprogram_is_preorder) done
+  then show ?case apply (simp add: specialize_is_preorder) done
 next
   case (Cons x xs)
-  then show "evaluate [x. x \<leftarrow> (x#xs), f x] C \<preceq>\<^sub>p evaluate (x#xs) C"
+  then show "evaluate [x. x \<leftarrow> (x#xs), f x] C \<subseteq>\<^sub>p evaluate (x#xs) C"
   proof (cases "xs=[]")
     case True
     then show ?thesis apply auto
-      apply (simp add: eval_subprogram2)
-      by (simp add: eval_subprogram)
+      apply (simp add: eval_specialize2)
+      by (simp add: eval_specialize)
   next
     case f1: False
     then show ?thesis
@@ -955,14 +955,14 @@ next
     proof (cases "[x. x \<leftarrow> xs, f x] = []")
       case True
       then show ?thesis apply auto
-        apply (simp add: True eval_subprogram2)
+        apply (simp add: True eval_specialize2)
         using local.t1 by blast
     next
       case False
     then have "evaluate [x. x \<leftarrow> (x#xs), f x] C = evaluate [x. x \<leftarrow> [x], f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, f x] C" 
-      using eval_subprogram7[of "[x. x \<leftarrow> (x#xs), f x]" "[x. x \<leftarrow> [x], f x]" "[x. x \<leftarrow> xs, f x]"]
+      using eval_specialize7[of "[x. x \<leftarrow> (x#xs), f x]" "[x. x \<leftarrow> [x], f x]" "[x. x \<leftarrow> xs, f x]"]
       using \<open>concat (map (\<lambda>x. if f x then [x] else []) (x # xs)) = x # concat (map (\<lambda>x. if f x then [x] else []) xs)\<close> \<open>equal_cnf (concat (map (\<lambda>x. if f x then [x] else []) (x # xs))) (concat (map (\<lambda>x. if f x then [x] else []) [x]) \<union>\<^sub>c concat (map (\<lambda>x. if f x then [x] else []) xs))\<close> by fastforce
-    have "evaluate [x. x \<leftarrow> xs, f x] C \<preceq>\<^sub>p evaluate xs C"
+    have "evaluate [x. x \<leftarrow> xs, f x] C \<subseteq>\<^sub>p evaluate xs C"
       by (simp add: local.Cons)
     then show ?thesis
       by (metis (no_types, lifting) False \<open>concat (map (\<lambda>x. if f x then [x] else []) (x # xs)) = x # concat (map (\<lambda>x. if f x then [x] else []) xs)\<close> choice_commute choice_safety1 concat_prop3 f1)
@@ -970,12 +970,12 @@ next
 next
   case False
   show ?thesis
-    using False eval_subprogram local.Cons subprogram_is_order by fastforce
+    using False eval_specialize local.Cons specialize_is_order by fastforce
 qed
 qed
 qed
 
-lemma eval_subprogram9: "evaluate [x. x \<leftarrow> (x#xx#xs), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs, \<not>f x] C = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] C)"
+lemma eval_specialize9: "evaluate [x. x \<leftarrow> (x#xx#xs), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs, \<not>f x] C = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] C)"
 proof (induction xs)
   case Nil
   have "(evaluate [x. x \<leftarrow> [], f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> [], \<not>f x] C) = Fail {}" by(auto simp: evaluate_def Fail_def choice_def restr_post_def S_def restrict_r_def)
@@ -1025,7 +1025,7 @@ next
   qed
 qed
 
-lemma eval_subprogram10: "(evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] C) = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate xs C)"
+lemma eval_specialize10: "(evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] C) = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate xs C)"
 proof (induction xs)
   case Nil
   then show ?case apply (auto simp: evaluate_def)
@@ -1037,17 +1037,17 @@ next
     by (smt (z3) Choice_prop_22 choice_assoc_1 choice_commute)
 qed
 
-lemma eval_subprogram11: "size xs > 1 \<Longrightarrow> evaluate [x. x \<leftarrow> xs, f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] C = evaluate xs C"
+lemma eval_specialize11: "size xs > 1 \<Longrightarrow> evaluate [x. x \<leftarrow> xs, f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] C = evaluate xs C"
 proof -
   assume "size xs > 1"
   then obtain x xx xs' where "xs=x#xx#xs'" apply auto
     by (metis length_0_conv length_Cons less_irrefl_nat less_nat_zero_code remdups_adj.cases)
   have "evaluate (x#xx#xs') C = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p evaluate xs' C"
-    by (metis \<open>1 < length xs\<close> \<open>xs = x # xx # xs'\<close> choice_cnf_def cnf_choice2 cnf_choice3 concat_prop3 eval_subprogram6 list.distinct(1))
+    by (metis \<open>1 < length xs\<close> \<open>xs = x # xx # xs'\<close> choice_cnf_def cnf_choice2 cnf_choice3 concat_prop3 eval_specialize6 list.distinct(1))
   have "evaluate [x. x \<leftarrow> (x#xx#xs'), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs', \<not>f x] C = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate [x. x \<leftarrow> (xs'), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs', \<not>f x] C)"
-    using eval_subprogram9 by blast
+    using eval_specialize9 by blast
   have "... = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate xs' C)"
-    using eval_subprogram10 by blast
+    using eval_specialize10 by blast
   have "evaluate [x. x \<leftarrow> (x#xx#xs'), f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> x#xx#xs', \<not>f x] C = evaluate (x#xx#xs') C"
     using \<open>(evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs')) C \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs')) C) = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p evaluate xs' C\<close> \<open>evaluate (concat (map (\<lambda>x. if f x then [x] else []) (x # xx # xs'))) C \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) (x # xx # xs'))) C = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p (evaluate (concat (map (\<lambda>x. if f x then [x] else []) xs')) C \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if \<not> f x then [x] else []) xs')) C)\<close> \<open>evaluate (x # xx # xs') C = (evaluate [x] C \<union>\<^sub>p evaluate [xx] C) \<union>\<^sub>p evaluate xs' C\<close> by argo
   show "evaluate [x. x \<leftarrow> xs, f x] C \<union>\<^sub>p evaluate [x. x \<leftarrow> xs, \<not>f x] C = evaluate xs C"
@@ -1055,15 +1055,15 @@ proof -
 qed
 
 
-theorem eval_subprogram12: "set xs \<subseteq> set ys \<Longrightarrow> evaluate xs C\<preceq>\<^sub>p evaluate ys C"
+theorem eval_specialize12: "set xs \<subseteq> set ys \<Longrightarrow> evaluate xs C\<subseteq>\<^sub>p evaluate ys C"
   apply (cases "xs = []") apply auto
-   apply (simp add: concat_prop2 fail_subprogram3)
+   apply (simp add: concat_prop2 fail_specialize3)
   apply (cases "ys = []")
    apply simp
   apply (cases "size ys = 1")
-   apply (metis One_nat_def eval_subprogram3 length_0_conv length_Suc_conv)
+   apply (metis One_nat_def eval_specialize3 length_0_conv length_Suc_conv)
   apply (cases "size xs = 1")
-   apply (metis One_nat_def Suc_length_conv eval_subprogram4 length_0_conv)
+   apply (metis One_nat_def Suc_length_conv eval_specialize4 length_0_conv)
 proof -
   assume a1: "set xs \<subseteq> set ys" and a2: "xs \<noteq> []" and a3: "ys \<noteq> []" and a4: "length ys \<noteq> 1" and a5: "length xs \<noteq> 1"
   have "size xs > 1"
@@ -1072,15 +1072,15 @@ proof -
     using \<open>length ys \<noteq> 1\<close> \<open>ys \<noteq> []\<close> nat_neq_iff by auto
   obtain ys' where o1: "ys' = [y. y \<leftarrow> ys, y \<in> set xs]" by simp
   obtain ys'' where o2: "ys'' = [y. y \<leftarrow> ys, y \<notin> set xs]" by simp
-  have "evaluate ys' C \<preceq>\<^sub>p evaluate ys C" apply (simp add: o1) using eval_subprogram8[of "\<lambda>y. y \<in> set xs" ys] by auto
+  have "evaluate ys' C \<subseteq>\<^sub>p evaluate ys C" apply (simp add: o1) using eval_specialize8[of "\<lambda>y. y \<in> set xs" ys] by auto
   have "set ys' \<union> set ys'' = set ys" using o1 o2 by auto
   have "set ys' = set xs" using o1 a1 by auto
   have "size ys' > 0" apply auto
     using \<open>set ys' = set xs\<close> a2 by auto
-  have "evaluate ys' C \<union>\<^sub>p evaluate ys'' C = evaluate ys C" apply (simp add: o1 o2) using eval_subprogram11[of ys "\<lambda>y. y \<in> set xs"] apply auto
+  have "evaluate ys' C \<union>\<^sub>p evaluate ys'' C = evaluate ys C" apply (simp add: o1 o2) using eval_specialize11[of ys "\<lambda>y. y \<in> set xs"] apply auto
     using \<open>1 < length ys\<close>
     using \<open>\<And>C. 1 < length ys \<Longrightarrow> evaluate (concat (map (\<lambda>x. if x \<in> set xs then [x] else []) ys)) C \<union>\<^sub>p evaluate (concat (map (\<lambda>x. if x \<notin> set xs then [x] else []) ys)) C = evaluate ys C\<close> by blast
-  show "evaluate xs C \<preceq>\<^sub>p evaluate ys C"
+  show "evaluate xs C \<subseteq>\<^sub>p evaluate ys C"
   proof (cases "size ys' = 1")
     case True
     have "card (set xs) = 1"
@@ -1093,13 +1093,13 @@ proof -
     proof (cases "set xs = set ys")
       case True
       then show ?thesis
-        by (simp add: \<open>evaluate xs C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> \<open>set xs = {x}\<close> choice_decomp_1 eval_subprogram4)
+        by (simp add: \<open>evaluate xs C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> \<open>set xs = {x}\<close> choice_decomp_1 eval_specialize4)
     next
       case False
       have "ys'' \<noteq> []"
         using False \<open>set ys' = set xs\<close> \<open>set ys' \<union> set ys'' = set ys\<close> by fastforce
       then show ?thesis
-        by (metis \<open>evaluate xs C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> \<open>set xs = {x}\<close> a1 choice_decomp_1 empty_set eval_subprogram4 list.simps(15))
+        by (metis \<open>evaluate xs C = evaluate [x] C \<union>\<^sub>p evaluate [x] C\<close> \<open>set xs = {x}\<close> a1 choice_decomp_1 empty_set eval_specialize4 list.simps(15))
     qed
   next
     case False
@@ -1113,7 +1113,7 @@ proof -
       by (simp add: \<open>equal_cnf xs ys'\<close> equal_eval)
 
     then show ?thesis
-      by (simp add: \<open>evaluate ys' C \<preceq>\<^sub>p evaluate ys C\<close>)
+      by (simp add: \<open>evaluate ys' C \<subseteq>\<^sub>p evaluate ys C\<close>)
   qed
 qed
 
@@ -2057,14 +2057,14 @@ next
 qed
 qed
 
-theorem Conc_composeleft: "evaluate ((p \<parallel> q) ;\<^sub>c r) C \<preceq>\<^sub>p evaluate (p \<parallel> (q ;\<^sub>c r)) C" \<comment> \<open>Conc_composeleft\<close>
-  by (simp add: Conc_composeright_1 eval_subprogram12)
-theorem Conc_composeleftright: "evaluate (q ;\<^sub>c (p \<parallel> r)) C \<preceq>\<^sub>p evaluate (p \<parallel> (q ;\<^sub>c r)) C" \<comment> \<open>Conc_composeleftright\<close>
-  by (simp add: Conc_composeleft1_1 eval_subprogram12)
-theorem Conc_composeright: "evaluate (p ;\<^sub>c (q \<parallel> r)) C \<preceq>\<^sub>p evaluate ((p ;\<^sub>c q) \<parallel> r) C" \<comment> \<open>Conc_composeright\<close>
-  by (simp add: Conc_composeright_2 eval_subprogram12)
-theorem Conc_composerightleft: "evaluate ((p \<parallel> r) ;\<^sub>c q) C \<preceq>\<^sub>p evaluate ((p ;\<^sub>c q) \<parallel> r) C" \<comment> \<open>Conc_composerightleft\<close>
-  by (simp add: Conc_composeright1_1 eval_subprogram12)
+theorem Conc_composeleft: "evaluate ((p \<parallel> q) ;\<^sub>c r) C \<subseteq>\<^sub>p evaluate (p \<parallel> (q ;\<^sub>c r)) C" \<comment> \<open>Conc_composeleft\<close>
+  by (simp add: Conc_composeright_1 eval_specialize12)
+theorem Conc_composeleftright: "evaluate (q ;\<^sub>c (p \<parallel> r)) C \<subseteq>\<^sub>p evaluate (p \<parallel> (q ;\<^sub>c r)) C" \<comment> \<open>Conc_composeleftright\<close>
+  by (simp add: Conc_composeleft1_1 eval_specialize12)
+theorem Conc_composeright: "evaluate (p ;\<^sub>c (q \<parallel> r)) C \<subseteq>\<^sub>p evaluate ((p ;\<^sub>c q) \<parallel> r) C" \<comment> \<open>Conc_composeright\<close>
+  by (simp add: Conc_composeright_2 eval_specialize12)
+theorem Conc_composerightleft: "evaluate ((p \<parallel> r) ;\<^sub>c q) C \<subseteq>\<^sub>p evaluate ((p ;\<^sub>c q) \<parallel> r) C" \<comment> \<open>Conc_composerightleft\<close>
+  by (simp add: Conc_composeright1_1 eval_specialize12)
 
 theorem Conc_composegeneral: "set (([p] ;\<^sub>c [q]) \<parallel> ([u] ;\<^sub>c [v])) \<subseteq> set (([p] ;\<^sub>c [u]) \<parallel> ([q] ;\<^sub>c [v]))"
   oops
@@ -2092,8 +2092,8 @@ next
     using \<open>set (((p # ps) ;\<^sub>c r) \<parallel> (q ;\<^sub>c s)) = set (([p] ;\<^sub>c r) \<parallel> (q ;\<^sub>c s)) \<union> set ((ps ;\<^sub>c r) \<parallel> (q ;\<^sub>c s))\<close> \<open>set ((p # ps) \<parallel> q ;\<^sub>c r \<parallel> s) = set ([p] \<parallel> q ;\<^sub>c r \<parallel> s) \<union> set (ps \<parallel> q ;\<^sub>c r \<parallel> s)\<close> \<open>set ([p] \<parallel> q ;\<^sub>c r \<parallel> s) \<subseteq> set (([p] ;\<^sub>c r) \<parallel> (q ;\<^sub>c s))\<close> by auto
 qed
 
-theorem Conc_composegeneral: "evaluate ((p \<parallel> q) ;\<^sub>c (r \<parallel> s)) C \<preceq>\<^sub>p evaluate ((p ;\<^sub>c r) \<parallel> (q ;\<^sub>c s)) C" \<comment> \<open>Conc_composegeneral\<close>
-  by (simp add: Conc_composegeneral_1 eval_subprogram12)
+theorem Conc_composegeneral: "evaluate ((p \<parallel> q) ;\<^sub>c (r \<parallel> s)) C \<subseteq>\<^sub>p evaluate ((p ;\<^sub>c r) \<parallel> (q ;\<^sub>c s)) C" \<comment> \<open>Conc_composegeneral\<close>
+  by (simp add: Conc_composegeneral_1 eval_specialize12)
 
 lemma "foldl (+) (b::nat) xs = b + foldl (+) 0 xs" apply (induction xs) apply auto
   by (simp add: simp_2)

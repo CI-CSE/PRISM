@@ -91,14 +91,14 @@ theorem composition_refines_atomic_conc_weakens: "weakens ([p\<^sub>1] \<paralle
   by (simp add: non_atomic_conc_def weakens_def)
 
 theorem composition_refines_atomic_conc_strengthens: "strengthens (p\<^sub>1;p\<^sub>2) ([p\<^sub>1] \<parallel> p\<^sub>2)"
-  apply (auto simp: non_atomic_conc_def program_is_subprogram_of_choice subprogram_def strengthens_def)
+  apply (auto simp: non_atomic_conc_def program_is_specialize_of_choice specialize_def strengthens_def)
   by (metis UnI1 restr_post_def restrict_prop_4)
 
-theorem composition_refines_atomic_conc: "p\<^sub>1;p\<^sub>2 \<subseteq>\<^sub>p ([p\<^sub>1] \<parallel> p\<^sub>2)"
+theorem composition_refines_atomic_conc: "p\<^sub>1;p\<^sub>2 \<sqsubseteq>\<^sub>p ([p\<^sub>1] \<parallel> p\<^sub>2)"
   oops
 
-theorem composition_is_subprogram_of_atomic_conc: "p\<^sub>1;p\<^sub>2 \<preceq>\<^sub>p ([p\<^sub>1] \<parallel> p\<^sub>2)"
-  by (simp add: non_atomic_conc_def program_is_subprogram_of_choice)
+theorem composition_is_specialize_of_atomic_conc: "p\<^sub>1;p\<^sub>2 \<subseteq>\<^sub>p ([p\<^sub>1] \<parallel> p\<^sub>2)"
+  by (simp add: non_atomic_conc_def program_is_specialize_of_choice)
 
 theorem commute_compose: "commute_programs3 p\<^sub>1 p\<^sub>2 \<Longrightarrow> ([p\<^sub>1] \<parallel> p\<^sub>2) \<equiv>\<^sub>p p\<^sub>1 ; p\<^sub>2"
   by (auto simp: commute_programs3_def non_atomic_conc_def choice_def equiv_def restr_post_def composition_def restrict_r_def)
@@ -202,48 +202,48 @@ lemma atomic_refines_non_atomic_weakens: "weakens ([p\<^sub>1, p\<^sub>2] \<para
   by (auto simp: non_atomic_conc_def atomic_conc_def equal_def weakens_def)
   
 lemma atomic_refines_non_atomic_strengthens: "strengthens ([p\<^sub>1; p\<^sub>2] \<parallel> q) ([p\<^sub>1, p\<^sub>2] \<parallel> q)"
-  by (smt (verit) atomic_refines_non_atomic_1 choice_assoc_1 choice_commute compose_assoc concor_three_1 program_is_subprogram_of_choice subprogram_def)
+  by (smt (verit) atomic_refines_non_atomic_1 choice_assoc_1 choice_commute compose_assoc concor_three_1 program_is_specialize_of_choice specialize_def)
 
-theorem coarse_fine: "([p\<^sub>1; p\<^sub>2] \<parallel> q) \<subseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>Coarse_fine\<close>
+theorem coarse_fine: "([p\<^sub>1; p\<^sub>2] \<parallel> q) \<sqsubseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>Coarse_fine\<close>
   oops \<comment> \<open>This does not hold. When the previous lemmas hold\<close>
 
-theorem atomic_subprogram_non_atomic: "([p\<^sub>1; p\<^sub>2] \<parallel> q) \<preceq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>T56\<close>
-  by (metis atomic_refines_non_atomic_1 choice_commute compose_assoc concor_three_1 program_is_subprogram_of_choice choice_safety1)
+theorem atomic_specialize_non_atomic: "([p\<^sub>1; p\<^sub>2] \<parallel> q) \<subseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>T56\<close>
+  by (metis atomic_refines_non_atomic_1 choice_commute compose_assoc concor_three_1 program_is_specialize_of_choice choice_safety1)
 
-theorem atomic_subprogram_non_atomic_2: "([q] \<parallel> (p\<^sub>1; p\<^sub>2)) \<preceq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>T56\<close>
-  apply (auto simp: subprogram_def extends_def non_atomic_conc_def)
-  apply (metis choice_commute choice_decomp program_is_subprogram_of_choice subprogram_def)
+theorem atomic_specialize_non_atomic_2: "([q] \<parallel> (p\<^sub>1; p\<^sub>2)) \<subseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>T56\<close>
+  apply (auto simp: specialize_def extends_def non_atomic_conc_def)
+  apply (metis choice_commute choice_decomp program_is_specialize_of_choice specialize_def)
   by (metis atomic_refines_non_atomic_1 atomic_refines_non_atomic_strengthens choice_commute compose_assoc concor_three_1)
 
 
 
-theorem exchange_law1: "p\<^sub>1 ; ([p\<^sub>2] \<parallel> q) \<preceq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>Exchange_law1\<close>
+theorem exchange_law1: "p\<^sub>1 ; ([p\<^sub>2] \<parallel> q) \<subseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>Exchange_law1\<close>
 proof -
   have l1: "S (p\<^sub>1 ; ([p\<^sub>2] \<parallel> q)) \<subseteq> S ((p\<^sub>1 ; (p\<^sub>2; q)) \<union>\<^sub>p (p\<^sub>1 ; (q ; p\<^sub>2)))" by (auto simp: non_atomic_conc_def)
   have l2: "S ((q ; p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1 ; q) ; p\<^sub>2 \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>2) ; q)) \<subseteq> S ([p\<^sub>1, p\<^sub>2] \<parallel> q)" by (auto simp: non_atomic_conc_def)
   have "p\<^sub>1 ; ([p\<^sub>2] \<parallel> q) \<equiv>\<^sub>p (p\<^sub>1 ; (p\<^sub>2; q)) \<union>\<^sub>p (p\<^sub>1 ; (q ; p\<^sub>2))" apply (auto simp: non_atomic_conc_def)
     by (simp add: compose_distrib1_3)
-  moreover have "... \<preceq>\<^sub>p (q ; p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1 ; q) ; p\<^sub>2 \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>2) ; q)"
-    using program_is_subprogram_of_choice by force
+  moreover have "... \<subseteq>\<^sub>p (q ; p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1 ; q) ; p\<^sub>2 \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>2) ; q)"
+    using program_is_specialize_of_choice by force
   moreover have "... \<equiv>\<^sub>p [p\<^sub>1, p\<^sub>2] \<parallel> q"
     by (metis choice_assoc_1 concor_three_1 concor_three_3)
   ultimately show ?thesis
-    using equiv_subprogram_transitivity local.l1 local.l2 by blast
+    using equiv_specialize_transitivity local.l1 local.l2 by blast
 qed
 
-theorem exchange_law2: "([p\<^sub>1] \<parallel> q) ; p\<^sub>2 \<preceq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>Exchange_law2\<close>
+theorem exchange_law2: "([p\<^sub>1] \<parallel> q) ; p\<^sub>2 \<subseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> q)" \<comment> \<open>Exchange_law2\<close>
 proof -
   have l1: "S (p\<^sub>1 ; ([p\<^sub>2] \<parallel> q)) \<subseteq> S (((p\<^sub>1 ; q) ; p\<^sub>2) \<union>\<^sub>p ((q ; p\<^sub>1) ; p\<^sub>2))" by (auto simp: non_atomic_conc_def)
   have l2: "S ((q ; p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1 ; q) ; p\<^sub>2 \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>2) ; q)) \<subseteq> S ([p\<^sub>1, p\<^sub>2] \<parallel> q)" by (auto simp: non_atomic_conc_def)
   have "([p\<^sub>1] \<parallel> q) ; p\<^sub>2 \<equiv>\<^sub>p ((p\<^sub>1 ; q) ; p\<^sub>2) \<union>\<^sub>p ((q ; p\<^sub>1) ; p\<^sub>2)" apply (auto simp: non_atomic_conc_def)
     by (metis compose_assoc compose_distrib2_3)
-  moreover have "... \<preceq>\<^sub>p (q ; p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1 ; q) ; p\<^sub>2 \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>2) ; q)"
-    using program_is_subprogram_of_choice
+  moreover have "... \<subseteq>\<^sub>p (q ; p\<^sub>1) ; p\<^sub>2 \<union>\<^sub>p ((p\<^sub>1 ; q) ; p\<^sub>2 \<union>\<^sub>p (p\<^sub>1 ; p\<^sub>2) ; q)"
+    using program_is_specialize_of_choice
     by (metis choice_commute choice_safety1)
   moreover have "... \<equiv>\<^sub>p [p\<^sub>1, p\<^sub>2] \<parallel> q"
     by (metis choice_assoc_1 concor_three_1 concor_three_3)
   ultimately show ?thesis
-    using equiv_subprogram_transitivity local.l1 local.l2 non_atomic_conc_S non_atomic_prop1 complete_state_prop
+    using equiv_specialize_transitivity local.l1 local.l2 non_atomic_conc_S non_atomic_prop1 complete_state_prop
     by (smt (verit, ccfv_threshold) choice_state composition_state set_eq_subset sup.idem sup_commute)
 qed
 

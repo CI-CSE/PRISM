@@ -527,7 +527,7 @@ proof -
     from a2 have l2: "loop p s (Suc f) \<union>\<^sub>p loop p (Suc (Suc f)) (Suc (Suc f)) \<equiv>\<^sub>p loop p (Suc (Suc f)) (Suc (Suc f))"
       by (meson equiv_is_symetric equiv_is_transitive choice_equiv fail_choice_l)
     have l3: "loop p (Suc (Suc f)) (Suc (Suc f)) \<equiv>\<^sub>p p\<^bold>^(Suc (Suc f))"
-      using loop_l2_1 by blastl
+      using loop_l2_1 by blast
     have "p\<^bold>^(Suc (Suc f)) \<equiv>\<^sub>p p\<^bold>^(Suc f) ; p"
       by (simp add: equiv_is_reflexive)
     have "loop p s (Suc f) \<equiv>\<^sub>p p\<^bold>^(Suc f) \<union>\<^sub>p loop p s f"

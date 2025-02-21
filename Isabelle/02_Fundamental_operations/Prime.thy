@@ -217,11 +217,11 @@ theorem
     "is_minimal p" and 
     "P = {\<lparr>State={a,b},Pre={a},post={(a,b)}\<rparr> |a b . (a,b) \<in> (post p)}" and
     "p\<^sub>i \<in> P"
-  shows "is_prime p\<^sub>i \<and> p\<^sub>i \<preceq>\<^sub>p p \<and> \<Union>\<^sub>P P = p"
+  shows "is_prime p\<^sub>i \<and> p\<^sub>i \<subseteq>\<^sub>p p \<and> \<Union>\<^sub>P P = p"
 proof -
   have l1: "is_prime p\<^sub>i" using assms by (auto simp: is_prime_def)
-  have l2: "p\<^sub>i \<preceq>\<^sub>p p" using assms
-    apply (auto simp: subprogram_def)
+  have l2: "p\<^sub>i \<subseteq>\<^sub>p p" using assms
+    apply (auto simp: specialize_def)
     apply (auto simp: extends_def S_def Field_def) [1]
     apply (auto simp: weakens_def is_feasible_def subset_iff Domain_iff is_minimal_def) [1]
     apply (auto simp: strengthens_def is_feasible_def subset_iff Domain_iff is_minimal_def restrict_r_def) [1]
@@ -237,15 +237,15 @@ proof -
     using assms(4) assms(5) apply auto[1]
   
 
-theorem "finite (S p) \<Longrightarrow> is_feasible p \<Longrightarrow> is_minimal p \<Longrightarrow> \<exists> P. p\<^sub>i \<in> P \<longrightarrow> is_prime p\<^sub>i \<and> p\<^sub>i \<preceq>\<^sub>p p \<and> \<Union>\<^sub>P P = p"
+theorem "finite (S p) \<Longrightarrow> is_feasible p \<Longrightarrow> is_minimal p \<Longrightarrow> \<exists> P. p\<^sub>i \<in> P \<longrightarrow> is_prime p\<^sub>i \<and> p\<^sub>i \<subseteq>\<^sub>p p \<and> \<Union>\<^sub>P P = p"
 proof -
   assume a1: "finite (S p)"
   assume a2: "is_feasible p"
   assume a3: "is_minimal p"
   obtain P where o1: "P = {\<lparr>State={a,b},Pre={a},post={(a,b)}\<rparr> |a b . (a,b) \<in> (post p)}" by auto
   have l1: "p\<^sub>i \<in> P \<Longrightarrow> is_prime p\<^sub>i" using o1 by (auto simp: is_prime_def)
-  have l2: "p\<^sub>i \<in> P \<Longrightarrow> p\<^sub>i \<preceq>\<^sub>p p" using o1
-    apply (auto simp: subprogram_def)
+  have l2: "p\<^sub>i \<in> P \<Longrightarrow> p\<^sub>i \<subseteq>\<^sub>p p" using o1
+    apply (auto simp: specialize_def)
     apply (auto simp: extends_def S_def Field_def) [1]
     using a2 a3 apply (auto simp: weakens_def is_feasible_def subset_iff Domain_iff is_minimal_def) [1]
     using a2 a3 apply (auto simp: strengthens_def is_feasible_def subset_iff Domain_iff is_minimal_def restrict_r_def) [1]

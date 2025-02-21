@@ -49,17 +49,17 @@ theorem fail_compose_r_2: "p ; Fail C \<triangleq> Fail (C \<union> S p)" \<comm
 theorem fail_compose_r: "p ; Fail C \<equiv>\<^sub>p Fail C" \<comment> \<open>/Fail_compo/\<close>
   by (auto simp: Fail_def composition_def S_def corestrict_r_def  restr_post_def restrict_r_def equiv_def)
 
-theorem only_fail_refines_fail: "(p \<subseteq>\<^sub>p Fail (S p)) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>T26\<close>
+theorem only_fail_refines_fail: "(p \<sqsubseteq>\<^sub>p Fail (S p)) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>T26\<close>
   oops
 
-theorem refine_fail: "p \<subseteq>\<^sub>p Fail (S p)" \<comment> \<open>Refine_fail\<close>
+theorem refine_fail: "p \<sqsubseteq>\<^sub>p Fail (S p)" \<comment> \<open>Refine_fail\<close>
   by (auto simp: refines_def Fail_def S_def Field_def extends_def weakens_def strengthens_def restrict_r_def)
 
-theorem fail_refine_self: "(Fail (S p) \<subseteq>\<^sub>p p) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>/Fail_refine_self/\<close>
+theorem fail_refine_self: "(Fail (S p) \<sqsubseteq>\<^sub>p p) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>/Fail_refine_self/\<close>
   by (auto simp: Fail_def S_def Field_def equiv_def restr_post_def restrict_r_def refines_def extends_def weakens_def strengthens_def)
 
-theorem fail_subprogram_self: "(p \<preceq>\<^sub>p Fail (S p)) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>/Fail_refine_self/\<close>
-  by (metis Fail_def Program.select_convs(2) equiv_is_symetric fail_refine_self no_pre_is_fail refine_fail refines_def subprogram_def subset_antisym weakens_def)
+theorem fail_specialize_self: "(p \<subseteq>\<^sub>p Fail (S p)) = (p \<equiv>\<^sub>p Fail (S p))" \<comment> \<open>/Fail_refine_self/\<close>
+  by (metis Fail_def Program.select_convs(2) equiv_is_symetric fail_refine_self no_pre_is_fail refine_fail refines_def specialize_def subset_antisym weakens_def)
 
 theorem range_of_fail: "Range_p (Fail C) = {}"
   by (auto simp: Fail_def Range_p_def restrict_r_def)
@@ -67,16 +67,16 @@ theorem range_of_fail: "Range_p (Fail C) = {}"
 theorem choice_fail_implication: "(a \<union>\<^sub>p b \<equiv>\<^sub>p Fail {}) = (a \<equiv>\<^sub>p Fail {} \<and> b \<equiv>\<^sub>p Fail {})"
   by (auto simp: Fail_def choice_def equiv_def restr_post_def restrict_r_def)
 
-theorem fail_refine: "C \<subseteq> S p \<Longrightarrow> p \<subseteq>\<^sub>p Fail C" \<comment> \<open>Fail_refine\<close>
+theorem fail_refine: "C \<subseteq> S p \<Longrightarrow> p \<sqsubseteq>\<^sub>p Fail C" \<comment> \<open>Fail_refine\<close>
   by (auto simp: Fail_def refines_def extends_def weakens_def S_def strengthens_def restrict_r_def)
-theorem "C \<subseteq> S p \<Longrightarrow> Fail C \<preceq>\<^sub>p p"
-  by (auto simp: Fail_def subprogram_def extends_def weakens_def S_def strengthens_def restrict_r_def)
+theorem "C \<subseteq> S p \<Longrightarrow> Fail C \<subseteq>\<^sub>p p"
+  by (auto simp: Fail_def specialize_def extends_def weakens_def S_def strengthens_def restrict_r_def)
 
-theorem fail_subprogram2: "p \<preceq>\<^sub>p Fail (S p) \<equiv> p \<equiv>\<^sub>p Fail {}" \<comment> \<open>Fail_subprogram2\<close>
-  apply (auto simp: subprogram_def Fail_def extends_def weakens_def S_def strengthens_def restrict_r_def equiv_def restr_post_def)
+theorem fail_specialize2: "p \<subseteq>\<^sub>p Fail (S p) \<equiv> p \<equiv>\<^sub>p Fail {}" \<comment> \<open>Fail_specialize2\<close>
+  apply (auto simp: specialize_def Fail_def extends_def weakens_def S_def strengthens_def restrict_r_def equiv_def restr_post_def)
   by (smt (verit, del_insts) empty_iff)
 
-theorem fail_refine2: "Fail (S p) \<subseteq>\<^sub>p p \<equiv> p \<equiv>\<^sub>p Fail {}" \<comment> \<open>Fail_refine2\<close>
+theorem fail_refine2: "Fail (S p) \<sqsubseteq>\<^sub>p p \<equiv> p \<equiv>\<^sub>p Fail {}" \<comment> \<open>Fail_refine2\<close>
   apply (auto simp: refines_def Fail_def extends_def weakens_def S_def strengthens_def restrict_r_def equiv_def restr_post_def)
   by (smt (verit, ccfv_SIG) empty_iff)
 
@@ -100,10 +100,10 @@ theorem fail_choice_decomp: "p \<union>\<^sub>p q \<equiv>\<^sub>p Fail {} \<equ
   apply (auto simp: equiv_def choice_def Fail_def S_def restr_post_def restrict_r_def)
   by (smt (verit, ccfv_SIG))
 
-theorem fail_subprogram: "C \<subseteq> S p \<Longrightarrow> Fail C \<preceq>\<^sub>p p" \<comment> \<open>/Fail_subprogram/\<close>
-  by (auto simp: Fail_def subprogram_def weakens_def extends_def strengthens_def restrict_r_def S_def)
+theorem fail_specialize: "C \<subseteq> S p \<Longrightarrow> Fail C \<subseteq>\<^sub>p p" \<comment> \<open>/Fail_specialize/\<close>
+  by (auto simp: Fail_def specialize_def weakens_def extends_def strengthens_def restrict_r_def S_def)
 
-theorem fail_subprogram3: "Fail {} \<preceq>\<^sub>p p"
-  by (auto simp: Fail_def subprogram_def extends_def weakens_def strengthens_def S_def restrict_r_def)
+theorem fail_specialize3: "Fail {} \<subseteq>\<^sub>p p"
+  by (auto simp: Fail_def specialize_def extends_def weakens_def strengthens_def S_def restrict_r_def)
 
 end

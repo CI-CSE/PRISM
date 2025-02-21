@@ -83,7 +83,7 @@ theorem inverse_reverses_composition_1: "is_feasible p \<Longrightarrow> is_dete
   apply (simp add: post_of_inverse)
   by (simp add: post_of_inverse)
 
-theorem inverse_reverses_composition_2: "Skip (S p) \<subseteq>\<^sub>p (p ; (p\<^sup>-\<^sup>1))"
+theorem inverse_reverses_composition_2: "Skip (S p) \<sqsubseteq>\<^sub>p (p ; (p\<^sup>-\<^sup>1))"
   apply (auto simp: refines_def)
   apply (auto simp: extends_def Skip_def composition_def inverse_def restrict_r_def restr_post_def Range_p_def S_def Field_def) [1]
   apply (auto simp: weakens_def Skip_def composition_def S_def) [1]
@@ -95,7 +95,7 @@ theorem equivalence_is_maintained_by_inverse: "f \<equiv>\<^sub>p p \<Longrighta
 theorem equality_is_maintained_by_inverse: "f \<triangleq> p \<Longrightarrow> f\<^sup>-\<^sup>1 \<triangleq> p\<^sup>-\<^sup>1" \<comment> \<open>NEW\<close>
   by (auto simp: equal_def restr_post_def inverse_def Range_p_def)
 
-theorem refinement_safety_inverse: "S f = S g \<Longrightarrow> all_feasible [f, g] \<Longrightarrow> f \<subseteq>\<^sub>p g \<Longrightarrow> (g\<^sup>-\<^sup>1) \<subseteq>\<^sub>p (f\<^sup>-\<^sup>1)"
+theorem refinement_safety_inverse: "S f = S g \<Longrightarrow> all_feasible [f, g] \<Longrightarrow> f \<sqsubseteq>\<^sub>p g \<Longrightarrow> (g\<^sup>-\<^sup>1) \<sqsubseteq>\<^sub>p (f\<^sup>-\<^sup>1)"
   oops \<comment> \<open>post `strengthening` is the problem\<close>
 
 theorem inverse_makes_feasible: "is_feasible (p\<^sup>-\<^sup>1)"

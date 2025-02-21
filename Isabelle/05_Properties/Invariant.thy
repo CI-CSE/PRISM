@@ -25,14 +25,14 @@ value "\<lparr>State={1::nat, 2}, Pre={1}, post={(1,1)}\<rparr>"
 value "\<lparr>State={1::nat, 2}, Pre={1}, post={(1,1), (1,2)}\<rparr>"
 value "{1::nat}"
 value "is_invariant {1::nat} \<lparr>State={1::nat, 2}, Pre={1}, post={(1,1)}\<rparr>"
-value "\<lparr>State={1::nat, 2}, Pre={1}, post={(1,1)}\<rparr> \<subseteq>\<^sub>p \<lparr>State={1::nat, 2}, Pre={1}, post={(1,1), (1,2)}\<rparr>"
+value "\<lparr>State={1::nat, 2}, Pre={1}, post={(1,1)}\<rparr> \<sqsubseteq>\<^sub>p \<lparr>State={1::nat, 2}, Pre={1}, post={(1,1), (1,2)}\<rparr>"
 value "is_invariant {1::nat} (\<lparr>State={1::nat, 2}, Pre={1}, post={(1,1),(1,2)}\<rparr> \<sslash>\<^sub>p (Pre \<lparr>State={1::nat, 2}, Pre={1}, post={(1,1)}\<rparr>))"
 
 
-theorem invariant_refinement: "is_invariant I p\<^sub>1 \<Longrightarrow> p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> is_invariant I (p\<^sub>2 \<sslash>\<^sub>p (Pre p\<^sub>1))" \<comment> \<open>Inv_prop2\<close>
+theorem invariant_refinement: "is_invariant I p\<^sub>1 \<Longrightarrow> p\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> is_invariant I (p\<^sub>2 \<sslash>\<^sub>p (Pre p\<^sub>1))" \<comment> \<open>Inv_prop2\<close>
   (* proof - *)
   (* assume a1: "is_invariant I p\<^sub>1" *)
-  (* assume a2: "p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1" *)
+  (* assume a2: "p\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>1" *)
   (* from a1 a2 have l1: "Pre (p\<^sub>2 \<sslash>\<^sub>p (Pre p\<^sub>1)) \<subseteq> I" *)
     (* by (auto simp: is_invariant_def Range_p_def restrict_p_def) *)
   (* from a2 have l2: "Range_p (p\<^sub>2 \<sslash>\<^sub>p (Pre p\<^sub>1)) \<subseteq> Range_p p\<^sub>1" *)
@@ -44,12 +44,12 @@ theorem invariant_refinement: "is_invariant I p\<^sub>1 \<Longrightarrow> p\<^su
 (* qed *)
   by (auto simp: is_invariant_def Range_p_def restrict_p_def restrict_r_def refines_def weakens_def strengthens_def)
 
-theorem invariant_prop_subprogram: "is_invariant I p\<^sub>1 \<Longrightarrow> p\<^sub>2 \<preceq>\<^sub>p p\<^sub>1 \<Longrightarrow> is_invariant I (p\<^sub>2)" \<comment> \<open>Inv_prop3\<close>
+theorem invariant_prop_specialize: "is_invariant I p\<^sub>1 \<Longrightarrow> p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> is_invariant I (p\<^sub>2)" \<comment> \<open>Inv_prop3\<close>
   (* apply (auto simp: is_invariant_def) *)
-  (* apply (auto simp: is_invariant_def subprogram_def weakens_def) [1] *)
-  (* apply (auto simp: is_invariant_def subprogram_def strengthens_def Range_p_def restrict_r_def subset_iff Range_iff weakens_def) [1] *)
+  (* apply (auto simp: is_invariant_def specialize_def weakens_def) [1] *)
+  (* apply (auto simp: is_invariant_def specialize_def strengthens_def Range_p_def restrict_r_def subset_iff Range_iff weakens_def) [1] *)
   (* by blast *)
-  apply (simp add: is_invariant_def Range_p_def subprogram_def restrict_r_def weakens_def strengthens_def restrict_p_def extends_def)
+  apply (simp add: is_invariant_def Range_p_def specialize_def restrict_r_def weakens_def strengthens_def restrict_p_def extends_def)
   apply (auto simp: S_def Range_iff Field_def Domain_iff Un_def)
   by fastforce
 
@@ -75,7 +75,7 @@ theorem choice_invariant_preserve: "is_invariant I p\<^sub>1 \<Longrightarrow> i
   by (auto simp: is_invariant_def choice_def Range_p_def restrict_p_def restrict_r_def restr_post_def)
 
 theorem choice_invariant_preserve_2: "is_invariant I (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<Longrightarrow> is_invariant I p\<^sub>1" \<comment> \<open>NEW\<close>
-  using invariant_prop_subprogram program_is_subprogram_of_choice by blast
+  using invariant_prop_specialize program_is_specialize_of_choice by blast
 
 theorem choice_invariant_preserve_3: "is_invariant I (p\<^sub>1 \<union>\<^sub>p p\<^sub>2) \<Longrightarrow> is_invariant I p\<^sub>2" \<comment> \<open>NEW\<close>
   by (metis choice_commute choice_invariant_preserve_2)

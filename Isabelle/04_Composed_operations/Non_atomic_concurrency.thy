@@ -175,7 +175,7 @@ proof -
     by (simp add: \<open>(xs \<parallel> x) = \<Union>\<^sub>p (map Concat (insert_all x xs))\<close>)
 qed
 
-theorem atomic_conc_refinement_safe: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> q\<^sub>3 \<subseteq>\<^sub>p p\<^sub>3 \<Longrightarrow> ([q\<^sub>1, q\<^sub>2] \<parallel> q\<^sub>3) \<subseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> p\<^sub>3)"
+theorem atomic_conc_refinement_safe: "q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> q\<^sub>3 \<sqsubseteq>\<^sub>p p\<^sub>3 \<Longrightarrow> ([q\<^sub>1, q\<^sub>2] \<parallel> q\<^sub>3) \<sqsubseteq>\<^sub>p ([p\<^sub>1, p\<^sub>2] \<parallel> p\<^sub>3)"
   \<comment> \<open>\<close>
   oops \<comment> \<open>Is dependent on refinement safety of composition and choice\<close>
 
@@ -322,12 +322,12 @@ proof -
     using \<open>\<Union>\<^sub>p (map (\<lambda>t. Concat t \<setminus>\<^sub>p C) xs') \<equiv>\<^sub>p \<Union>\<^sub>p (map (\<lambda>t. Concat (butlast t @ [last t \<setminus>\<^sub>p C])) xs')\<close> equiv_is_transitive local.l1 o1 by auto
 qed
 
-theorem concur_subprogram1: "p ; q \<preceq>\<^sub>p ([p] \<parallel> q)" \<comment> \<open>Concur_subprogram1\<close>
+theorem concur_specialize1: "p ; q \<subseteq>\<^sub>p ([p] \<parallel> q)" \<comment> \<open>Concur_specialize1\<close>
   apply (auto simp: non_atomic_conc_def)
-  by (simp add: program_is_subprogram_of_choice)
+  by (simp add: program_is_specialize_of_choice)
 
-theorem non_atomic_subprogram: "ys \<in> set (insert_all x xs) \<Longrightarrow> (Concat ys) \<preceq>\<^sub>p (xs \<parallel> x)"
-  apply (cases "xs = []") apply (auto simp: non_atomic_conc_def subprogram_is_reflexive) [1]
+theorem non_atomic_specialize: "ys \<in> set (insert_all x xs) \<Longrightarrow> (Concat ys) \<subseteq>\<^sub>p (xs \<parallel> x)"
+  apply (cases "xs = []") apply (auto simp: non_atomic_conc_def specialize_is_reflexive) [1]
   apply (cases "size xs = 1")
 proof -
   assume a0: "length xs = 1"
@@ -336,7 +336,7 @@ proof -
   have l1: "xs \<parallel> x = x;x' \<union>\<^sub>p x';x" by (auto simp: o1 non_atomic_conc_def)
   have l2: "(Concat ys = x;x') \<or> (Concat ys = x';x)" using a1 o1 by auto
   show ?thesis
-    by (metis choice_commute local.l1 local.l2 program_is_subprogram_of_choice)
+    by (metis choice_commute local.l1 local.l2 program_is_specialize_of_choice)
 next
   obtain xs' where o1: "xs' = insert_all x xs" by simp
   obtain xs'' where o2: "xs'' = [Concat t. t \<leftarrow> xs']" by simp
@@ -353,10 +353,10 @@ next
     using local.l2 o1 o2 by auto
   have "\<Union>\<^sub>p xs'' = \<Union>\<^sub>p xs'' \<union>\<^sub>p Concat ys" using l1 l2 Choice_prop_17 l0 apply auto
     using local.l3 by fastforce
-  have "Concat ys \<preceq>\<^sub>p \<Union>\<^sub>p [Concat t. t \<leftarrow> insert_all x xs] \<union>\<^sub>p Concat ys"
-    by (simp add: program_is_subprogram_of_choice)
+  have "Concat ys \<subseteq>\<^sub>p \<Union>\<^sub>p [Concat t. t \<leftarrow> insert_all x xs] \<union>\<^sub>p Concat ys"
+    by (simp add: program_is_specialize_of_choice)
   show ?thesis
-    using \<open>Concat ys \<preceq>\<^sub>p \<Union>\<^sub>p (map Concat (insert_all x xs)) \<union>\<^sub>p Concat ys\<close> \<open>\<Union>\<^sub>p xs'' = \<Union>\<^sub>p xs'' \<union>\<^sub>p Concat ys\<close> local.l1 o1 o2 by argo
+    using \<open>Concat ys \<subseteq>\<^sub>p \<Union>\<^sub>p (map Concat (insert_all x xs)) \<union>\<^sub>p Concat ys\<close> \<open>\<Union>\<^sub>p xs'' = \<Union>\<^sub>p xs'' \<union>\<^sub>p Concat ys\<close> local.l1 o1 o2 by argo
 qed
 
 theorem commute_compose: "commute_programs3 a b \<Longrightarrow> [a] \<parallel> b \<equiv>\<^sub>p a;b" \<comment> \<open>Commute_compose\<close>
@@ -405,10 +405,10 @@ next
     by argo
 qed
 
-theorem concur_subprogram2: "([Concat xs] \<parallel> x) \<preceq>\<^sub>p (xs \<parallel> x)" \<comment> \<open>Concur_subprogram2\<close>
+theorem concur_specialize2: "([Concat xs] \<parallel> x) \<subseteq>\<^sub>p (xs \<parallel> x)" \<comment> \<open>Concur_specialize2\<close>
 proof (cases "xs=[]")
   case True
-  then show ?thesis by (auto simp: non_atomic_conc_def subprogram_def extends_def weakens_def strengthens_def Skip_def S_def composition_def corestrict_r_def choice_def Field_def restr_post_def restrict_r_def)
+  then show ?thesis by (auto simp: non_atomic_conc_def specialize_def extends_def weakens_def strengthens_def Skip_def S_def composition_def corestrict_r_def choice_def Field_def restr_post_def restrict_r_def)
 next
   case False
   have "[Concat xs] \<parallel> x = x ; (Concat xs) \<union>\<^sub>p (Concat xs) ; x"
@@ -419,10 +419,10 @@ next
     by (simp add: l2)
   have "xs@[x] \<in> set (insert_all x xs)"
     by (simp add: l3)
-  then have "Concat (xs@[x]) \<preceq>\<^sub>p (xs \<parallel> x)"
-    by (simp add: non_atomic_subprogram)
+  then have "Concat (xs@[x]) \<subseteq>\<^sub>p (xs \<parallel> x)"
+    by (simp add: non_atomic_specialize)
   show ?thesis using choice_suprogram_prop
-    by (metis \<open>([Concat xs] \<parallel> x) = x ; Concat xs \<union>\<^sub>p Concat xs ; x\<close> \<open>Concat (xs @ [x]) \<preceq>\<^sub>p (xs \<parallel> x)\<close> \<open>x # xs \<in> set (insert_all x xs)\<close> \<open>x ; Concat xs \<union>\<^sub>p Concat xs ; x = Concat (x # xs) \<union>\<^sub>p Concat (xs @ [x])\<close> non_atomic_subprogram)
+    by (metis \<open>([Concat xs] \<parallel> x) = x ; Concat xs \<union>\<^sub>p Concat xs ; x\<close> \<open>Concat (xs @ [x]) \<subseteq>\<^sub>p (xs \<parallel> x)\<close> \<open>x # xs \<in> set (insert_all x xs)\<close> \<open>x ; Concat xs \<union>\<^sub>p Concat xs ; x = Concat (x # xs) \<union>\<^sub>p Concat (xs @ [x])\<close> non_atomic_specialize)
 qed
 
 end

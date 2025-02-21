@@ -100,17 +100,17 @@ definition strengthens :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> boo
   where
     "strengthens p\<^sub>2 p\<^sub>1 \<equiv> ((post p\<^sub>2) \<sslash>\<^sub>r Pre p\<^sub>2) \<sslash>\<^sub>r (Pre p\<^sub>1) \<subseteq> post p\<^sub>1"  \<comment> \<open>Can be simplified if p2 weakens p1\<close>  
   
-definition refines :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<subseteq>\<^sub>p" 50) \<comment> \<open>D7\<close>
+definition refines :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<sqsubseteq>\<^sub>p" 50) \<comment> \<open>D7\<close>
   where
-    "p\<^sub>1 \<subseteq>\<^sub>p p\<^sub>2 = (extends p\<^sub>1 p\<^sub>2 \<and> weakens p\<^sub>1 p\<^sub>2 \<and> strengthens p\<^sub>1 p\<^sub>2)"
+    "p\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>2 = (extends p\<^sub>1 p\<^sub>2 \<and> weakens p\<^sub>1 p\<^sub>2 \<and> strengthens p\<^sub>1 p\<^sub>2)"
 
-definition refines_c :: "'a Contracted_Program \<Rightarrow> 'a Contracted_Program \<Rightarrow> bool" (infix "\<subseteq>\<^sub>c" 50)
+definition refines_c :: "'a Contracted_Program \<Rightarrow> 'a Contracted_Program \<Rightarrow> bool" (infix "\<sqsubseteq>\<^sub>c" 50)
   where
-    "cp\<^sub>2 \<subseteq>\<^sub>c cp\<^sub>1 \<equiv> a_specification cp\<^sub>2 = a_specification cp\<^sub>1 \<and> a_implementation cp\<^sub>2 \<subseteq>\<^sub>p a_implementation cp\<^sub>1"
+    "cp\<^sub>2 \<sqsubseteq>\<^sub>c cp\<^sub>1 \<equiv> a_specification cp\<^sub>2 = a_specification cp\<^sub>1 \<and> a_implementation cp\<^sub>2 \<sqsubseteq>\<^sub>p a_implementation cp\<^sub>1"
 
-definition subprogram :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<preceq>\<^sub>p" 50)
+definition specialize :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" (infix "\<subseteq>\<^sub>p" 50)
   where
-    "p\<^sub>1 \<preceq>\<^sub>p p\<^sub>2 \<equiv> extends p\<^sub>2 p\<^sub>1 \<and> weakens p\<^sub>2 p\<^sub>1 \<and> strengthens p\<^sub>1 p\<^sub>2"
+    "p\<^sub>1 \<subseteq>\<^sub>p p\<^sub>2 \<equiv> extends p\<^sub>2 p\<^sub>1 \<and> weakens p\<^sub>2 p\<^sub>1 \<and> strengthens p\<^sub>1 p\<^sub>2"
 
 definition independent :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>NEW DEFINITION\<close>
   where
@@ -118,7 +118,7 @@ definition independent :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> boo
 
 definition implements :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> bool" \<comment> \<open>Implement_def\<close>
   where
-    "implements p\<^sub>2 p\<^sub>1 = (p\<^sub>2 \<subseteq>\<^sub>p p\<^sub>1 \<and> is_feasible p\<^sub>2)"
+    "implements p\<^sub>2 p\<^sub>1 = (p\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>1 \<and> is_feasible p\<^sub>2)"
 
 definition most_abstract_implementation :: "'a Program \<Rightarrow> 'a Contracted_Program" \<comment> \<open>MAI_definition\<close>
   where
@@ -171,8 +171,8 @@ definition is_prime :: "'a Program \<Rightarrow> bool"
 
 value "is_prime (\<lparr>State={1,2}, Pre={1}, post={(1,2)}\<rparr>::nat Program)"
 
-theorem "\<lparr>State={}, Pre={1::nat}, post={(1,2)}\<rparr> \<preceq>\<^sub>p \<lparr>State={}, Pre={1::nat}, post={(1,2)}\<rparr>"
-  by (auto simp: subprogram_def extends_def weakens_def strengthens_def restrict_r_def)
+theorem "\<lparr>State={}, Pre={1::nat}, post={(1,2)}\<rparr> \<subseteq>\<^sub>p \<lparr>State={}, Pre={1::nat}, post={(1,2)}\<rparr>"
+  by (auto simp: specialize_def extends_def weakens_def strengthens_def restrict_r_def)
 
 definition composition :: "'a Program \<Rightarrow> 'a Program \<Rightarrow> 'a Program" (infix ";" 152) \<comment> \<open>D10\<close>
   where

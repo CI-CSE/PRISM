@@ -18,14 +18,14 @@ value "\<lparr>State={}, Pre = {1::nat, 2}, post = {(1,2), (2,1)}\<rparr> \<ssla
 theorem property_on_ite_2: "Pre (p \<sslash>\<^sub>p C) = Pre (ITE C p (Skip (S p)))" \<comment> \<open>T53\<close>
   oops
 
-theorem cond_refine3: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> ITE C q\<^sub>1 q\<^sub>2 \<subseteq>\<^sub>p ITE C p\<^sub>1 p\<^sub>2" \<comment> \<open>Cond_refine3\<close>
+theorem cond_refine3: "q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> ITE C q\<^sub>1 q\<^sub>2 \<sqsubseteq>\<^sub>p ITE C p\<^sub>1 p\<^sub>2" \<comment> \<open>Cond_refine3\<close>
   apply (auto simp: refines_def)
   apply (auto simp: extends_def ite_S) [1]
   apply (auto simp: weakens_def if_then_else_def restrict_p_def restrict_r_def choice_def S_def) [1]
   by (auto simp: strengthens_def if_then_else_def restrict_p_def restrict_r_def choice_def restr_post_def)
 
-theorem cond_refine4: "q\<^sub>1 \<preceq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<preceq>\<^sub>p p\<^sub>2 \<Longrightarrow> ITE C q\<^sub>1 q\<^sub>2 \<preceq>\<^sub>p ITE C p\<^sub>1 p\<^sub>2" 
-  apply (auto simp: subprogram_def)
+theorem cond_refine4: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> ITE C q\<^sub>1 q\<^sub>2 \<subseteq>\<^sub>p ITE C p\<^sub>1 p\<^sub>2" 
+  apply (auto simp: specialize_def)
   apply (auto simp: extends_def if_then_else_def) [1]
   apply (auto simp: weakens_def if_then_else_def restrict_p_def) [1]
   by (auto simp: strengthens_def if_then_else_def restrict_p_def restr_post_def restrict_r_def)

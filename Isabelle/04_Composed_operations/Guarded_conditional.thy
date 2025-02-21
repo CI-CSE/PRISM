@@ -40,12 +40,12 @@ theorem cond_commute: "xs \<in> set (permutations ys) \<Longrightarrow> GC xs = 
   apply (auto simp: guarded_conditional_def)
   by (metis (mono_tags, lifting) Choice_prop_1_1 perm_prop_2)
 
-theorem cond_sub1: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> (GC [(D\<^sub>1, p), (D\<^sub>2, q)]) \<preceq>\<^sub>p (GC [(C\<^sub>1, p), (C\<^sub>2, q)])" \<comment> \<open>Cond_sub1\<close>
-  apply (auto simp: subprogram_def extends_def weakens_def strengthens_def guarded_conditional_def restr_post_def restrict_p_def restrict_r_def choice_def)
+theorem cond_sub1: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> (GC [(D\<^sub>1, p), (D\<^sub>2, q)]) \<subseteq>\<^sub>p (GC [(C\<^sub>1, p), (C\<^sub>2, q)])" \<comment> \<open>Cond_sub1\<close>
+  apply (auto simp: specialize_def extends_def weakens_def strengthens_def guarded_conditional_def restr_post_def restrict_p_def restrict_r_def choice_def)
   apply (simp add: S_def Field_def Range_iff Domain_iff)
   by force
 
-theorem property_on_gc_3: "all_feasible [p\<^sub>1, p\<^sub>2] \<Longrightarrow> GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)] \<subseteq>\<^sub>p p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1" \<comment> \<open>T54\<close>
+theorem property_on_gc_3: "all_feasible [p\<^sub>1, p\<^sub>2] \<Longrightarrow> GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)] \<sqsubseteq>\<^sub>p p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1" \<comment> \<open>T54\<close>
   oops
 
 theorem property_on_gc_3_1: "weakens (GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)]) (p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1)"
@@ -54,13 +54,13 @@ theorem property_on_gc_3_1: "weakens (GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\
 theorem property_on_gc_3_2: "strengthens (p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) (GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)])"
   by (auto simp: strengthens_def restr_post_def restrict_r_def restrict_p_def guarded_conditional_def choice_def)
 
-theorem cond_sub4: "(p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) \<preceq>\<^sub>p (GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)])" \<comment> \<open>Cond_sub4\<close>
-  by (auto simp: restrict_p_def subprogram_def guarded_conditional_def extends_def weakens_def restr_post_def restrict_r_def strengthens_def)
+theorem cond_sub4: "(p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1) \<subseteq>\<^sub>p (GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)])" \<comment> \<open>Cond_sub4\<close>
+  by (auto simp: restrict_p_def specialize_def guarded_conditional_def extends_def weakens_def restr_post_def restrict_r_def strengthens_def)
 
-theorem refinement_safety_gc_1: "all_feasible [p, q] \<Longrightarrow> D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> GC [(D\<^sub>1, p), (D\<^sub>2, q)] \<subseteq>\<^sub>p GC [(C\<^sub>1, p), (C\<^sub>2, q)]" \<comment> \<open>T49\<close>
+theorem refinement_safety_gc_1: "all_feasible [p, q] \<Longrightarrow> D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> GC [(D\<^sub>1, p), (D\<^sub>2, q)] \<sqsubseteq>\<^sub>p GC [(C\<^sub>1, p), (C\<^sub>2, q)]" \<comment> \<open>T49\<close>
   oops
 
-theorem refinement_safety_gc_2: "all_feasible [p, q] \<Longrightarrow> D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> GC [(C\<^sub>1, p), (C\<^sub>2, q)] \<subseteq>\<^sub>p GC [(D\<^sub>1, p), (D\<^sub>2, q)]" \<comment> \<open>T49\<close>
+theorem refinement_safety_gc_2: "all_feasible [p, q] \<Longrightarrow> D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> GC [(C\<^sub>1, p), (C\<^sub>2, q)] \<sqsubseteq>\<^sub>p GC [(D\<^sub>1, p), (D\<^sub>2, q)]" \<comment> \<open>T49\<close>
   oops
 
 theorem refinement_safety_gc_weakens: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> weakens (GC [(C\<^sub>1, p), (C\<^sub>2, q)]) (GC [(D\<^sub>1, p), (D\<^sub>2, q)])" \<comment> \<open>T49\<close>
@@ -69,13 +69,13 @@ theorem refinement_safety_gc_weakens: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrig
 theorem refinement_safety_gc_strengthens: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> strengthens (GC [(D\<^sub>1, p), (D\<^sub>2, q)]) (GC [(C\<^sub>1, p), (C\<^sub>2, q)])" \<comment> \<open>T49\<close>
   by (auto simp: strengthens_def restr_post_def guarded_conditional_def restrict_p_def restrict_r_def choice_def)
 
-theorem cond_refine1: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> (GC [(D\<^sub>1, p), (D\<^sub>2, q)]) \<subseteq>\<^sub>p (GC [(C\<^sub>1, p), (C\<^sub>2, q)])" \<comment> \<open>Cond_refine1\<close>
+theorem cond_refine1: "D\<^sub>1 \<subseteq> C\<^sub>1 \<Longrightarrow> D\<^sub>2 \<subseteq> C\<^sub>2 \<Longrightarrow> (GC [(D\<^sub>1, p), (D\<^sub>2, q)]) \<sqsubseteq>\<^sub>p (GC [(C\<^sub>1, p), (C\<^sub>2, q)])" \<comment> \<open>Cond_refine1\<close>
   oops
 
-theorem cond_refine2: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<subseteq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]"
+theorem cond_refine2: "q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<sqsubseteq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]"
   oops
 
-theorem refinement_safety_gc_3: "all_feasible [p\<^sub>1, p\<^sub>2, q\<^sub>1, q\<^sub>2] \<Longrightarrow> strengthens q\<^sub>1 p\<^sub>2 \<Longrightarrow> strengthens q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<subseteq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]" \<comment> \<open>T50 NEW Same problem as with refinement safety of choice\<close>
+theorem refinement_safety_gc_3: "all_feasible [p\<^sub>1, p\<^sub>2, q\<^sub>1, q\<^sub>2] \<Longrightarrow> strengthens q\<^sub>1 p\<^sub>2 \<Longrightarrow> strengthens q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<sqsubseteq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]" \<comment> \<open>T50 NEW Same problem as with refinement safety of choice\<close>
   apply (auto simp: refines_def)
   apply (auto simp: is_feasible_def extends_def) [1]
   apply (metis Un_iff gc_S subsetD)
@@ -83,17 +83,17 @@ theorem refinement_safety_gc_3: "all_feasible [p\<^sub>1, p\<^sub>2, q\<^sub>1, 
   apply (simp add: strengthens_def restr_post_def restrict_p_def restrict_r_def Fail_def weakens_def subset_iff guarded_conditional_def)
   by blast
 
-theorem refinement_safety_gc_4: "all_feasible [p\<^sub>1, p\<^sub>2, q\<^sub>1, q\<^sub>2] \<Longrightarrow> independent q\<^sub>1 p\<^sub>2 \<Longrightarrow> independent q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<subseteq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]" \<comment> \<open>T50 NEW Same problem as with refinement safety of choice\<close>
+theorem refinement_safety_gc_4: "all_feasible [p\<^sub>1, p\<^sub>2, q\<^sub>1, q\<^sub>2] \<Longrightarrow> independent q\<^sub>1 p\<^sub>2 \<Longrightarrow> independent q\<^sub>2 p\<^sub>1 \<Longrightarrow> q\<^sub>1 \<sqsubseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<sqsubseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<sqsubseteq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]" \<comment> \<open>T50 NEW Same problem as with refinement safety of choice\<close>
   using independent_strengthens refinement_safety_gc_3 by blast
 
 
-theorem cond_refine4: "GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)] \<subseteq>\<^sub>p p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1" \<comment> \<open>Cond_refine4\<close>
+theorem cond_refine4: "GC [(C\<^sub>1, p\<^sub>1), (C\<^sub>2, p\<^sub>2)] \<sqsubseteq>\<^sub>p p\<^sub>1 \<sslash>\<^sub>p C\<^sub>1" \<comment> \<open>Cond_refine4\<close>
   oops \<comment> \<open>C1 and C2 might have an overlap\<close>
 
-theorem cond_sub2: "q\<^sub>1 \<preceq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<preceq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<preceq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]" \<comment> \<open>Cond_sub2\<close>
-  apply (auto simp: subprogram_def guarded_conditional_def extends_def weakens_def Fail_def)
-  apply (auto simp: subprogram_def guarded_conditional_def extends_def weakens_def Fail_def restrict_p_def) [2]
-  by (auto simp: subprogram_def guarded_conditional_def extends_def weakens_def Fail_def restrict_p_def strengthens_def restr_post_def restrict_r_def)
+theorem cond_sub2: "q\<^sub>1 \<subseteq>\<^sub>p p\<^sub>1 \<Longrightarrow> q\<^sub>2 \<subseteq>\<^sub>p p\<^sub>2 \<Longrightarrow> GC [(C, q\<^sub>1), (C, q\<^sub>2)] \<subseteq>\<^sub>p GC [(C, p\<^sub>1), (C, p\<^sub>2)]" \<comment> \<open>Cond_sub2\<close>
+  apply (auto simp: specialize_def guarded_conditional_def extends_def weakens_def Fail_def)
+  apply (auto simp: specialize_def guarded_conditional_def extends_def weakens_def Fail_def restrict_p_def) [2]
+  by (auto simp: specialize_def guarded_conditional_def extends_def weakens_def Fail_def restrict_p_def strengthens_def restr_post_def restrict_r_def)
 
 theorem cond_distrib: "GC xs \<sslash>\<^sub>p C \<equiv>\<^sub>p GC [(fst t \<inter> C, snd t) . t \<leftarrow> xs]"
 proof (induction xs arbitrary: C)
@@ -112,7 +112,7 @@ next
     moreover have "... \<equiv>\<^sub>p (snd x \<sslash>\<^sub>p fst x) \<sslash>\<^sub>p C \<union>\<^sub>p GC xs \<sslash>\<^sub>p C"
       using restrict_distrib_3 by blast
     moreover have "... \<equiv>\<^sub>p snd x \<sslash>\<^sub>p (fst x \<inter> C) \<union>\<^sub>p GC (map (\<lambda>t. (fst t \<inter> C, snd t)) xs)"
-      by (metis (mono_tags, lifting) choice_equiv inf_sup_ord(2) local.Cons restrict_subprogorder1 restrict_idem restrict_inter subprogram_is_antisymetric)
+      by (metis (mono_tags, lifting) choice_equiv inf_sup_ord(2) local.Cons restrict_subprogorder1 restrict_idem restrict_inter specialize_is_antisymetric)
     moreover have "... = GC (map (\<lambda>t. (fst t \<inter> C, snd t)) (x # xs))"
       by (simp add: Choice_prop_1_2 False guarded_conditional_def)
     ultimately show "GC (x # xs) \<sslash>\<^sub>p C \<equiv>\<^sub>p GC (map (\<lambda>t. (fst t \<inter> C, snd t)) (x # xs))" using equiv_is_transitive by fastforce
@@ -252,21 +252,21 @@ qed
 theorem cond_one: "GC [(C,p)] = p\<sslash>\<^sub>pC" \<comment> \<open>Cond_one\<close>
   by (auto simp: guarded_conditional_def)
 
-theorem gc_prop6: "x \<sslash>\<^sub>p C \<preceq>\<^sub>p GC ((C,x) # xs)"
+theorem gc_prop6: "x \<sslash>\<^sub>p C \<subseteq>\<^sub>p GC ((C,x) # xs)"
   apply (induction xs)
   apply (auto simp: guarded_conditional_def)
-  apply (simp add: subprogram_is_preorder)
-  by (metis (no_types, lifting) choice_commute fold_choice program_is_subprogram_of_choice)
+  apply (simp add: specialize_is_preorder)
+  by (metis (no_types, lifting) choice_commute fold_choice program_is_specialize_of_choice)
 
 
 
-theorem gc_prop7: "GC a \<preceq>\<^sub>p GC (a@b)"
+theorem gc_prop7: "GC a \<subseteq>\<^sub>p GC (a@b)"
   apply (induction a)
   apply (auto simp: guarded_conditional_def) [1]
-   apply (simp add: fail_subprogram3)
+   apply (simp add: fail_specialize3)
 proof -
-  fix a1 a2 assume "GC a2 \<preceq>\<^sub>p GC (a2 @ b)"
-  show "GC (a1 # a2) \<preceq>\<^sub>p GC ((a1 # a2) @ b)"
+  fix a1 a2 assume "GC a2 \<subseteq>\<^sub>p GC (a2 @ b)"
+  show "GC (a1 # a2) \<subseteq>\<^sub>p GC ((a1 # a2) @ b)"
   proof (cases "a2=[]")
     case True
     then show ?thesis apply auto
@@ -276,14 +276,14 @@ proof -
     have "GC (a1 # a2) = GC [a1] \<union>\<^sub>p GC a2"
       by (simp add: False cond_helper_2)
     then show ?thesis
-      by (metis append_Nil2 choice_commute choice_decomp_1 cond_helper_3 list.discI program_is_subprogram_of_choice)
+      by (metis append_Nil2 choice_commute choice_decomp_1 cond_helper_3 list.discI program_is_specialize_of_choice)
   qed
 qed
 
-theorem cond_sub3: "(C, x) \<in> set (xs) \<Longrightarrow> x\<sslash>\<^sub>pC \<preceq>\<^sub>p GC xs" \<comment> \<open>Cond_sub3\<close>
+theorem cond_sub3: "(C, x) \<in> set (xs) \<Longrightarrow> x\<sslash>\<^sub>pC \<subseteq>\<^sub>p GC xs" \<comment> \<open>Cond_sub3\<close>
 proof (induction xs)
   case Nil
-  then show ?case by (auto simp: guarded_conditional_def subprogram_def extends_def weakens_def strengthens_def)
+  then show ?case by (auto simp: guarded_conditional_def specialize_def extends_def weakens_def strengthens_def)
 next
   case (Cons a xs)
   then show ?case
@@ -295,10 +295,10 @@ next
     case False
     have "(C, x) \<in> set xs"
       using Cons.prems False by auto
-    have "x \<sslash>\<^sub>p C \<preceq>\<^sub>p GC xs"
+    have "x \<sslash>\<^sub>p C \<subseteq>\<^sub>p GC xs"
       by (simp add: Cons.IH \<open>(C, x) \<in> set xs\<close>)
     then show ?thesis
-      by (metis cond_helper_1 gc_prop7 subprogram_is_preorder)
+      by (metis cond_helper_1 gc_prop7 specialize_is_preorder)
   qed
 qed
 

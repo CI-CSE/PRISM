@@ -57,29 +57,29 @@ theorem restrict_refine_4: "weakens p  (p \<sslash>\<^sub>p C)"
 theorem restrict_refine_5: "weakens p  q \<Longrightarrow> weakens (p \<sslash>\<^sub>p C) (q \<sslash>\<^sub>p C)"
   by (auto simp: weakens_def restrict_p_def restrict_r_def)
 
-theorem restrict_refine: "p \<subseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Restrict_refine/\<close>
+theorem restrict_refine: "p \<sqsubseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Restrict_refine/\<close>
   by (auto simp: refines_def extends_def weakens_def strengthens_def restrict_p_def restrict_r_def S_def Field_def)
 
-theorem restrict_refineorder1: "D \<subseteq> C \<Longrightarrow> p \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p D" \<comment> \<open>/Restrict_refineorder1/\<close>
+theorem restrict_refineorder1: "D \<subseteq> C \<Longrightarrow> p \<sslash>\<^sub>p C \<sqsubseteq>\<^sub>p p \<sslash>\<^sub>p D" \<comment> \<open>/Restrict_refineorder1/\<close>
   by (auto simp: refines_def extends_def weakens_def strengthens_def restrict_p_def restrict_r_def S_def Field_def)
 
-theorem restriction_refsafety: "q \<subseteq>\<^sub>p p \<Longrightarrow> q \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Restriction_refsafety/\<close>
+theorem restriction_refsafety: "q \<sqsubseteq>\<^sub>p p \<Longrightarrow> q \<sslash>\<^sub>p C \<sqsubseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Restriction_refsafety/\<close>
   by (auto simp: refines_def extends_def weakens_def strengthens_def restrict_p_def restrict_r_def S_def Field_def)
 
-theorem restriction_subsafety: "q \<preceq>\<^sub>p p \<Longrightarrow> q \<sslash>\<^sub>p C \<preceq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Restriction_subsafety/\<close>
-  by (simp add: extends_def restrict_refine_3 restrict_refine_5 subprogram_def)
+theorem restriction_subsafety: "q \<subseteq>\<^sub>p p \<Longrightarrow> q \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>/Restriction_subsafety/\<close>
+  by (simp add: extends_def restrict_refine_3 restrict_refine_5 specialize_def)
 
-theorem restriction_refsafety2: "q \<subseteq>\<^sub>p p \<Longrightarrow> D \<subseteq> C \<Longrightarrow> q \<sslash>\<^sub>p C \<subseteq>\<^sub>p p \<sslash>\<^sub>p D" \<comment> \<open>//\<close>
+theorem restriction_refsafety2: "q \<sqsubseteq>\<^sub>p p \<Longrightarrow> D \<subseteq> C \<Longrightarrow> q \<sslash>\<^sub>p C \<sqsubseteq>\<^sub>p p \<sslash>\<^sub>p D" \<comment> \<open>//\<close>
   by (meson restrict_refineorder1 restriction_refsafety refines_is_preorder)
 
 theorem implements_safety_restriction: "implements a b \<Longrightarrow> implements (a \<sslash>\<^sub>p C) (b \<sslash>\<^sub>p C)"
   by (simp add: implements_def restriction_refsafety restrict_feasible)
 
-theorem restrict_subprogorder1: "D \<subseteq> C \<Longrightarrow> p \<sslash>\<^sub>p D \<preceq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>Restrict_subprogorder1\<close>
-  by (metis extends_def inf.absorb_iff2 order_refl restrict_inter restrict_refine_2 restrict_refine_4 restriction_state subprogram_def)
+theorem restrict_subprogorder1: "D \<subseteq> C \<Longrightarrow> p \<sslash>\<^sub>p D \<subseteq>\<^sub>p p \<sslash>\<^sub>p C" \<comment> \<open>Restrict_subprogorder1\<close>
+  by (metis extends_def inf.absorb_iff2 order_refl restrict_inter restrict_refine_2 restrict_refine_4 restriction_state specialize_def)
 
-theorem restrict_subprog: "p \<sslash>\<^sub>p C \<preceq>\<^sub>p p" \<comment> \<open>Restrict_subprog\<close>
-  by (auto simp: restrict_p_def subprogram_def extends_def weakens_def S_def strengthens_def restrict_r_def Field_def)
+theorem restrict_subprog: "p \<sslash>\<^sub>p C \<subseteq>\<^sub>p p" \<comment> \<open>Restrict_subprog\<close>
+  by (auto simp: restrict_p_def specialize_def extends_def weakens_def S_def strengthens_def restrict_r_def Field_def)
 
 
 end

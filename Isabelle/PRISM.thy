@@ -27,7 +27,7 @@ definition mid':: "nat set" where "mid' = {}"
 value "\<lparr>State={}, Pre=A', post={(x,y). x \<in> Domain B' \<and> y \<in> mid'}\<rparr> ; \<lparr>State={}, Pre=mid', post={(x,y). x \<in> mid' \<and> y \<in> Range B'}\<rparr>"
 value "\<lparr>State={}, Pre=A', post=B'\<rparr>"
 
-theorem law_3_3: "\<lparr>State=mid, Pre=A, post=B\<rparr> \<subseteq>\<^sub>p \<lparr>State={}, Pre=A, post={(x,y). x \<in> Domain B \<and> y \<in> mid}\<rparr> ; \<lparr>State={}, Pre=mid, post={(x,y). x \<in> mid \<and> y \<in> Range B}\<rparr>"
+theorem law_3_3: "\<lparr>State=mid, Pre=A, post=B\<rparr> \<sqsubseteq>\<^sub>p \<lparr>State={}, Pre=A, post={(x,y). x \<in> Domain B \<and> y \<in> mid}\<rparr> ; \<lparr>State={}, Pre=mid, post={(x,y). x \<in> mid \<and> y \<in> Range B}\<rparr>"
   by (auto simp: refines_def extends_def S_def composition_def Field_def restr_post_def restrict_r_def weakens_def strengthens_def relcomp_unfold corestrict_r_def)
 
 theorem "is_rounded p \<Longrightarrow> p \<union>\<^sub>p p \<triangleq> p"
