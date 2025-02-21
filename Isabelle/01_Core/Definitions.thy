@@ -18,10 +18,6 @@ definition basic :: "'a CNF \<Rightarrow> 'a Program set"
   where
     "basic p \<equiv> foldl (\<union>) ({}::'a Program set) (map (set) p)"
 
-definition normal_of :: "'a CNF \<Rightarrow> 'a Program set \<Rightarrow> bool"
-  where
-    "normal_of p xs \<equiv> (basic p \<subseteq> (xs \<union> {\<lparr>State={},Pre={},post={}\<rparr>})) \<and> finite xs"
-
 definition S :: "'a Program \<Rightarrow> 'a set"
   where
     "S p = State p \<union> Pre p \<union> Field (post p)"
@@ -38,6 +34,11 @@ primrec all_feasible :: "('a Program) list \<Rightarrow> bool"
   where
     "all_feasible [] = True" |
     "all_feasible (x # xs) = (all_feasible xs \<and> is_feasible x)"
+
+primrec cnf_feasible :: "'a CNF \<Rightarrow> bool"
+  where
+    "cnf_feasible [] = True" |
+    "cnf_feasible (x # xs) = (all_feasible x \<and> cnf_feasible xs)"
 
 definition is_valid :: "'a Program \<Rightarrow> bool"
   where
@@ -600,6 +601,7 @@ definition complete_cnf_state :: "'a CNF \<Rightarrow> 'a set"
 definition normal_of :: "'a CNF \<Rightarrow> 'a Program set \<Rightarrow> bool"
   where
     "normal_of p xs \<equiv> (basic p \<subseteq> (xs \<union> {Fail {}, Skip (complete_state (set_to_list xs))})) \<and> finite xs"
+
 (*
     C = {}
     D = {a\<^sub>1, a\<^sub>2}
