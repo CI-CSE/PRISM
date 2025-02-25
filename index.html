@@ -5,42 +5,37 @@
     <meta charset="utf-8" />
 
     <!-- Begin Jekyll SEO tag v2.8.0 -->
-    <title>
-      Your awesome title | Write an awesome description for your new site here.
-      You can edit this line in _config.yml. It will appear in your document
-      head meta (for Google search results) and in your feed.xml site
-      description.
-    </title>
+    <title>PRISM | Programming really is simple mathematics.</title>
     <meta name="generator" content="Jekyll v4.4.1" />
-    <meta property="og:title" content="Your awesome title" />
+    <meta property="og:title" content="PRISM" />
     <meta property="og:locale" content="en_US" />
     <meta
       name="description"
-      content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description."
+      content="Programming really is simple mathematics."
     />
     <meta
       property="og:description"
-      content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description."
+      content="Programming really is simple mathematics."
     />
-    <link rel="canonical" href="/" />
-    <meta property="og:url" content="/" />
-    <meta property="og:site_name" content="Your awesome title" />
+    <link rel="canonical" href="https://se.constructor.ch/PRISM/" />
+    <meta property="og:url" content="https://se.constructor.ch/PRISM/" />
+    <meta property="og:site_name" content="PRISM" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
-    <meta property="twitter:title" content="Your awesome title" />
+    <meta property="twitter:title" content="PRISM" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "description": "Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.",
-        "headline": "Your awesome title",
-        "name": "Your awesome title",
-        "url": "/"
+        "description": "Programming really is simple mathematics.",
+        "headline": "PRISM",
+        "name": "PRISM",
+        "url": "https://se.constructor.ch/PRISM/"
       }
     </script>
     <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/assets/css/main.css" />
+    <link rel="stylesheet" href="/PRISM/assets/css/main.css" />
   </head>
   <body class="flex">
     <div class="flex-1 flex flex-row-reverse"></div>
@@ -48,22 +43,96 @@
       <header class="mx-auto w-full text-white bg-navy-blue p-2">
         <a href="https://institute.constructor.org/">
           <img
-            src="/assets/images/C_IT_Logo_White_On_Transparent-cropped-min.svg"
+            src="/PRISM/assets/images/C_IT_Logo_White_On_Transparent-cropped-min.svg"
             alt="Constructor Institute of Technology logo"
             class="h-3.5 block"
           />
         </a>
-        <a href="/" class="text-2xl my-4 inline-block"> Your awesome title </a>
+        <a href="/PRISM/" class="text-2xl my-4 inline-block"> PRISM </a>
         <ul class="flex items-center gap-6">
           <li>
-            <a href="/">Home</a>
+            <a href="/PRISM/">Home</a>
+          </li>
+
+          <li>
+            <a href="https://se.constructor.ch/">Chair homepage</a>
           </li>
         </ul>
       </header>
 
       <div class="p-2">
         <main class="prose mx-auto">
-          <h1 id="prism">PRISM</h1>
+          <h1 id="programming-really-is-simple-mathematics">
+            Programming really is simple mathematics
+          </h1>
+          <p>
+            PRISM is a novel framework that offers a fresh perspective on
+            programming. Traditionally, key aspects of programming — such as
+            specification and implementation, formal and applied methods, and
+            static and dynamic verification — are often viewed as distinct and
+            even opposing concepts. PRISM challenges this notion by providing a
+            unified, mathematically rigorous foundation that integrates these
+            elements seamlessly.
+          </p>
+
+          <p>
+            Currently, the project comprises a
+            <a href="https://arxiv.org/abs/2502.17149">research paper</a>, sonn
+            published as part of a Festschrift honoring
+            <a href="https://web.eecs.umich.edu/~gurevich/">Yuri Gurevich</a>,
+            along with the
+            <a href="https://github.com/CI-CSE/PRISM/tree/main/Isabelle"
+              >formal proofs</a
+            >
+            of the paper’s theorems, developed in
+            <a href="https://isabelle.in.tum.de/">Isabelle HOL</a>. Moving
+            forward, PRISM will continue to be refined and expanded, with the
+            ultimate goal of enabling the generation of formally verified
+            programming languages.
+          </p>
+
+          <hr />
+          <h2 id="abstract">Abstract</h2>
+          <p>
+            A re-construction of the fundamentals of programming as a small
+            mathematical theory (“PRISM”) based on elementary set theory.
+            Highlights:
+          </p>
+          <ul>
+            <li>
+              Zero axioms. No properties are assumed, all are proved (from
+              standard set theory).
+            </li>
+            <li>A single concept covers specifications and programs.</li>
+            <li>Its definition only involves one relation and one set.</li>
+            <li>
+              Everything proceeds from three operations: choice, composition and
+              restriction.
+            </li>
+            <li>
+              These techniques suffice to derive the axioms of classic papers on
+              the “laws of programming” as consequences and prove them
+              mechanically.
+            </li>
+            <li>
+              The ordinary subset operator suffices to define both the notion of
+              program correctness and the concepts of specialization and
+              refinement.
+            </li>
+            <li>
+              From this basis, the theory deduces dozens of theorems
+              characterizing important properties of programs and programming.
+            </li>
+            <li>
+              All these theorems have been mechanically verified (using
+              Isabelle/HOL); the proofs are available in a public repository.
+            </li>
+          </ul>
+
+          <p>
+            This paper is a considerable extension and rewrite of an
+            <a href="https://arxiv.org/abs/1507.00723">earlier contribution</a>.
+          </p>
         </main>
       </div>
     </div>
