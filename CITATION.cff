@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Weber"
+  given-names: "Reto"
+  orcid: "https://orcid.org/0009-0001-9262-4843"
+title: "PRISM proofs"
+version: 1.0.0
+date-released: 2025-02-20
+url: "https://github.com/CI-CSE/PRISM"

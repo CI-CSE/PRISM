@@ -272,37 +272,37 @@ theorem repetition_fail: "i<j \<Longrightarrow> p\<^bold>^i \<equiv>\<^sub>p Fai
   apply (induction j) apply auto
   by (metis fail_stays_fail_fixed fixed_repetition.simps(2) less_antisym)
 
-theorem fix_rep_prop1: "0<i \<Longrightarrow> p\<^bold>^i = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat [p . t \<leftarrow> [1 .. int i]]"
+theorem fix_rep_prop1: "0<i \<Longrightarrow> p\<^bold>^i = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat [p . t \<leftarrow> [1 .. int i]] (S p)"
 proof (induction i arbitrary: p)
   case 0
   then show ?case by simp
 next
   case (Suc i)
-  then show "p \<^bold>^ Suc i = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat (map (\<lambda>t. p) [1..int (Suc i)])"
+  then show "p \<^bold>^ Suc i = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat (map (\<lambda>t. p) [1..int (Suc i)])  (S p)"
   proof (cases "i=0")
     case True
     then show ?thesis by auto
   next
     case False
     have "p \<^bold>^ Suc i = p \<^bold>^ i ; p" by simp
-    have "... = (Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat [p . t \<leftarrow> [1 .. int i]]) ; p"
+    have "... = (Skip (S p) \<sslash>\<^sub>p (Pre p) ; (Concat [p . t \<leftarrow> [1 .. int i]]) (S p)) ; p"
       by (metis False Suc.IH not_gr_zero)
-    have "... = Skip (S p) \<sslash>\<^sub>p (Pre p) ; (Concat [p . t \<leftarrow> [1 .. int i]] ; p)"
+    have "... = Skip (S p) \<sslash>\<^sub>p (Pre p) ; (Concat [p . t \<leftarrow> [1 .. int i]] (S p) ; p)"
       by simp
-    have "... = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat [p . t \<leftarrow> [1 .. int (Suc i)]]"
+    have "... = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat [p . t \<leftarrow> [1 .. int (Suc i)]] (S p)"
       by (metis Concat_prop_9 False not_gr_zero)
     then show ?thesis
-      by (simp add: \<open>p \<^bold>^ i ; p = (Skip (S p) \<sslash>\<^sub>p Pre p ; Concat (map (\<lambda>t. p) [1..int i])) ; p\<close>)
+      by (simp add: \<open>p \<^bold>^ i ; p = (Skip (S p) \<sslash>\<^sub>p Pre p ; Concat (map (\<lambda>t. p) [1..int i]) (S p)) ; p\<close>)
   qed
 qed
 
-theorem fix_rep_prop2: "p\<^bold>^i = Concat ((Skip (S p) \<sslash>\<^sub>p (Pre p))#[p . t \<leftarrow> [1 .. int i]])"
+theorem fix_rep_prop2: "p\<^bold>^i = Concat ((Skip (S p) \<sslash>\<^sub>p (Pre p))#[p . t \<leftarrow> [1 .. int i]]) (S p)"
   apply (cases "i=0") apply (auto simp: restrict_p_def Skip_def S_def) [1] apply auto
 proof -
   assume a1: "0<i"
-  have l1: "Concat (Skip (S p) \<sslash>\<^sub>p (Pre p) # map (\<lambda>t. p) [1..int i]) = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat (map (\<lambda>t. p) [1..int i])"
+  have l1: "Concat (Skip (S p) \<sslash>\<^sub>p (Pre p) # map (\<lambda>t. p) [1..int i]) (S p) = Skip (S p) \<sslash>\<^sub>p (Pre p) ; Concat (map (\<lambda>t. p) [1..int i]) (S p)"
     by (smt (verit) Concat_prop_10 \<open>0 < i\<close> list.map_disc_iff of_nat_0_less_iff upto_Nil2)
-  show "p \<^bold>^ i = Concat (Skip (S p) \<sslash>\<^sub>p (Pre p) # map (\<lambda>t. p) [1..int i])" using a1 l1 fix_rep_prop1
+  show "p \<^bold>^ i = Concat (Skip (S p) \<sslash>\<^sub>p (Pre p) # map (\<lambda>t. p) [1..int i]) (S p)" using a1 l1 fix_rep_prop1
     using map_eq_map_tailrec by auto
 qed
 

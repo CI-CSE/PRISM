@@ -1205,10 +1205,10 @@ theorem Consistent_round: "is_rounded (rounded_version p)"
 theorem Consistent_exact: "is_exact (exact_version p)"
   by (auto simp: is_exact_def exact_version_def is_rounded_def is_feasible_def restrict_r_def)
 
-theorem Feas_round: "is_feasible p \<Longrightarrow> is_feasible (rounded_version p)"
+theorem Feasible_round: "is_feasible p \<Longrightarrow> is_feasible (rounded_version p)"
   by (auto simp: is_feasible_def rounded_version_def restrict_r_def Domain_iff subset_iff)
 
-theorem Round_feas: "is_rounded p \<Longrightarrow> is_rounded (feasible_version p)"
+theorem Round_feasible: "is_rounded p \<Longrightarrow> is_rounded (feasible_version p)"
   by (auto simp: is_rounded_def feasible_version_def)
 
 theorem Equiv_prog: "a \<equiv>\<^sub>p b \<equiv> (Pre (rounded_version a) = Pre (rounded_version b) \<and> post (rounded_version a) = post (rounded_version b))"

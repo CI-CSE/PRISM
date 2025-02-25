@@ -49,7 +49,7 @@ primrec all_valid :: "('a Program) list \<Rightarrow> bool"
     "all_valid [] = True" |
     "all_valid (x#xs) = (all_valid xs \<and> is_valid x)"
 
-definition is_deterministic :: "'a Program \<Rightarrow> bool" \<comment> \<open>/Program_kind/\<close>
+definition is_deterministic :: "'a Program \<Rightarrow> bool" \<comment> \<open>/Deterministic_def/\<close>
   where
     "is_deterministic p = is_function (post p)"
 
@@ -265,11 +265,11 @@ definition if_then :: "'a set \<Rightarrow> 'a Program \<Rightarrow> 'a Program"
   where
     "if_then C p \<equiv> ITE C p (Skip (S p))"
 
-definition TRUE:: "'a set \<Rightarrow> 'a set"
+definition TRUE:: "'a set \<Rightarrow> 'a set" \<comment> \<open>True_def\<close>
   where
     "TRUE s = s"
 
-definition FALSE:: "'a set"
+definition FALSE:: "'a set" \<comment> \<open>False_def\<close>
   where
     "FALSE = {}"
 
@@ -281,21 +281,21 @@ definition ID :: "'a set \<Rightarrow> 'a rel"
   where
     "ID s \<equiv> {(a,b) . a \<in> s \<and> b \<in> s \<and> a = b}"
 
-definition AND\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" (infix "\<and>\<^sub>s" 50)
+definition AND\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" (infix "\<and>\<^sub>s" 50) \<comment> \<open>And_def\<close>
   where
     "AND\<^sub>s s\<^sub>1 s\<^sub>2 = s\<^sub>1 \<inter> s\<^sub>2"
 
-definition OR\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" (infix "\<or>\<^sub>s" 50)
+definition OR\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" (infix "\<or>\<^sub>s" 50) \<comment> \<open>Or_def\<close>
   where
     "OR\<^sub>s s\<^sub>1 s\<^sub>2 = s\<^sub>1 \<union> s\<^sub>2"
 
-definition NOT\<^sub>s:: "'a set \<Rightarrow> 'a set"
+definition NOT\<^sub>s:: "'a set \<Rightarrow> 'a set" \<comment> \<open>Not_def\<close>
   where
     "NOT\<^sub>s s = -s"
 
 notation NOT\<^sub>s ("\<not>\<^sub>s _" [50] 50)
 
-definition IMPLIES\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" (infix "\<rightarrow>\<^sub>s" 50) \<comment> \<open>NEW DEFINITION\<close>
+definition IMPLIES\<^sub>s:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" (infix "\<rightarrow>\<^sub>s" 50) \<comment> \<open>Implies_arrow\<close>
   where
     "IMPLIES\<^sub>s s\<^sub>1 s\<^sub>2 \<equiv> (\<not>\<^sub>s s\<^sub>1) \<or>\<^sub>s  s\<^sub>2"
 
