@@ -1,9 +1,10 @@
 GIT
   remote: https://github.com/CI-CSE/ci-cse.github.io
-  revision: ad29c0c64cc091a31e969ebc34c88c97da750eef
+  revision: 570c241fa7322eb5b6513fe2b02ab182bda791af
   glob: jekyll-theme-cicse/*.gemspec
   specs:
     jekyll-theme-cicse (0.1.0)
+      bigdecimal (>= 3.1.9)
       jekyll (~> 4.4)
       jekyll-seo-tag (~> 2.8)
       jekyll-tailwindcss (~> 0.6)
@@ -91,8 +92,8 @@ GEM
       google-protobuf (~> 4.29)
     sass-embedded (1.85.1-x86_64-linux-gnu)
       google-protobuf (~> 4.29)
-    tailwindcss-ruby (4.0.8-x64-mingw-ucrt)
-    tailwindcss-ruby (4.0.8-x86_64-linux-gnu)
+    tailwindcss-ruby (4.0.9-x64-mingw-ucrt)
+    tailwindcss-ruby (4.0.9-x86_64-linux-gnu)
     terminal-table (3.0.2)
       unicode-display_width (>= 1.1.1, < 3)
     tzinfo (2.0.6)

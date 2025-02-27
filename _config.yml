@@ -37,8 +37,8 @@ theme: jekyll-theme-cicse
 #
 cicse:
   nav_links:
-    - title: "Chair homepage"
-      link: "https://se.constructor.ch/"
+    - title: "Theory"
+      link: "/theory"
   
 exclude:
   - README.md
