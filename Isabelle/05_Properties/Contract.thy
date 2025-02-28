@@ -3,13 +3,10 @@ theory Contract
 begin
 section \<open>Contract for top\<close>
 
-theorem consequence_rule:
-  assumes "post\<^sub>1 \<subseteq> post\<^sub>2"
-    and "Pre\<^sub>2 \<subseteq> Pre\<^sub>1"
-    and "is_correct \<lparr>a_specification=\<lparr>State=Pre\<^sub>1 \<union> Field post\<^sub>2, Pre=Pre\<^sub>1, post=post\<^sub>1\<rparr>, a_implementation=b\<rparr>" 
-  shows "is_correct \<lparr>a_specification=\<lparr>State=Pre\<^sub>1 \<union> Field post\<^sub>2, Pre=Pre\<^sub>2, post=post\<^sub>2\<rparr>, a_implementation=b\<rparr>"
+theorem consequence_rule: "post\<^sub>1 \<subseteq> post\<^sub>2 \<Longrightarrow> Pre\<^sub>2 \<subseteq> Pre\<^sub>1 \<Longrightarrow> is_correct \<lparr>a_specification=\<lparr>State=Pre\<^sub>1 \<union> Field post\<^sub>2, Pre=Pre\<^sub>1, post=post\<^sub>1\<rparr>, a_implementation=b\<rparr> \<Longrightarrow> is_correct \<lparr>a_specification=\<lparr>State=Pre\<^sub>1 \<union> Field post\<^sub>2, Pre=Pre\<^sub>2, post=post\<^sub>2\<rparr>, a_implementation=b\<rparr>"
 proof -
-  from assms show "is_correct \<lparr>a_specification=\<lparr>State=Pre\<^sub>1 \<union> Field post\<^sub>2, Pre=Pre\<^sub>2, post=post\<^sub>2\<rparr>, a_implementation=b\<rparr>"
+  assume "post\<^sub>1 \<subseteq> post\<^sub>2" and "Pre\<^sub>2 \<subseteq> Pre\<^sub>1" and "is_correct \<lparr>a_specification=\<lparr>State=Pre\<^sub>1 \<union> Field post\<^sub>2, Pre=Pre\<^sub>1, post=post\<^sub>1\<rparr>, a_implementation=b\<rparr>"
+  then show "is_correct \<lparr>a_specification=\<lparr>State=Pre\<^sub>1 \<union> Field post\<^sub>2, Pre=Pre\<^sub>2, post=post\<^sub>2\<rparr>, a_implementation=b\<rparr>"
     apply (auto simp: is_correct_def implements_def)
     apply (auto simp: refines_def)
     apply (auto simp: extends_def S_def) [1]

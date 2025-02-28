@@ -173,50 +173,56 @@ lemma until_decomp_7: "s = f \<Longrightarrow> until_support a C b s f \<equiv>\
 lemma until_support_feasible: "all_feasible [a, b] \<Longrightarrow> is_feasible (until_support a C b s f)"
   oops
 
-theorem equiv_is_maintained_by_until_support_1: 
-  assumes "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2"
-      and "b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2"
-      and "S b\<^sub>1 = S b\<^sub>2"
-      and "all_feasible [b\<^sub>1, b\<^sub>2]"
-    shows "until_support a\<^sub>1 C b\<^sub>1 s f \<equiv>\<^sub>p until_support a\<^sub>2 C b\<^sub>2 s f"
+theorem equiv_is_maintained_by_until_support_1: "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2 \<Longrightarrow> b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2 \<Longrightarrow> S b\<^sub>1 = S b\<^sub>2 \<Longrightarrow> all_feasible [b\<^sub>1, b\<^sub>2] \<Longrightarrow> until_support a\<^sub>1 C b\<^sub>1 s f \<equiv>\<^sub>p until_support a\<^sub>2 C b\<^sub>2 s f"
   apply (auto simp: until_support_def)
   apply (induction f)
   apply (auto) [1]
-  apply (auto simp add: assms(1) assms(3) equals_equiv_relation_3 composition_equiv)
-  apply (smt (verit, ccfv_SIG) Definitions.equiv_def assms(1) assms(2) equiv_is_symetric composition_equiv equivalence_is_maintained_by_corestriction restriction_equiv)
+  apply (auto simp add: equals_equiv_relation_3 composition_equiv)
+  apply (smt (verit, ccfv_SIG) Definitions.equiv_def equiv_is_symetric composition_equiv equivalence_is_maintained_by_corestriction restriction_equiv)
 proof -
   fix f assume IH: "a\<^sub>1 ; loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C"
+  assume assms1: "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2" and
+         assms2: "b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2" and
+         assms3: "S b\<^sub>1 = S b\<^sub>2" and
+         assms4: "is_feasible b\<^sub>2" and
+         assms5: "is_feasible b\<^sub>1" and
+         assms6: "\<not> Suc f < s"
   have l1: "b\<^sub>1 \<sslash>\<^sub>p (- C) \<equiv>\<^sub>p b\<^sub>2 \<sslash>\<^sub>p (- C)"
-    by (simp add: assms(2) restriction_equiv)
+    by (simp add: assms2 restriction_equiv)                                    
   have l2: "S (b\<^sub>1 \<sslash>\<^sub>p (- C)) = S (b\<^sub>2 \<sslash>\<^sub>p (- C))"
-    by (simp add: assms(3))
-  from l1 l2 assms (2) assms (3) assms (4)  have l3: "loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<equiv>\<^sub>p loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f)"
-    by (meson all_feasible.simps(2) equiv_is_maintained_by_arbitrary_repetition_1 restrict_feasible)
+    by (simp add: assms3)
+  from l1 l2 assms2 assms3 assms4 assms5  have l3: "loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<equiv>\<^sub>p loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f)"
+    using all_feasible.simps(2) equiv_is_maintained_by_arbitrary_repetition_1 restrict_feasible
+    by (metis all_feasible.simps(1) assms5)
   show "\<not> Suc f < s \<Longrightarrow> a\<^sub>1 ; (loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s f \<union>\<^sub>p (b\<^sub>1 \<sslash>\<^sub>p (- C)) \<^bold>^ f ; b\<^sub>1 \<sslash>\<^sub>p (- C)) \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; (loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s f \<union>\<^sub>p (b\<^sub>2 \<sslash>\<^sub>p (- C)) \<^bold>^ f ; b\<^sub>2 \<sslash>\<^sub>p (- C)) \<setminus>\<^sub>p C"
-    using assms(1) composition_equiv equivalence_is_maintained_by_corestriction l3
+    using assms1 composition_equiv equivalence_is_maintained_by_corestriction l3
     by fastforce
 qed
 
-theorem equiv_is_maintained_by_until_support_2: 
-  assumes "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2"
-      and "b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2"
-      and "0<s"
-      and "all_feasible [b\<^sub>1, b\<^sub>2]"
-    shows "until_support a\<^sub>1 C b\<^sub>1 s f \<equiv>\<^sub>p until_support a\<^sub>2 C b\<^sub>2 s f"
+theorem equiv_is_maintained_by_until_support_2: "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2 \<Longrightarrow> b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2 \<Longrightarrow> 0<s \<Longrightarrow> all_feasible [b\<^sub>1, b\<^sub>2] \<Longrightarrow> until_support a\<^sub>1 C b\<^sub>1 s f \<equiv>\<^sub>p until_support a\<^sub>2 C b\<^sub>2 s f"
   apply (auto simp: until_support_def)
   apply (induction f)
   apply (auto) [1]
-  apply (simp add: assms(1) assms(3) equals_equiv_relation_3 composition_equiv)
-  apply (simp add: assms(1) composition_equiv equivalence_is_maintained_by_corestriction fail_equiv)
-  using assms(3) apply auto[1]
+  apply (simp add: composition_equiv equivalence_is_maintained_by_corestriction fail_equiv)
+  apply (simp add: equals_equiv_relation_3 composition_equiv)
+  apply (simp add: composition_equiv equivalence_is_maintained_by_corestriction fail_equiv)
+  apply auto
 proof -
   fix f assume IH: "a\<^sub>1 ; loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s f \<setminus>\<^sub>p C"
+  assume assms1: "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2" and
+         assms2: "b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2" and
+         assms3: "0 < s" and
+         assms4: "is_feasible b\<^sub>2" and
+         assms5: "is_feasible b\<^sub>1" and
+         assms6: "\<not> Suc f < s"
   have l1: "b\<^sub>1 \<sslash>\<^sub>p (- C) \<equiv>\<^sub>p b\<^sub>2 \<sslash>\<^sub>p (- C)"
-    by (simp add: assms(2) restriction_equiv)
-  from l1 assms (2) assms (3) assms (4)  have l3: "loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<equiv>\<^sub>p loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f)"
-    by (metis all_feasible.simps(2) assms(3) assms(4) equiv_is_maintained_by_arbitrary_repetition_2 l1 restrict_feasible)
-  show "a\<^sub>1 ; loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f) \<setminus>\<^sub>p C"
-    using assms(1) composition_equiv equivalence_is_maintained_by_corestriction l3 by blast
+    by (simp add: assms2 restriction_equiv)
+  from l1 assms2 assms3 assms4 assms5 have l3: "loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s (Suc f) \<equiv>\<^sub>p loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s (Suc f)"
+    using all_feasible.simps(2) assms3 assms4 assms5 equiv_is_maintained_by_arbitrary_repetition_2 l1 restrict_feasible
+    by (metis all_feasible.simps(1))
+  show "a\<^sub>1 ; (loop (b\<^sub>1 \<sslash>\<^sub>p (- C)) s f \<union>\<^sub>p (b\<^sub>1 \<sslash>\<^sub>p (- C)) \<^bold>^ f ; b\<^sub>1 \<sslash>\<^sub>p (- C)) \<setminus>\<^sub>p C \<equiv>\<^sub>p a\<^sub>2 ; (loop (b\<^sub>2 \<sslash>\<^sub>p (- C)) s f \<union>\<^sub>p (b\<^sub>2 \<sslash>\<^sub>p (- C)) \<^bold>^ f ; b\<^sub>2 \<sslash>\<^sub>p (- C)) \<setminus>\<^sub>p C"
+    using assms1 composition_equiv equivalence_is_maintained_by_corestriction l3
+    using assms6 by fastforce
 qed
 
 theorem bad_index_is_fail_support: "f < s \<Longrightarrow> until_support a C b s f \<equiv>\<^sub>p Fail {}"
@@ -241,18 +247,17 @@ proof -
     by (metis range_of_fail same_range_p_3)
 qed
 
-theorem until_support_decomp:
-  assumes "s\<le>s'" and "f'\<le>f "
-  shows "until_support a C b s f \<equiv>\<^sub>p until_support a C b s f \<union>\<^sub>p until_support a C b s' f'"
+theorem until_support_decomp: "s\<le>s' \<Longrightarrow> f'\<le>f \<Longrightarrow> until_support a C b s f \<equiv>\<^sub>p until_support a C b s f \<union>\<^sub>p until_support a C b s' f'"
 proof (cases "s'\<le>f'")
   case True
-  then show ?thesis using assms
+  assume "s\<le>s'" and "f'\<le>f"
+  then show ?thesis using True
   proof (induction f)
     case 0
     then show ?case by (auto simp: until_support_def composition_def equiv_def restr_post_def Fail_def restrict_r_def corestrict_p_def restrict_p_def corestrict_r_def)
   next
     case (Suc f)
-    assume IH: "s' \<le> f' \<Longrightarrow> s \<le> s' \<Longrightarrow> f' \<le> f \<Longrightarrow> until_support a C b s f \<equiv>\<^sub>p until_support a C b s f \<union>\<^sub>p until_support a C b s' f'"
+    assume IH: "s \<le> s' \<Longrightarrow> f' \<le> f \<Longrightarrow> s' \<le> f' \<Longrightarrow> until_support a C b s f \<equiv>\<^sub>p until_support a C b s f \<union>\<^sub>p until_support a C b s' f'"
     assume a1: "s \<le> s'"
     assume a2: "f' \<le> Suc f"
     assume a4: "s' \<le> f'"

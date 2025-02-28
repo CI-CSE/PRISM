@@ -2,7 +2,7 @@ theory Non_atomic_concurrency
   imports "../T_03_Basic_programs" "Atomic_concurrency" "Big_choice"
 begin
 section \<open>Non-Atomic concurrency for top\<close>
-
+\<comment> \<open>DEPRECATED. This used an old definition of concurrency\<close>
 theorem non_atomic_prop1: "[] \<parallel> x = x" by (auto simp: non_atomic_conc_def complete_state_def)
 
 
@@ -213,12 +213,6 @@ proof -
   then show ?thesis
     by (simp add: non_atomic_conc_def)
 qed
-
-fun equiv_list :: "'a Program list \<Rightarrow> 'a Program list \<Rightarrow> bool" where
-  "equiv_list [] [] = True" |
-  "equiv_list (x#xs) [] = False" |
-  "equiv_list [] (y#ys) = False" |
-  "equiv_list (x#xs) (y#ys) = (x \<equiv>\<^sub>p y \<and> equiv_list xs ys)"
 
 theorem equiv_list_prop_2: "equiv_list xs ys \<Longrightarrow> \<Union>\<^sub>p xs \<equiv>\<^sub>p \<Union>\<^sub>p ys"
 proof (induction "size xs" arbitrary: xs ys)

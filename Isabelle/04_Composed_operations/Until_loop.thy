@@ -83,13 +83,8 @@ qed
 theorem until_loop_feasible: "all_feasible [a, b] \<Longrightarrow> is_feasible (until_loop a C b n)" \<comment> \<open>Disproves a statement below T77\<close>
   oops
 
-theorem equiv_is_maintained_by_until_loop_2: 
-  assumes "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2"
-      and "b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2"
-      and "S b\<^sub>1 = S b\<^sub>2"
-      and "all_feasible [b\<^sub>1, b\<^sub>2]"
-    shows "until_loop a\<^sub>1 C b\<^sub>1 n \<equiv>\<^sub>p until_loop a\<^sub>2 C b\<^sub>2 n"
-  by (metis assms(1) assms(2) assms(3) assms(4) equiv_is_maintained_by_until_support_1 until_conncetion)
+theorem equiv_is_maintained_by_until_loop_2: "a\<^sub>1 \<equiv>\<^sub>p a\<^sub>2 \<Longrightarrow> b\<^sub>1 \<equiv>\<^sub>p b\<^sub>2 \<Longrightarrow> S b\<^sub>1 = S b\<^sub>2 \<Longrightarrow> all_feasible [b\<^sub>1, b\<^sub>2] \<Longrightarrow> until_loop a\<^sub>1 C b\<^sub>1 n \<equiv>\<^sub>p until_loop a\<^sub>2 C b\<^sub>2 n"
+  by (simp add: equiv_is_maintained_by_until_support_1 until_conncetion)
 
 theorem until_decom: "k\<le>n \<Longrightarrow> until_loop a C b n \<equiv>\<^sub>p until_loop a C b n \<union>\<^sub>p until_loop a C b k"
 proof (induction n)

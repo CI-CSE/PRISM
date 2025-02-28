@@ -944,24 +944,23 @@ next
   qed
 qed
 
-theorem decomp_programs:
-  assumes "Pre a = Pre p - {y}"
-  and "post b = {t. t \<in> post p \<and> (fst t=y \<or> snd t=y)}"
-  and "Pre b = Pre p \<inter> ({y} \<union> Domain (post p \<setminus>\<^sub>r {y}))"
-  and "post a = {t. t \<in> post p \<and> (fst t \<noteq> y \<and> snd t \<noteq> y)}"
-shows "a \<union>\<^sub>p b \<equiv>\<^sub>p p"
+theorem decomp_programs: "Pre a = Pre p - {y} \<Longrightarrow> post b = {t. t \<in> post p \<and> (fst t=y \<or> snd t=y)} \<Longrightarrow> Pre b = Pre p \<inter> ({y} \<union> Domain (post p \<setminus>\<^sub>r {y})) \<Longrightarrow> post a = {t. t \<in> post p \<and> (fst t \<noteq> y \<and> snd t \<noteq> y)} \<Longrightarrow> a \<union>\<^sub>p b \<equiv>\<^sub>p p"
 proof -
+  assume assms1: "Pre a = Pre p - {y}" and 
+         assms2: "post b = {t. t \<in> post p \<and> (fst t=y \<or> snd t=y)}" and 
+         assms3: "Pre b = Pre p \<inter> ({y} \<union> Domain (post p \<setminus>\<^sub>r {y}))" and 
+         assms4: "post a = {t. t \<in> post p \<and> (fst t \<noteq> y \<and> snd t \<noteq> y)}"
   have l1: "Pre a \<union> Pre b = Pre p"
-    by (metis Int_Un_distrib Int_Un_eq(3) Un_Diff_Int Un_assoc assms(1) assms(3))
-  have l2: "post a \<union> post b = post p" using assms (2) assms (4) by auto
+    using \<open>Pre a = Pre p - {y}\<close> \<open>Pre b = Pre p \<inter> ({y} \<union> Domain (post p \<setminus>\<^sub>r {y}))\<close> by force
+  have l2: "post a \<union> post b = post p" using assms2 assms4 by auto
   have "restr_post a \<union> restr_post b \<subseteq> restr_post p" apply (auto simp: restr_post_def restrict_r_def)
     using \<open>Pre a \<union> Pre b = Pre p\<close> apply auto using l1 l2 by (auto simp: Un_def)
-  have l3: "\<forall>r. r \<in> restr_post p \<and> (fst r \<noteq> y \<and> snd r \<noteq> y) \<longrightarrow> r \<in> restr_post a" using assms(4) assms(1) by (auto simp: restr_post_def restrict_r_def)
-  have l4: "\<forall>r. r \<in> restr_post p \<and> (fst r = y \<or> snd r = y) \<longrightarrow> r \<in> restr_post b" using assms(2) assms(3) by (auto simp: restr_post_def restrict_r_def corestrict_r_def)
+  have l3: "\<forall>r. r \<in> restr_post p \<and> (fst r \<noteq> y \<and> snd r \<noteq> y) \<longrightarrow> r \<in> restr_post a" using assms4 assms1 by (auto simp: restr_post_def restrict_r_def)
+  have l4: "\<forall>r. r \<in> restr_post p \<and> (fst r = y \<or> snd r = y) \<longrightarrow> r \<in> restr_post b" using assms2 assms3 by (auto simp: restr_post_def restrict_r_def corestrict_r_def)
   have "restr_post p \<subseteq> restr_post a \<union> restr_post b" using l3 l4 by auto
   show "a \<union>\<^sub>p b \<equiv>\<^sub>p p" apply (auto simp: equiv_def)
     using local.l1 apply auto[1]
-    apply (simp add: assms(3))
+    apply (simp add: assms3)
     using local.l1 apply auto[1]
     apply (metis \<open>restr_post a \<union> restr_post b \<subseteq> restr_post p\<close> choice_idem_2 choice_post_2 le_sup_iff subsetD)
     using \<open>restr_post p \<subseteq> restr_post a \<union> restr_post b\<close> char_rel_choice char_rel_def restr_post_def by blast
@@ -4640,9 +4639,7 @@ proof -
     by simp
 qed
 
-theorem list_comp_index:
-  "x_ind < size xs \<Longrightarrow> y_ind < size ys \<Longrightarrow> 
-   [f x y. x \<leftarrow> xs, y \<leftarrow> ys] ! (x_ind * size ys + y_ind) = f (xs ! x_ind) (ys ! y_ind)"
+theorem list_comp_index: "x_ind < size xs \<Longrightarrow> y_ind < size ys \<Longrightarrow> [f x y. x \<leftarrow> xs, y \<leftarrow> ys] ! (x_ind * size ys + y_ind) = f (xs ! x_ind) (ys ! y_ind)"
 proof -
   assume m_bound: "x_ind < size xs"
   assume n_bound: "y_ind < size ys"
@@ -5014,20 +5011,20 @@ proof -
     using \<open>concat (map (\<lambda>y_ind. map (\<lambda>x_ind. f x_ind y_ind) [0..<sx]) [0..<sy]) \<in> set (permutations xy)\<close> \<open>f = (\<lambda>x y. xy ! (x * sy + y))\<close> by auto
 qed
 
-theorem perm_exists:
-  assumes
-    "xy = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]" and  
-    "yx = [path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs]"
-  shows "\<exists>xy'. xy' \<in> set (permutations xy) \<and> (\<forall>t\<in>set (zip xy' yx). fst t \<in> set (permutations (snd t)))"
+theorem perm_exists: "xy = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys] \<Longrightarrow> yx = [path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs] \<Longrightarrow> \<exists>xy'. xy' \<in> set (permutations xy) \<and> (\<forall>t\<in>set (zip xy' yx). fst t \<in> set (permutations (snd t)))"
 proof (cases "xs =[]")
   case True
-  then show ?thesis using assms by auto
+  assume assms1: "xy = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]" and 
+         assms2: "yx = [path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs]"
+  then show ?thesis using assms1 assms2 True by auto
 next
   case f1: False
-  then show ?thesis
+  assume assms1: "xy = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys]" and 
+         assms2: "yx = [path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs]"
+  then show ?thesis using f1
   proof (cases "ys = []")
     case True
-    then show ?thesis using assms apply auto
+    then show ?thesis using assms1 assms2 apply auto
       by (meson in_set_member permutation_reflexive)
   next
     case False
@@ -5035,9 +5032,9 @@ next
   obtain xy' where o1: "xy' = [xy ! ((x_ind* (size ys))+y_ind). y_ind \<leftarrow> [0..<size ys], x_ind \<leftarrow> [0..<size xs]]" by simp
   have l1: "size xy' = size xs * size ys" using o1 apply (induction ys) apply auto
     by (simp add: t2)
-  have l2: "size xy = size xs * size ys" using assms(1) t2 by auto
+  have l2: "size xy = size xs * size ys" using assms1 t2 by auto
   then have l2_5: "size xy = size ys * size xs" by auto
-  have l3: "size yx = size xs * size ys" using assms(2) t2 by (metis t3)
+  have l3: "size yx = size xs * size ys" using assms2 t2 by (metis t3)
   have "xy' \<in> set (permutations xy)" apply (simp add: o1) using is_perm4[of xy "size xs" "size ys"] l2 by blast
   have "\<And>a b. (a, b) \<in> set (zip xy' yx) \<Longrightarrow> a \<in> set (permutations b)"
   proof -
@@ -5051,7 +5048,7 @@ next
     ultimately have "i \<le> ((size xs - 1) * (size ys))+(size ys - 1)" by auto
     have "b = (ys ! (i div length xs)) \<interleave> (xs ! (i mod length xs))"
     proof -
-      have "b=[path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs]!i" using assms(2) o2 by auto
+      have "b=[path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs]!i" using assms2 o2 by auto
       have "i < size ys * size xs" using local.l3
         by (simp add: local.l4 mult.commute)
       then have "[path_m \<interleave> path_n. path_m \<leftarrow> ys, path_n \<leftarrow> xs]!i = (ys ! (i div length xs)) \<interleave> (xs ! (i mod length xs))" using index_prop4
@@ -5103,7 +5100,7 @@ next
     then have "xy' ! i = f (i div length xs) (i mod length xs)"
       by (metis (no_types, lifting) l2_5 length_map local.l1 local.l2 local.l4 nth_map nth_upt plus_nat.add_0)
     have "... = xy ! (i mod length xs * length ys + i div length xs)" by (auto simp add: o3)
-    have "... = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys] ! (i mod length xs * length ys + i div length xs)" by (simp add: assms)
+    have "... = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys] ! (i mod length xs * length ys + i div length xs)" by (simp add: assms1 assms2)
     have "... = [path_m \<interleave> path_n. path_m \<leftarrow> xs, path_n \<leftarrow> ys] ! j" by (simp add: o4)
     have "... = (xs ! (j div length ys)) \<interleave> (ys ! (j mod length ys))" using index_prop4[of j xs ys "(\<interleave>)"] by (simp add: \<open>j < length xs * length ys\<close>)
     have "... = (xs ! ((i mod length xs * length ys + i div length xs) div length ys)) \<interleave> (ys ! ((i mod length xs * length ys + i div length xs) mod length ys))" using o4 by blast

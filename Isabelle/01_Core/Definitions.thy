@@ -357,7 +357,7 @@ abbreviation GC :: "('a set \<times> 'a Program) list \<Rightarrow> 'a Program"
 (*
 primrec insert_all_positions :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a list list" where
   base: "insert_all_positions x [] = [[x]]" |
-  step: "insert_all_positions x (y#ys) = (x#y#ys) # [(y#t). t <- (insert_all_positions x ys)]"
+  step: "insert_all_positions x (y#ys) = (x#y#ys) # [(y#t). t \<leftarrow> (insert_all_positions x ys)]"
 *)
 (*
 definition permutations :: "'a list \<Rightarrow> 'a list set" where
@@ -387,7 +387,7 @@ primrec n_comp :: "'a Program list \<Rightarrow> 'a Program"
 
 definition conc_elems :: "'a Program list \<Rightarrow> 'a Program list"
   where
-    "conc_elems xs \<equiv> [Concat t (complete_state t). t <- permutations xs]"
+    "conc_elems xs \<equiv> [Concat t (complete_state t). t \<leftarrow> permutations xs]"
 
 definition atomic_conc :: "'a Program list \<Rightarrow> 'a Program"
   where
@@ -500,7 +500,7 @@ where
 
 definition get_atomic :: "'a Program \<Rightarrow> ('a Program) set"
   where
-    "get_atomic p = {\<lparr>State={a,b}, Pre={a}, post={(a, b)}\<rparr> | a b .     (a,b) \<in> post p \<and> a \<in> Pre p}"
+    "get_atomic p = {\<lparr>State={a,b}, Pre={a}, post={(a, b)} \<rparr> | a b .     (a,b) \<in> post p \<and> a \<in> Pre p}"
 
 definition evaluate :: "'a CNF \<Rightarrow> 'a set \<Rightarrow> 'a Program"
   where
@@ -611,4 +611,65 @@ lemma "evaluate ([[]] \<sslash>\<^sub>c {}) {1, 2} = g" apply (auto simp: evalua
 theorem "C \<subseteq> D \<Longrightarrow> (evaluate p D) \<sslash>\<^sub>p C \<equiv>\<^sub>p evaluate (p \<sslash>\<^sub>c C) D" nitpick
 *)
 
+
+definition feas_of :: "'a Program \<Rightarrow> 'a Program" where
+  "feas_of p \<equiv> \<lparr>State=S p, Pre=Pre p \<inter> Domain (post p), post=post p\<rparr>"
+
+
+definition set_to_list_r :: "'a set \<Rightarrow> 'a list" where
+  "set_to_list_r s = (SOME l. set l = s)"
+  
+
+primrec factorial :: "nat \<Rightarrow> nat" where
+  "factorial 0 = 1" |
+  "factorial (Suc n) = (Suc n) * factorial n"
+
+primrec sum :: "nat list \<Rightarrow> nat" where
+  "sum [] = 0" |
+  "sum (x#xs) = x + sum xs"
+
+definition nmb_interleavings_pre :: "nat \<Rightarrow> nat \<Rightarrow> nat"
+  where
+    "nmb_interleavings_pre x y \<equiv> factorial (x + y) div (factorial x * factorial y)"
+
+definition nmb_interleavings :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat"
+  where
+    "nmb_interleavings xs ys \<equiv> nmb_interleavings_pre (size xs) (size ys)"
+
+fun list_equiv :: "'a Program list \<Rightarrow> 'a Program list \<Rightarrow> bool" where
+  "list_equiv [] [] = True" | 
+  "list_equiv (x#xs) (y#ys) = ((x \<equiv>\<^sub>p y) \<and> list_equiv xs ys)" |
+  "list_equiv _ _ = False"
+
+fun cnf_size :: "'a CNF \<Rightarrow> nat" where
+  "cnf_size [] = 0" |
+  "cnf_size (x#xs) = length x + cnf_size xs + 1"
+
+fun equiv_list :: "'a Program list \<Rightarrow> 'a Program list \<Rightarrow> bool" where
+  "equiv_list [] [] = True" |
+  "equiv_list (x#xs) [] = False" |
+  "equiv_list [] (y#ys) = False" |
+  "equiv_list (x#xs) (y#ys) = (x \<equiv>\<^sub>p y \<and> equiv_list xs ys)"
+
+
+function cnf_concurrency2 :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> 'a set \<Rightarrow> 'a Program" where
+  "cnf_concurrency2 [] ys C = Fail {}" |
+  "cnf_concurrency2 xs [] C = Fail {}" |
+  "cnf_concurrency2 (x#xs) (y#ys) C = 
+     (case (xs , ys) of
+        ([], []) \<Rightarrow> (case (x, y) of 
+          ([], []) \<Rightarrow> Skip C |
+          ([a], [b]) \<Rightarrow> a;b \<union>\<^sub>p b;a |
+          ([], bs) \<Rightarrow> evaluate [bs] C |
+          (as, []) \<Rightarrow> evaluate [as] C |
+          (a#as, b#bs) \<Rightarrow> a; (cnf_concurrency2 [as] [b#bs] C) \<union>\<^sub>p b; (cnf_concurrency2 [a#as] [bs] C)) |
+        (f#fs, []) \<Rightarrow> cnf_concurrency2 [x] [y] C \<union>\<^sub>p cnf_concurrency2 (f#fs) [y] C |
+        ([], g#gs) \<Rightarrow> cnf_concurrency2 [x] [y] C \<union>\<^sub>p cnf_concurrency2 [x] (g#gs) C |
+        (f#fs, g#gs) \<Rightarrow> cnf_concurrency2 [x] (y#g#gs) C \<union>\<^sub>p cnf_concurrency2 (f#fs) (y#g#gs) C
+  )"
+  by pat_completeness auto
+termination cnf_concurrency2
+  apply (relation "measure (\<lambda>(xs, ys, _). cnf_size xs + cnf_size ys)")
+  by auto
+declare cnf_concurrency2.simps [simp del]
 end

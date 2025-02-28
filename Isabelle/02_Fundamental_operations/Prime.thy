@@ -5,9 +5,7 @@ HOL.Finite_Set
 "Choice"
 begin
 
-theorem finite_Field_implies_finite_relation:
-  assumes "finite (Field r)"
-  shows "finite r"
+theorem finite_Field_implies_finite_relation: "finite (Field r)  \<Longrightarrow> finite r"
 proof -
   have "r \<subseteq> Field r \<times> Field r"
     by (auto simp add: Field_def subset_iff)
@@ -22,9 +20,7 @@ theorem "finite (S p) \<Longrightarrow> finite (Pre p)"
    apply (auto simp: S_def)
   by (metis finite_Un finite_insert)
 
-theorem finite_S_implies_finite_post:
-  assumes "finite (S p)"
-  shows "finite (post p)"
+theorem finite_S_implies_finite_post: "finite (S p)  \<Longrightarrow> finite (post p)"
 proof -
   have "S p = State p \<union> Pre p \<union> Field (post p)"
     by (simp add: S_def)
@@ -39,9 +35,7 @@ proof -
     by (simp add: finite_Field_implies_finite_relation)
 qed
 
-theorem post_cardinality_equals_P_cardinality:
-  assumes "P = {\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> | a b. (a,b) \<in> (post p)}"
-  shows "card (post p) = card P"
+theorem post_cardinality_equals_P_cardinality: "P = {\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> | a b. (a,b) \<in> (post p)}  \<Longrightarrow> card (post p) = card P"
 proof -
   have bijection: "\<exists>f. bij_betw f (post p) P"
   proof (rule exI, rule bij_betwI')
@@ -65,11 +59,7 @@ proof -
     by (rule bij_betw_same_card)
 qed
 
-theorem same_card_and_finite_impl_finite:
-  assumes "card a = card b"
-    and "finite a"
-    and "card a > 0"
-  shows "finite b"
+theorem same_card_and_finite_impl_finite: "card a = card b  \<Longrightarrow> finite a  \<Longrightarrow> card a > 0  \<Longrightarrow> finite b"
   using assms(1) assms(3) card_ge_0_finite by auto
 
 theorem fst_in_state: "is_feasible p \<Longrightarrow> is_minimal p \<Longrightarrow> P = {\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> | a b. (a,b) \<in> post p} \<Longrightarrow> r \<in> post p \<Longrightarrow> fst r \<in> State p"
@@ -84,9 +74,7 @@ theorem "is_feasible p \<Longrightarrow> is_minimal p \<Longrightarrow> P = {\<l
   using mem_Collect_eq prod.collapse apply (auto simp: is_feasible_def is_minimal_def is_valid_def S_def Field_def Un_def Range_iff Domain_iff subset_iff)
   by (meson split_pairs)
 
-lemma fold_insert [simp]:
-  assumes "finite A" and "x \<notin> A"
-  shows "fold f z (insert x A) = f x (fold f z A)"
+lemma fold_insert [simp]: "finite A" and "x \<notin> A  \<Longrightarrow> fold f z (insert x A) = f x (fold f z A)"
 
 theorem choice_set_decomp_1: "finite F \<Longrightarrow> \<Union>\<^sub>P (insert x F) = \<Union>\<^sub>P F \<union>\<^sub>p x"
 proof -
@@ -126,13 +114,7 @@ proof -
 qed
   apply (auto simp: Choice_set_def choice_def Fail_def restr_post_def restrict_r_def S_def)
 
-theorem choice_set_equality:
-  assumes "finite (S p)"
-    and "is_feasible p"
-    and "is_minimal p"
-    and "P = {\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> | a b. (a,b) \<in> post p}"
-    and "p\<^sub>i \<in> P"
-  shows "\<Union>\<^sub>P P = p"
+theorem choice_set_equality: "finite (S p) \<Longrightarrow> is_feasible p \<Longrightarrow> is_minimal p \<Longrightarrow> P = {\<lparr>State={a,b}, Pre={a}, post={(a,b)}\<rparr> | a b. (a,b) \<in> post p} \<Longrightarrow> p\<^sub>i \<in> P \<Longrightarrow> \<Union>\<^sub>P P = p"
 proof -
   have l1: "finite (post p)"
     by (simp add: assms(1) finite_S_implies_finite_post)
@@ -212,12 +194,7 @@ proof -
 qed
 
 theorem
-  assumes "finite (S p)" and 
-    "is_feasible p" and 
-    "is_minimal p" and 
-    "P = {\<lparr>State={a,b},Pre={a},post={(a,b)}\<rparr> |a b . (a,b) \<in> (post p)}" and
-    "p\<^sub>i \<in> P"
-  shows "is_prime p\<^sub>i \<and> p\<^sub>i \<subseteq>\<^sub>p p \<and> \<Union>\<^sub>P P = p"
+  "finite (S p) \<Longrightarrow> is_feasible p \<Longrightarrow> is_minimal p \<Longrightarrow> P = {\<lparr>State={a,b},Pre={a},post={(a,b)}\<rparr> |a b . (a,b) \<in> (post p)} \<Longrightarrow> p\<^sub>i \<in> P \<Longrightarrow> is_prime p\<^sub>i \<and> p\<^sub>i \<subseteq>\<^sub>p p \<and> \<Union>\<^sub>P P = p"
 proof -
   have l1: "is_prime p\<^sub>i" using assms by (auto simp: is_prime_def)
   have l2: "p\<^sub>i \<subseteq>\<^sub>p p" using assms

@@ -141,10 +141,9 @@ theorem fold_composition_state_inv: "S (fold (;) t b) = S (foldl (;) b t)"
 theorem "S (fold (;) t (Skip (complete_state t))) = S (foldl (;) (Skip (complete_state t)) t)"
   by (simp add: fold_composition_state_inv)
 
-theorem permutation_fold_subset_complete_state:
-  assumes "t \<in> set (permutations xs)"
-  shows "S (fold (;) t (Skip (complete_state t))) \<subseteq> complete_state xs"
+theorem permutation_fold_subset_complete_state: "t \<in> set (permutations xs) \<Longrightarrow> S (fold (;) t (Skip (complete_state t))) \<subseteq> complete_state xs"
 proof -
+  assume assms: "t \<in> set (permutations xs)"
   have perm_set_eq: "set t = set xs"
     using assms permutation_set_equality by blast
 

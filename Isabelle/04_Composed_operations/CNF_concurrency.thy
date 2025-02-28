@@ -5,10 +5,6 @@ begin
 theorem "(a@b)\<parallel>c =(a\<parallel>c)@(b\<parallel>c)"
   by (auto simp: cnf_concurrency_def)
 
-primrec factorial :: "nat \<Rightarrow> nat" where
-  "factorial 0 = 1" |
-  "factorial (Suc n) = (Suc n) * factorial n"
-
 theorem fact_eq: "factorial n = fact n"
   apply (induction n) by auto
 
@@ -26,18 +22,10 @@ theorem simp_div: "a mod b = 0 \<Longrightarrow> c mod b = 0 \<Longrightarrow> (
 
 theorem exits_mulit: "\<exists>t::nat. n*t=m \<Longrightarrow> m mod n = 0" by auto
 
-definition nmb_interleavings_pre :: "nat \<Rightarrow> nat \<Rightarrow> nat"
-  where
-    "nmb_interleavings_pre x y \<equiv> factorial (x + y) div (factorial x * factorial y)"
-
 value "nmb_interleavings_pre 1 0"
 
 theorem "nmb_interleavings_pre (nmb_interleavings_pre x y) z = nmb_interleavings_pre x (nmb_interleavings_pre y z)"
   oops
-
-definition nmb_interleavings :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat"
-  where
-    "nmb_interleavings xs ys \<equiv> nmb_interleavings_pre (size xs) (size ys)"
 
 theorem number_interleav: "length (xs \<interleave> ys) = nmb_interleavings xs ys"
     apply (auto simp: nmb_interleavings_def nmb_interleavings_pre_def)
@@ -255,11 +243,6 @@ proof -
   show "size ys = 1" using size_one1
     using \<open>length (ys \<parallel> xs) = 1\<close> by auto
 qed
-
-
-primrec sum :: "nat list \<Rightarrow> nat" where
-  "sum [] = 0" |
-  "sum (x#xs) = x + sum xs"
 
 theorem sum_1: "size (concat xs) = sum [size x. x\<leftarrow>xs]"
   apply (induction xs) by auto
@@ -2097,32 +2080,6 @@ theorem Conc_composegeneral: "evaluate ((p \<parallel> q) ;\<^sub>c (r \<paralle
 
 lemma "foldl (+) (b::nat) xs = b + foldl (+) 0 xs" apply (induction xs) apply auto
   by (simp add: simp_2)
-
-fun cnf_size :: "'a CNF \<Rightarrow> nat" where
-  "cnf_size [] = 0" |
-  "cnf_size (x#xs) = length x + cnf_size xs + 1"
-
-
-function cnf_concurrency2 :: "'a CNF \<Rightarrow> 'a CNF \<Rightarrow> 'a set \<Rightarrow> 'a Program" where
-  "cnf_concurrency2 [] ys C = Fail {}" |
-  "cnf_concurrency2 xs [] C = Fail {}" |
-  "cnf_concurrency2 (x#xs) (y#ys) C = 
-     (case (xs , ys) of
-        ([], []) \<Rightarrow> (case (x, y) of 
-          ([], []) \<Rightarrow> Skip C |
-          ([a], [b]) \<Rightarrow> a;b \<union>\<^sub>p b;a |
-          ([], bs) \<Rightarrow> evaluate [bs] C |
-          (as, []) \<Rightarrow> evaluate [as] C |
-          (a#as, b#bs) \<Rightarrow> a; (cnf_concurrency2 [as] [b#bs] C) \<union>\<^sub>p b; (cnf_concurrency2 [a#as] [bs] C)) |
-        (f#fs, []) \<Rightarrow> cnf_concurrency2 [x] [y] C \<union>\<^sub>p cnf_concurrency2 (f#fs) [y] C |
-        ([], g#gs) \<Rightarrow> cnf_concurrency2 [x] [y] C \<union>\<^sub>p cnf_concurrency2 [x] (g#gs) C |
-        (f#fs, g#gs) \<Rightarrow> cnf_concurrency2 [x] (y#g#gs) C \<union>\<^sub>p cnf_concurrency2 (f#fs) (y#g#gs) C
-  )"
-  by pat_completeness auto
-termination cnf_concurrency2
-  apply (relation "measure (\<lambda>(xs, ys, _). cnf_size xs + cnf_size ys)")
-  by auto
-declare cnf_concurrency2.simps [simp del]
 
 theorem cnf_concurrency2_simp1 [simp]: "cnf_concurrency2 [] ys C = Fail {}"
   by (simp add: cnf_concurrency2.simps(1))

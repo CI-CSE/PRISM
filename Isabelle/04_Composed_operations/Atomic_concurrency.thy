@@ -105,10 +105,6 @@ theorem pre_one: "is_feasible x \<Longrightarrow> Pre (atomic_conc [x]) = Pre x"
 theorem lemma_pre_1: "Pre (atomic_conc (a#[b])) \<subseteq> Pre a \<union> Pre b"
   by (auto simp: atomic_conc_def conc_elems_def complete_state_def composition_def Fail_def corestrict_r_def Skip_def S_def Field_def)
 
-fun list_equiv :: "'a Program list \<Rightarrow> 'a Program list \<Rightarrow> bool" where
-  "list_equiv [] [] = True" | 
-  "list_equiv (x#xs) (y#ys) = ((x \<equiv>\<^sub>p y) \<and> list_equiv xs ys)" |
-  "list_equiv _ _ = False"
 
 theorem list_equiv_reflexive: "list_equiv xs xs"
   apply (induction xs)
@@ -145,9 +141,6 @@ proof -
   show "fold (;) xs (a ; Skip (complete_state (a # xs))) \<equiv>\<^sub>p fold (;) xs a" using l1 list_equiv_reflexive list_equiv_comp_equiv
     by blast
   qed
-
-definition feas_of :: "'a Program \<Rightarrow> 'a Program" where
-  "feas_of p \<equiv> \<lparr>State=S p, Pre=Pre p \<inter> Domain (post p), post=post p\<rparr>"
 
 theorem feas_of_prop: "is_feasible (feas_of p)" by (auto simp: is_feasible_def feas_of_def)
 
@@ -687,9 +680,6 @@ qed
 
 theorem atomic_prop5: "atomic_conc [a \<union>\<^sub>p b] = atomic_conc [a] \<union>\<^sub>p atomic_conc [b]"
   by (auto simp: atomic_conc_def conc_elems_def)
-
-definition set_to_list :: "'a set \<Rightarrow> 'a list" where
-  "set_to_list s = (SOME l. set l = s)"
 
 lemma set_to_list_set: "finite xs \<Longrightarrow> set (set_to_list xs) = xs"
   by (metis (mono_tags, lifting) finite_distinct_list set_to_list_def some_eq_imp)

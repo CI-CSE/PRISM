@@ -395,8 +395,7 @@ next
   proof -
     from Cons.prems have "p1 \<in> set (concat (map (insert_all x) (permutations xs)))"
       by simp
-    then obtain ps where ps_def: 
-      "ps \<in> set (permutations xs)" "p1 \<in> set (insert_all x ps)"
+    then obtain ps where ps_def: "ps \<in> set (permutations xs)" "p1 \<in> set (insert_all x ps)"
       by auto
 
     have "set xs = set ps" using Cons.IH ps_def(1) by simp
@@ -420,11 +419,9 @@ next
     from Cons.prems have p2_def: "p2 \<in> set (concat (map (insert_all x) (permutations xs)))"
       by simp
 
-    from p1_def obtain ps1 where ps1_def: 
-      "ps1 \<in> set (permutations xs)" "p1 \<in> set (insert_all x ps1)"
+    from p1_def obtain ps1 where ps1_def: "ps1 \<in> set (permutations xs)" "p1 \<in> set (insert_all x ps1)"
       by auto
-    from p2_def obtain ps2 where ps2_def: 
-      "ps2 \<in> set (permutations xs)" "p2 \<in> set (insert_all x ps2)"
+    from p2_def obtain ps2 where ps2_def: "ps2 \<in> set (permutations xs)" "p2 \<in> set (insert_all x ps2)"
       by auto
 
     have "set ps1 = set ps2" using Cons.IH ps1_def(1) ps2_def(1)
@@ -951,42 +948,35 @@ proof -
     by argo
 qed
 
-theorem decomp_program: 
-  assumes "finite (S p)"
-  assumes "x \<notin> F"
-  assumes "S p = insert x F"
-  assumes "q = \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr>"
-  assumes "r = \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr>"
-  shows "p \<equiv>\<^sub>p q \<union>\<^sub>p r"
-  using assms by (auto simp: choice_def restr_post_def S_def restrict_r_def Field_def equiv_def)
+theorem decomp_program: "finite (S p) \<Longrightarrow> x \<notin> F \<Longrightarrow> S p = insert x F \<Longrightarrow> q = \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr> \<Longrightarrow> r = \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr> \<Longrightarrow> p \<equiv>\<^sub>p q \<union>\<^sub>p r"
+  by (auto simp: choice_def restr_post_def S_def restrict_r_def Field_def equiv_def)
 
 
-theorem decomp_program2: 
-  assumes "finite (S p)"
-  assumes "x \<notin> F"
-  assumes "S p = insert x F"
-  shows "finite (S \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr>)"
+theorem decomp_program2: "finite (S p) \<Longrightarrow> x \<notin> F \<Longrightarrow> S p = insert x F  \<Longrightarrow> finite (S \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr>)"
 proof-
+  assume assms: "finite (S p)" and "x \<notin> F" and "S p = insert x F"
   obtain r where o1: "r = \<lparr>State={s|s. s \<in> State p \<and> s \<in> F}, Pre={s|s. s \<in> Pre p \<and> s \<in> F}, post={(a,b)|a b. a \<in> F \<and> b \<in> F \<and> (a,b) \<in> post p}\<rparr>" by simp
-  have l1: "finite F" using assms by auto
+  have l1: "finite F"
+    using \<open>S p = insert x F\<close> \<open>finite (S p)\<close> by auto
   from l1 have "finite (S r)" using assms(1) by (auto simp: o1 S_def Field_def)
   then show ?thesis using o1 by auto
 qed
 
 
-theorem decomp_program3: 
-  assumes "finite (S p)"
-  assumes "x \<notin> F"
-  assumes "S p = insert x F"
-  shows "finite (S \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr>)"
+theorem decomp_program3: "finite (S p) \<Longrightarrow> x \<notin> F \<Longrightarrow> S p = insert x F  \<Longrightarrow> finite (S \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr>)"
 proof-
+  assume "finite (S p)" and "x \<notin> F" and "S p = insert x F"
   obtain r where o1: "r = \<lparr>State={s|s. s \<in> State p}, Pre={s|s. s \<in> Pre p}, post={(a,b)|a b. (a = x \<or> b = x) \<and> (a,b) \<in> post p}\<rparr>" by simp
-  have l1: "finite F" using assms by auto
-  have l2: "finite (post p)" using assms finite_relation by (auto simp: S_def Field_def Domain_iff)
-  have l3: "finite (State r)" using assms by (auto simp: o1 S_def)
-  have l4: "finite (Pre r)" using assms by (auto simp: o1 S_def)
+  have l1: "finite F"
+    using \<open>S p = insert x F\<close> \<open>finite (S p)\<close> by auto
+  have l2: "finite (post p)"
+    by (metis S_def \<open>finite (S p)\<close> finite_Un finite_relation)
+  have l3: "finite (State r)" using \<open>S p = insert x F\<close> \<open>finite (S p)\<close> \<open>x \<notin> F\<close> apply (auto simp: o1 S_def)
+    by (metis \<open>S p = insert x F\<close> \<open>finite (S p)\<close> finite_Un)
+  have l4: "finite (Pre r)"using \<open>S p = insert x F\<close> \<open>finite (S p)\<close> \<open>x \<notin> F\<close> apply (auto simp: o1 S_def)
+    by (metis \<open>S p = insert x F\<close> \<open>finite (S p)\<close> finite_Un)
   have l5: "post r \<subseteq> post p" by (auto simp: o1)
-  have l6: "finite (post p)" using assms(1) finite_relation
+  have l6: "finite (post p)" using \<open>S p = insert x F\<close> \<open>finite (S p)\<close> \<open>x \<notin> F\<close> finite_relation
     by (simp add: l2)
   have l7: "finite (post r)"
     using l5 l6 rev_finite_subset by auto
@@ -995,19 +985,19 @@ proof-
   then show ?thesis using o1 by auto
 qed
 
-theorem card_prop: assumes "finite a" shows "b \<inter> c = {} \<Longrightarrow> a = b \<union> c \<Longrightarrow> card a = card b + card c"
-  using assms (1) apply (induction a rule: "finite_induct") apply auto
+theorem card_prop: "finite a  \<Longrightarrow> b \<inter> c = {} \<Longrightarrow> a = b \<union> c \<Longrightarrow> card a = card b + card c"
+  apply (induction a rule: "finite_induct") apply auto
   by (metis card_Un_disjoint finite_Un finite_insert)
 
-theorem card_prop2: assumes "finite b" assumes "finite c" shows "b \<inter> c = {} \<Longrightarrow> a = b \<union> c \<Longrightarrow> card a = card b + card c"
-  using assms (1) proof (induction b rule: "finite_induct")
+theorem card_prop2: "finite b  \<Longrightarrow> finite c  \<Longrightarrow> b \<inter> c = {} \<Longrightarrow> a = b \<union> c \<Longrightarrow> card a = card b + card c"
+  proof (induction b rule: "finite_induct")
   case empty
   then show ?case by auto
 next
   case (insert x F)
   have "finite (insert x F)" using insert by auto
   show "card a = card (insert x F) + card c"
-    using \<open>finite (insert x F)\<close> assms(2) card_Un_disjoint insert.prems(1) insert.prems(2) by blast
+    using \<open>finite (insert x F)\<close> card_Un_disjoint insert.prems(1) insert.prems(2) insert.prems(3) by blast
 qed
 
 theorem finite_prop3: "finite x \<Longrightarrow> finite {f a |a . a \<in> x}" by auto
@@ -1132,12 +1122,12 @@ theorem atomic_split: "finite (get_atomic p) \<Longrightarrow> finite (get_atomi
   by (auto simp: get_atomic_def choice_def restr_post_def restrict_r_def)
 
 
-theorem assumes "is_atomic x" shows "(get_atomic p) \<union> {x} = get_atomic (p \<union>\<^sub>p x)"
+theorem "is_atomic x  \<Longrightarrow> (get_atomic p) \<union> {x} = get_atomic (p \<union>\<^sub>p x)"
   apply (auto simp: get_atomic_def choice_def restr_post_def restrict_r_def)
-  using assms(1) atomic_prop1 apply force
-  using assms(1) atomic_prop1 apply fastforce
-  using assms(1) atomic_prop1 apply fastforce
-  using assms(1) atomic_prop1 by fastforce
+  using atomic_prop1 apply force
+  using atomic_prop1 apply fastforce
+  using atomic_prop1 apply fastforce
+  using atomic_prop1 by fastforce
 
 theorem fail_atomic: "get_atomic (Fail {}) = {}" by (auto simp: get_atomic_def Fail_def)
 

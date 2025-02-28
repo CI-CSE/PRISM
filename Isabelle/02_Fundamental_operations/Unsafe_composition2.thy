@@ -10,6 +10,7 @@ lemma "Pre (p\<^sub>1 ;\<^sup>p (p\<^sub>2 ;\<^sup>p p\<^sub>3)) \<subseteq> Pre
   apply (simp add: unsafe_composition2_def corestrict_r_def relcomp_unfold Domain_iff Int_def)
   by auto
 
+(*
 definition P1 :: "nat Program" where "P1 =\<lparr>State={1,2}, Pre={1,2}, post={(1,1), (1,2), (2,1), (2,2)}\<rparr>"
 definition P2 :: "nat Program" where "P2 =\<lparr>State={1,2}, Pre={1}, post={(1,2), (2,1)}\<rparr>"
 definition P3 :: "nat Program" where "P3 =\<lparr>State={1,2}, Pre={1}, post={(1,1)}\<rparr>"
@@ -18,6 +19,7 @@ value "P1 ;\<^sup>p P2"
 value "P2 ;\<^sup>p P3"
 value "P1 ;\<^sup>p (P2 ;\<^sup>p P3)"
 value "(P1 ;\<^sup>p P2) ;\<^sup>p P3"
+*)
 
 lemma "Pre ((p ;\<^sup>p q) ;\<^sup>p r) = Pre (p ;\<^sup>p (q ;\<^sup>p r))"
   nitpick
