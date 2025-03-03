@@ -4,7 +4,7 @@ layout: page
 # Programming really is simple mathematics
 PRISM is a novel framework that offers a fresh perspective on programming. Traditionally, key aspects of programming — such as specification and implementation, formal and applied methods, and static and dynamic verification — are often viewed as distinct and even opposing concepts. PRISM challenges this notion by providing a unified, mathematically rigorous foundation that integrates these elements seamlessly.
 
-Currently, the project comprises a [research paper](https://arxiv.org/abs/2502.17149), sonn published as part of a Festschrift honoring [Yuri Gurevich](https://web.eecs.umich.edu/~gurevich/), along with the [formal proofs](https://github.com/CI-CSE/PRISM/tree/main/Isabelle) of the paper's theorems, developed in [Isabelle HOL](https://isabelle.in.tum.de/). Moving forward, PRISM will continue to be refined and expanded, with the ultimate goal of enabling the generation of formally verified programming languages.
+Currently, the project comprises a [research paper](https://arxiv.org/abs/2502.17149), soon submitted as part of a Festschrift honoring [Yuri Gurevich](https://web.eecs.umich.edu/~gurevich/), along with the [formal proofs](https://github.com/CI-CSE/PRISM/tree/main/Isabelle) of the paper's theorems, developed in [Isabelle HOL](https://isabelle.in.tum.de/). Moving forward, PRISM will continue to be refined and expanded, with the ultimate goal of enabling the generation of formally verified programming languages.
 
 ---
 ## Abstract
